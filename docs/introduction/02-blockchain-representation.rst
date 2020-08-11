@@ -25,7 +25,9 @@ Node Main Elements & Intro to a "NodeView"
   * **State** - is a snapshot of all boxes that haven’t been opened yet. It represents the state at the current chain tip.
     
   * **Wallet** - has two main functionalities:
+
     * It holds the secret keys that belong to that specific node.
+    
     * It keeps track of objects that are of interest to this specific node, e.g. received coins (output boxes whose secret keys are known by the node) and views of them (e.g. balances).   
   
   * **Memory Pool** - is a list of transactions that are known to the node but have not made it to a sidechain block yet.
