@@ -1,0 +1,35 @@
+.wy-side-nav-search {
+    background-color: #041742 !important;
+}
+.wy-nav-top {
+    background: #041742 !important;
+}
+.wy-body-for-nav {
+    background: #fff;
+}
+.wy-nav-side {
+    background: #041742 !important;
+}
+.wy-nav-content {
+   // background: rgb(122, 115, 115);
+}
+.wy-nav-content-wrap {
+    background: rgba(0,0,0,0.00) !important; 
+}
+.rst-versions .rst-current-version {
+    background-color: #041742 !important;
+}
+.highlight {
+    background: #e8ecef;
+}
+
+div.leftside {
+  width: 43%;
+  padding: 0px 3px 0px 0px;
+  float: left;
+}
+
+div.rightside {
+  margin-left: 45%;
+  /* float: right; */
+}

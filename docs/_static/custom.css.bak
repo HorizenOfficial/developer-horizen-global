@@ -1,0 +1,52 @@
+.wy-side-nav-search {
+    display: block;
+    width: 300px;
+    padding: .809em;
+    margin-bottom: .809em;
+    z-index: 200;
+    background-color: #041742 !important;
+    text-align: center;
+    padding: .809em;
+    display: block;
+    color: #fcfcfc;
+    margin-bottom: .809em;
+}
+.wy-nav-content {
+    padding: 1.618em 3.236em;
+    height: 100%;
+    //max-width: 1200px !important;
+    margin: auto;
+    //float: left;
+}
+.wy-nav-side {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding-bottom: 2em;
+    width: 300px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    min-height: 100%;
+    color: #9b9b9b;
+    background: #041742 !important;
+    z-index: 200;
+}
+.rst-versions .rst-current-version {
+    padding: 12px;
+    background-color: #041742;
+    display: block;
+    text-align: right;
+    font-size: 90%;
+    cursor: pointer;
+    color: #27AE60;
+    *zoom: 1;
+}
+body {
+    font-family: proxima-nova,sans-serif;
+    font-weight: normal;
+    color: #404040;
+    min-height: 100%;
+    overflow-x: hidden;
+    background: #edf0f2;
+}
