@@ -22,7 +22,7 @@
 
 
 ###################################
-Horizen Sidechains SDK Documentation
+Horizen Sidechain SDK Documentation
 ###################################
 
 ********
