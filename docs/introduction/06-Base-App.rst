@@ -124,7 +124,7 @@ Node interconnection is organized as a peer-to-peer network. Over the network, t
 Physical storage
 ****************
 
-Physical storage. The SDK introduces the unified physical storage interface, this default implementation is based on the `LevelDB library <https://github.com/google/leveldb>`_. Sidechain developers can decide to use the default solution or to provide the custom one. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. In case of your own implementation, please make sure that `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes for your custom storage.
+Physical storage. The SDK introduces the unified physical storage interface, this default implementation is based on the `IODB Library <https://github.com/input-output-hk/iodb>`_. The `LevelDB library <https://github.com/google/leveldb>`_ is also in consideration for possible integration. Sidechain developers can decide to use the default solution or to provide the custom one. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. In case of your own implementation, please make sure that `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes for your custom storage.
 
 User specific settings
 **********************
