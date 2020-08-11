@@ -1,42 +1,47 @@
 ***************************************
-Internal representation of a Blockchain
+Internal Representation of a Blockchain
 ***************************************
 
-Being a distributed architecture, the sidechain software is meant to be delivered as a software application that will be compiled/installed by potentially many different independent, connected computers. In blockchain jargon, these computers are called “Nodes,” and the term “node” is also generally used to name the blockchain software itself.
-So, the output of the Sidechain SDK, when customized by a developer, is a “Node” that implements core functionalities, and the added logic.
+The sidechain software is is a distributed architecture and is meant to be delivered as a software application that will be 
+compiled/installed by potentially many different independent, connected computers. In blockchain jargon, these computers are 
+called “nodes,” and the term “node” is also generally used to name the blockchain software itself. 
+So, the output of the sidechain SDK, when customized by a developer, is a “node” that implements core functionalities and the added logic.
 
-A Node consists of 4 main elements: “**History**,” “**State**,” “**Wallet**,” and “**Memory pool**.” Before we get to know these 4 elements we need to know what a “box” is.
+A node consists of four main elements: history, state, wallet, and memory pool. 
+We need to know what a “box” is before we get to know these four elements.
 
-Concept of a BOX
+Concept of a Box
 ****************
 
-A box generalizes the concept of Bitcoin’s UTXOs.
-A box is a cryptographic object that can be created with some secret keys. This box can be open \ (spent) by the owner of those secret keys. Once opened by the owner of the secret keys the box may not be opened again.
+A box generalizes the concept of Bitcoin’s UTXOs. A box is a cryptographic object that can be created with secret keys. This box can be opened (spent) by the 
+owner of those secret keys. 
+Once the owner of the secret keys opens it, the box may not be opened again.
 
-Node Main elements & intro to a "NodeView"
+Node Main Elements & Intro to a "NodeView"
 ******************************************
 
-  * **History**
-    * “History” is a blockchain ledger, that is typically a list of Sidechain blocks that were received by the Node, and that have been verified against Consensus rules, and accepted.
+  * **History** - is a blockchain ledger that is typically a list of sidechain blocks that were received by the node, verified against consensus rules,
+  and accepted.
+
+  * **State** - is a snapshot of all boxes that haven’t been opened yet. It represents the state at the current chain tip.
     
-  * **State**
-    * “State” is a snapshot of all boxes that haven’t been opened yet. It represents the state at the current chain tip.
+  * **Wallet** - has two main functionalities:
+    * It holds the secret keys that belong to that specific node.
+    * It keeps track of objects that are of interest to this specific node, e.g. received coins (output boxes whose secret keys are known by the node) 
+    and views of them (e.g. balances).   
+  
+  * **Memory Pool** - is a list of transactions that are known to the node but have not made it to a sidechain block yet.
     
-  * **Wallet**
-    * The “Wallet” has two main functionalities:
-      1. It holds the Secret keys that belong to that specific Node.
-      2. It keeps track of objects that are of interest to this specific node, e.g. received coins (output boxes whose secret keys are known by the node) and views of them (e.g. balances).      
-  * **Memory Pool**
-    * The “Memory pool” is a list of transactions that are known to the node but have not made it to a Sidechain block yet.
-    
-Altogether these 4 objects represent a “NodeView.”
+Together these four objects represent a “NodeView.”
 
 NodeViewHelper
 ==============
 
-All communication between NodeView objects is controlled by NodeViewHolder, which also provides a layer of communication within the application for local data processing of Blocks, Transactions, Secrets, etc.
+All communication between NodeView objects is controlled by NodeViewHolder, which also provides a layer of communication within the application for local data
+processing of Blocks, Transactions, Secrets, etc.
 
-In terms of customization, the History object is the only one that is fully controlled by the core and that in almost all circumstances does not need to be extended. It contains a ready-made implementation of the Latus consensus and of the Cross-Chain Transfer Protocol.
+In terms of customization, the History object is the only one that is fully controlled by the core and that in almost all circumstances does not need to be
+extended. It contains a ready-made implementation of the Latus consensus and of the Cross-Chain Transfer Protocol.
 
 The core logic of State, Wallet and Memory Pool can instead be extended by sidechain developers:
 
