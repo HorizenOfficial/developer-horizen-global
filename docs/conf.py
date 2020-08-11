@@ -53,7 +53,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Horizen SidechainsSDK'
+project = u'Horizen Sidechain SDK'
 copyright = u'© 2020 Horizen. All rights reserved.'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -253,7 +253,7 @@ man_pages = [
 ]
 
 # If true, show URL addresses after external links.
-#man_show_urls = False
+#man_show_urls = Falsegit
 
 
 # -- Options for Texinfo output -------------------------------------------
