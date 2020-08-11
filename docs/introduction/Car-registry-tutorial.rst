@@ -221,7 +221,7 @@ Few comments about implementation:
 Implementation of CarBoxSerializer:
 ***********************************
 
-A CarBoxSerializer is implemented according to the description from the (`“Custom Box Data Serializer Creation section” <07-Sidechain-SDK-extension.html#custom-box-data-serializer-class-creation>`_) as 
+A CarBoxSerializer is implemented according to the description from the (`“Custom Box Data Serializer Creation section” <Sidechain-SDK-extension.html#custom-box-data-serializer-class-creation>`_) as 
 ::
  public class CarBoxSerializer implements BoxSerializer<CarBox> 
 
@@ -263,7 +263,7 @@ Implementation Comments: Information about proof type is defined by the result o
 Implementation of CarSellOrderBoxData
 *************************************
 
-A CarSellOrderBoxData is implemented according to the description from the (`“Custom Box Data class creation section” <07-Sidechain-SDK-extension.html#custom-box-data-class-creation>`_) as 
+A CarSellOrderBoxData is implemented according to the description from the (`“Custom Box Data class creation section” <Sidechain-SDK-extension.html#custom-box-data-class-creation>`_) as 
 ::
  public class CarSellOrderData extends AbstractNoncedBoxData<SellOrderProposition, CarSellOrderBox, CarSellOrderBoxData> 
  
@@ -286,7 +286,7 @@ CarSellOrderBoxData  uses custom proposition type, thus *proposition* field have
 Implementation of CarSellOrderBoxDataSerializer
 ***********************************************
 
-A CarSellOrderDataSerializer is implemented according to the description from the (`“Custom Box Data Serializer creation section” <07-Sidechain-SDK-extension.html#custom-box-data-serializer-class-creation>`_) as
+A CarSellOrderDataSerializer is implemented according to the description from the (`“Custom Box Data Serializer creation section” <Sidechain-SDK-extension.html#custom-box-data-serializer-class-creation>`_) as
 ::
  public class CarSellOrderBoxDataSerializer implements NoncedBoxDataSerializer<CarSellOrderData>
 
@@ -295,7 +295,7 @@ A CarSellOrderDataSerializer is implemented according to the description from th
 Implementation of CarSellOrderBox
 *********************************
 
-A CarSellorder is implemented according to description from the (`“Custom Box Class creation section” <07-Sidechain-SDK-extension.html#custom-box-class-creation>`_) as
+A CarSellorder is implemented according to description from the (`“Custom Box Class creation section” <Sidechain-SDK-extension.html#custom-box-class-creation>`_) as
 ::
  public final class CarSellOrderBox extends AbstractNoncedBox<SellOrderProposition, CarSellOrderBoxData, CarSellOrderBox>
 
