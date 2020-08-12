@@ -33,3 +33,6 @@ div.rightside {
   margin-left: 45%;
   /* float: right; */
 }
+.ethical-dark-theme .ethical-sidebar {
+    visibility: hidden !important;
+}
