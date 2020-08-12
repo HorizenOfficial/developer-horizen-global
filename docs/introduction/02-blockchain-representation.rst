@@ -27,7 +27,7 @@ Node Main Elements & Intro to a "NodeView"
   * **Wallet** - has two main functionalities:
 
     * It holds the secret keys that belong to that specific node.
-    
+
     * It keeps track of objects that are of interest to this specific node, e.g. received coins (output boxes whose secret keys are known by the node) and views of them (e.g. balances).   
   
   * **Memory Pool** - is a list of transactions that are known to the node but have not made it to a sidechain block yet.
@@ -37,13 +37,13 @@ Together these four objects represent a “NodeView.”
 NodeViewHelper
 ==============
 
-All communication between NodeView objects is controlled by NodeViewHolder, which also provides a layer of communication within the application for local data
-processing of Blocks, Transactions, Secrets, etc.
+All communication between NodeView objects is controlled by NodeViewHolder, 
+which also provides a layer of communication within the application for local data processing of blocks, transactions, secrets, etc.
 
-In terms of customization, the History object is the only one that is fully controlled by the core and that in almost all circumstances does not need to be
+n terms of customization, the history object is the only one that is fully controlled by the core and that in almost all circumstances does not need to be 
 extended. It contains a ready-made implementation of the Latus consensus and of the Cross-Chain Transfer Protocol.
 
-The core logic of State, Wallet and Memory Pool can instead be extended by sidechain developers:
+The core logic of state, wallet and memory pool can instead be extended by sidechain developers:
 
  * The “State” is a set of objects that are the result of processing all the previous blocks. These objects are needed to validate the next block, to allow the Node to efficiently verify, before applying a block, that all the defined rules have been respected by it. The “State” can be extended to keep track of new objects that can be useful to enforce additional rules that can be implemented in the application state interface.
 
