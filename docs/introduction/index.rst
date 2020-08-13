@@ -28,14 +28,14 @@ in the order presented here.
     :numbered:
 
     overview.rst
-    01-install
-    02-blockchain-representation
-    03-Cross-chain-transfer-protocol
-    04-Latus-Consensus
-    05-Node-communication
-    06-Base-App
-    07-Sidechain-SDK-extension
-    08-Car-registry-tutorial
+    install
+    blockchain-representation
+    Cross-chain-transfer-protocol
+    Latus-Consensus
+    Node-communication
+    Base-App
+    Sidechain-SDK-extension
+    Car-registry-tutorial
 
 Either way, you'll be able to find support and help from the numerous friendly
 members of the Horizen community,  on our Discord
