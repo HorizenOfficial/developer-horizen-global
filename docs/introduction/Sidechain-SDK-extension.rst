@@ -32,7 +32,7 @@ CustomData are the following:
 
 * In your AppModule class (i.e. class which extends  ```AbstractModule```, in SimpleApp it is ```SimpleAppModule```) define Custom Serializer map, for example for boxes it could be ```Map<Byte, BoxSerializer<Box<Proposition>>> customBoxSerializers = new HashMap<>();``` where key is data type id and value is CustomSerializer for those data type id.
   
-* Add your custom serializer into the map, for example it could be something  ```like customBoxSerializers.put((byte)MY_CUSTOM_BOX_ID, (BoxSerializer) CustomBoxSerializer.getSerializer());```
+* Add your custom serializer to the map, for example it could be something  ```like customBoxSerializers.put((byte)MY_CUSTOM_BOX_ID, (BoxSerializer) CustomBoxSerializer.getSerializer());```
 
 * Bind map with custom serializers to your application in the app model class:
   ::
@@ -79,25 +79,25 @@ Custom box creation
 
   a) SDK Box extension Overview
 
-To build a real application, a developer will need more to do more than receive, transfer, and send coins back. A distributed app, built on a sidechain, will typically have to define some custom data that the sidechain users will be able to exchange according to a defined logic. The creation of new Boxes requires the definition of four new classes. We will use the name Custom Box as a definition for some abstract custom Box:  
+To build a real application, a developer will need to do more than receive, transfer, and send coins back. A distributed app, built on a sidechain, will typically have to define some custom data that the sidechain users will be able to exchange according to a defined logic. The creation of new Boxes requires the definition of four new classes. We will use the name Custom Box as a definition for some abstract custom Box:  
 
 
 +--------------------------------------+------------------------------------------------------------------------------------+
 | Class type                           | Class description                                                                  |
 +======================================+====================================================================================+
 | Custom Box Data class                | -- Contains all custom data definitions plus proposition for Box                   |
-|                                      | -- Provide required information for serialization of Box Data                      |
-|                                      | -- Define the way for creation new Custom Box from current Custom Box Data         |
+|                                      | -- Provides required information for serialization of Box Data                     |
+|                                      | -- Defines the way to create a new Custom Box from current Custom Box Data         |
 +--------------------------------------+------------------------------------------------------------------------------------+
-| Custom Box Data Serializer Singleton | -- Define the way how to parse bytes from Reader into Custom Box Data object       |
-|                                      | -- Define the way how to put boxData object into Writer Parsing function used in a |
+| Custom Box Data Serializer Singleton | -- Defines how to parse bytes from Reader into Custom Box Data object              |
+|                                      | -- Defines the way to put boxData object into Writer Parsing function used in a    |
 |                                      | Serializer class can be put in that class as well. However, it can be defined      |
 |                                      | somewhere else                                                                     |
 +--------------------------------------+------------------------------------------------------------------------------------+
 | Custom Box                           | Representation new entity in Sidechain, contains appropriate Custom Box Data class |
 +--------------------------------------+------------------------------------------------------------------------------------+
-| Custom Box Serializer Singleton      | -- Define the way how to parse bytes from Reader into Box object                   |
-|                                      | -- Define the way how to put boxData object into Writer Parsing function used in a |
+| Custom Box Serializer Singleton      | -- Defines how to parse bytes from Reader into Box object                          |
+|                                      | -- Defines the way how to put boxData object into Writer Parsing function used in a|
 |                                      | Serializer class can be put in that class as well. However, it can be defined      |
 |                                      | somewhere else                                                                     |
 +--------------------------------------+------------------------------------------------------------------------------------+
@@ -105,7 +105,7 @@ To build a real application, a developer will need more to do more than receive,
 Custom Box Data class creation
 ##############################
 
-The SDK provides base class for any Box Data class: 
+The SDK provides a base class for any Box Data class: 
 
 ::
 
@@ -127,13 +127,13 @@ That base class provides the following data by default:
 
   proposition of type P long value
 
-If the box type is a Coin-Box then this value is required and will contain data such as coin value. In the case of a Non-Coin box it will be used in custom logic only. As a common practice for non-Coin box you can set it always equal to 1 
+If the box type is a Coin-Box, then this value is required and will contain data such as coin value. In the case of a Non-Coin box it will be used in custom logic only. As a common practice for non-Coin box you can set it always equal to 1 
 
-So the creation of new Custom Box Data will be created in the following way:
+So the creation of new Custom Box Data takes place as follows:
 ::
   public class CustomBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CustomBox, CustomBoxData>
 
-The new custom box data class  requires the following:
+The new custom box data class requires the following:
 
 1. Custom data definition
   * Custom data itself
@@ -159,17 +159,17 @@ So creation of a Custom Box Data Serializer can be done in following way:
 ::
  public class CustomBoxDataSerializer implements NoncedBoxDataSerializer<CustomBoxData>
 
-The new Custom Box Data Serializer require's the following:
+The new Custom Box Data Serializer requires the following:
 
-  1. Definition of function for writing Custom Box Data into the Scorex Writer by implementation of the following method.
+  1. Definition of a function for writing Custom Box Data into the Scorex Writer by implementation of the following method.
      ::
       public void serialize(CustomBoxData boxData, Writer writer)
 
-  2. Definition of function for reading Custom Box Data from Scorex *Reader* by implementation of the function 
+  2. Definition of a function for reading Custom Box Data from Scorex *Reader* by implementation of the function 
      ::
       public CustomBoxData parse(Reader reader)
 
-  3. Class shall be converted to singleton, for example it can be done in following way:
+  3. Class shall be converted to singleton. For example, this can be done as follows:
 
      ::
         
@@ -194,7 +194,7 @@ As parameters for **AbstractNoncedBox** three template parameters shall be provi
 ::
  P extends Proposition
 
-- Proposition type for the box, for common purposes. ``PublicKey25519Proposition`` could be used as it used in regular boxes
+- Proposition type for the box, for common purposes. ``PublicKey25519Proposition`` could be used as it is used in regular boxes
   ::
    BD extends AbstractNoncedBoxData<P, B, BD>
    
@@ -202,7 +202,7 @@ As parameters for **AbstractNoncedBox** three template parameters shall be provi
   ::
    B extends AbstractNoncedBox<P, BD, B>
 
-- Definition of type for Box itself, required for description inside of new Custom Box data.
+- Definition of type for the Box itself, required for description inside of new Custom Box data.
   
   
 The Custom Box itself requires implementation of following functionality:
@@ -254,13 +254,13 @@ A transaction in the SDK is represented by the following class.
 ::
  public abstract class BoxTransaction<P extends Proposition, B extends Box<P>>
  
-This class provides access to data such as which boxes will be created, unlockers for input boxes, fees, etc. 
-SDK developer could add custom transaction check by implementing *custom ApplicationState* 
+This class provides access to data such as which boxes will be created, unlockers for input boxes, fees, etc. the 
+SDK developer could add a custom transaction check by implementing *custom ApplicationState* 
 
 Any custom transaction shall implement three important functions:
-``public boolean transactionSemanticValidity()`` -- this function defines is transaction semantically valid or not, i.e. verify stateless (without context) transaction correctness. Non zero fee and positive timestamp are examples of such verification.
+``public boolean transactionSemanticValidity()`` -- this function defines if a transaction is semantically valid or not, i.e. verify stateless (without context) transaction correctness. Non-zero fee and positive timestamp are examples of such verification.
 
-``public List<BoxUnlocker<Proposition>> unlockers()`` -- SDK core does box opening verification by checking proofs against input box ids. However, information about closed boxes and proofs for that box shall be returned separately by each transaction. For such purposes each transaction shall return a list of `unlockers <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxUnlocker.java>`_ which are implements following interface:
+``public List<BoxUnlocker<Proposition>> unlockers()`` -- The SDK core does box opening verification by checking proofs against input box ids. However, information about closed boxes and proofs for that box shall be returned separately by each transaction. For such purposes, each transaction shall return a list of `unlockers <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxUnlocker.java>`_ which are implemented by the following interface:
 ::
   public interface BoxUnlocker<P extends Proposition>
   {
@@ -270,7 +270,7 @@ Any custom transaction shall implement three important functions:
 
 Where *closedBoxId* is the id of the closed box and *boxKey* is correct proof for that box.
 
-``public List<NoncedBox<Proposition>> newBoxes()`` -- function returns list of new boxes which shall be created by current transaction. Be aware due to some internal implementation of SDK that function must be implemented in the following way:
+``public List<NoncedBox<Proposition>> newBoxes()`` -- function returns list of new boxes which shall be created by current transaction. Be aware that due to some internal implementation of SDK that function must be implemented in the following way:
 ::
  @Override
  public List<NoncedBox<Proposition>> newBoxes() {
@@ -284,10 +284,10 @@ Where *closedBoxId* is the id of the closed box and *boxKey* is correct proof fo
 Custom Proof / Proposition creation
 ###################################
 
-A proposition is a locker for a box, and Proof is an unlocker for a box. For some reason, a way how the box is locked/unlocked can be changed by the SDK developer. For example, a special box can be opened by two or more independent private keys. For such reason, custom Proof / Proposition can be created.
+A proposition is a locker for a box, and Proof is an unlocker for a box. For some reason, the manner in which the box is locked/unlocked can be changed by the SDK developer (should this be sidechain developer?). For example, a special box can be opened by two or more independent private keys. For such reason, custom Proof/Proposition can be created.
 
 * Creating custom Proposition
-  For creating a custom Proposition  ``ProofOfKnowledgeProposition<S extends Secret>`` interface shall be implemented. Generic     parameter is just a marker for the type of private key, for example, *PrivateKey25519* It could be used. Inside the Proposition, we could put two different public keys, which are used for locking the box.
+  For creating a custom Proposition  ``ProofOfKnowledgeProposition<S extends Secret>`` interface shall be implemented. Generic parameter is just a marker for the type of private key. For example, *PrivateKey25519* could be used. Inside the Proposition, we could use two different public keys to lock the box.
 
 * Creating custom Proof interface ``Proof<P extends Proposition>`` shall be implemented where *P* is an appropriate Proposition class. ``Function boolean isValid(P proposition, byte[] messageToVerify);`` shall be implemented. That function defines whether Proof is valid for a given proposition and Proof or not. For example, in the case of Proposition with two different public keys, we could try to verify the message using public keys in Proposition one by one and return true if Proof had been created by one of the expected private keys.
 
@@ -306,22 +306,22 @@ ApplicationState:
   Try<ApplicationState> onRollback(byte[] version);
   }
 
-For example, the custom application may have the possibility to tokenize cars by the creation of Box entries - let us call them CarBox. Each CarBox token should represent a unique car by having a unique *VIN* (Vehicle Identification Number). To do this, Sidechain developer may define ApplicationState to store the list of actual VINs and reject transactions with CarBox tokens with VIN already existing.
+For example, the custom application may have the possibility to tokenize cars by the creation of Box entries - let us call them CarBox. Each CarBox token should represent a unique car by having a unique *VIN* (Vehicle Identification Number). To do this, the sidechain developer may define ApplicationState to store the list of actual VINs and reject transactions with CarBox tokens with VIN already existing.
 
 The next custom state checks could be done here:
 
-  * ``public boolean validate(SidechainStateReader stateReader, SidechainBlock block)`` --  any custom block validation could be done here. If the function returns false, then the block will not be accepted by the Sidechain Node.
+  * ``public boolean validate(SidechainStateReader stateReader, SidechainBlock block)`` -- any custom block validation could be done here. If the function returns false, then the block will not be accepted by the sidechain node.
   
-  * ``public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)`` -- any custom checks for the transaction could be done here if the function returns false then transaction is assumed as invalid and for example will not be included in a memory pool. 
+  * ``public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)`` -- any custom checks for the transaction could be done here. If the function returns false, then the transaction is assumed as invalid and, for example, will not be included in a memory pool. 
 
   * ``public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)`` -- any specific action after block applying in State could be defined here.
   
-  * ``public Try<ApplicationState> onRollback(byte[] version)`` -- any specific action after rollback of State (for example in case of fork/invalid block) could be defined here
+  * ``public Try<ApplicationState> onRollback(byte[] version)`` -- any specific action after rollback of State (for example, in case of fork/invalid block) could be defined here.
   
 Application Wallet 
 ##################
 
-The Wallet by default keeps user secret info and related balances. The actual data is updated when a new block is applied to the chain or when some blocks are reverted. Developers can specify custom secret types that will be processed by Wallet. The developer may extend the logic using `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
+The Wallet by default keeps user secret info and related balances. The actual data is updated when a new block is applied to the chain or when some blocks are reverted. Developers can specify custom secret types that will be processed by the wallet. The developer may extend the logic using `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
 ::
   interface ApplicationWallet {
     void onAddSecret(Secret secret);
@@ -330,17 +330,16 @@ The Wallet by default keeps user secret info and related balances. The actual da
     void onRollback(byte[] version);
   }
 
-For example, a developer needs to have some event-based data, like an auction slot that belongs to him, and will start in 10 blocks and expire in 100 blocks. So in ApplicationWallet, he will additionally keep this event-based info and will react when a new block is going to be applied (onChangeBoxes method execution) to activate or deactivate that slot in ApplicationWallet.
-
+For example, a developer needs to have some event-based data, like an auction slot that belongs to him, that will start in 10 blocks and expire in 100 blocks. So in ApplicationWallet, he will additionally keep this event-based info and will react when a new block is going to be applied (onChangeBoxes method execution) to activate or deactivate that slot in ApplicationWallet.
 
 Custom API creation 
 ###################
 
   Steps to extend the API:
   
-    1. Create a class (e.g. MyCustomApi) which extends the ApplicationApiGroup abstract class (you could create multiple classes, for example to group functions by functionality).
+    1. Create a class (e.g. MyCustomApi) which extends the ApplicationApiGroup abstract class (you could create multiple classes, for example, to group functions by functionality).
 
-    2. In a class where all dependencies are declared (e.g. SimpleAppModule in our Simple App example ) we need to create the following variable: ``List<ApplicationApiGroup> customApiGroups = new ArrayList<>();``
+    2. In a class where all dependencies are declared (e.g. SimpleAppModule in our Simple App example ), we need to create the following variable: ``List<ApplicationApiGroup> customApiGroups = new ArrayList<>();``
 
     3. Create a new instance of the class MyCustomApi, and then add it to *customApiGroups* 
 
@@ -354,8 +353,7 @@ At this point, MyCustomApi will be included in the API route, but we still need 
 
 Where "myCustomAPI" is part of the HTTP path for that API group 
 
-
-  2.  Define HTTP request classes -- i.e. the json body in the HTTP request will be converted to that request class. For example, if as “request” we want to use byte array data with some integer value, we could define the following class:
+  2.  Define HTTP request classes -- i.e. the JSON body in the HTTP request will be converted to that request class. For example, if as “request” we want to use byte array data with some integer value, we could define the following class:
   
   ::
   
@@ -380,7 +378,7 @@ Where "myCustomAPI" is part of the HTTP path for that API group
     }
     }
 
-Setters are defined to expect data from JSON. So, for the given MyCustomRequest we could use next JSON: 
+Setters are defined to expect data from JSON. So, for the given MyCustomRequest we could use this JSON: 
 
     ::
     
@@ -404,7 +402,7 @@ Inside those functions, all required action could be defined, and with them also
 
   4. Add response classes
 
-As a result of an API request, the result shall be sent back via HTTP response. In a typical case, we could have two different responses: operation is successful, or some error had appeared during processing the API request. SDK provides following way to declare those API responses:
+As a result of an API request, the result shall be sent back via HTTP response. In a typical case, we could have two different responses: operation is successful, or some error had appeared during processing the API request. The SDK provides following way to declare those API responses:
 For a successful response, implement SuccessResponse interface with data to be returned. That data shall be accessible via getters. Also, that class shall have the next annotation required for marshaling and correct conversion to JSON: ``@JsonView(Views.Default.class)``. The developer can define here some other custom class for JSON marshaling. For example, if a string should be returned, then the following response class can be defined:
 
   ::
@@ -422,13 +420,13 @@ For a successful response, implement SuccessResponse interface with data to be r
     }
     }
 
-In such case API response will be represented in the following JSON format:
+In such a case, the API response will be represented in the following JSON format:
 
   ::
   
     {"result": {“response” : “response from CustomSuccessResponse object”}}
     
-In case of something going wrong and error shall be returned then response shall implement ErrorResponse interface which by default have next functions to be implemented:
+If an error shall be returned, then the response shall implement the ErrorResponse interface, which by default have these functions implemented:
 
 ```public String code()``` -- error code
 
@@ -436,7 +434,7 @@ In case of something going wrong and error shall be returned then response shall
 
 ```public Option<Throwable> exception()``` -- Caught exception during API processing
 
-As a result next JSON will be returned in case of error:
+As a result the following JSON will be returned in case of error:
 
   ::
   
