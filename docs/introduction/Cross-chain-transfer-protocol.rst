@@ -18,7 +18,7 @@ We can declare a new sidechain by using the following RPC command:
    sc_create withdrawalEpochLength "address" amount "verification key" "vrfPublickKey" "genSysConstant"
 
 The command specifies where the first forward transfer coins are sent, as well as the epoch length. It is the epoch length that defines the frequency, in blocks, of the backward transfers' submissions (see the “backward transfers” paragraph below). The sc_create command also includes the cryptographic key to receive coins back from the sidechain. The verification key guarantees that the received coins were processed according to a matching proving system.
-As a consequence of the sidechain declaration command, a unique sidechain id will be assigned to that sidechain, and from that moment on that id can be used for every operation related to that specific sidechain: (is this true only for interactions between the mainchain and that sidechain, or can another sidechain on that mainchain use that same sidechain id to communicate with it?)
+As a consequence of the sidechain declaration command, a unique sidechain id will be assigned to that sidechain, and from that moment on that id can be used for every operation related to that specific sidechain:
 
 .. code:: json
    

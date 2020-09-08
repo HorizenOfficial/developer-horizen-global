@@ -202,7 +202,7 @@ As parameters for **AbstractNoncedBox** three template parameters shall be provi
   ::
    B extends AbstractNoncedBox<P, BD, B>
 
-- Definition of type for the Box itself, required for description inside of new Custom Box data.
+- The definition of the type for the box itself is required for the description inside of the new Custom Box Data.
   
   
 The Custom Box itself requires implementation of following functionality:
@@ -284,10 +284,10 @@ Where *closedBoxId* is the id of the closed box and *boxKey* is correct proof fo
 Custom Proof / Proposition creation
 ###################################
 
-A proposition is a locker for a box, and Proof is an unlocker for a box. For some reason, the manner in which the box is locked/unlocked can be changed by the SDK developer (should this be sidechain developer?). For example, a special box can be opened by two or more independent private keys. For such reason, custom Proof/Proposition can be created.
+A proposition is a locker for a box, and a proof is an unlocker for a box. The manner in which a box is locked/unlocked can be changed by the developer. For example, a special box can be opened by two or more independent private keys. For this reason, a custom Proof/Proposition can be created.
 
 * Creating custom Proposition
-  For creating a custom Proposition  ``ProofOfKnowledgeProposition<S extends Secret>`` interface shall be implemented. Generic parameter is just a marker for the type of private key. For example, *PrivateKey25519* could be used. Inside the Proposition, we could use two different public keys to lock the box.
+  To create a custom proposition  ``ProofOfKnowledgeProposition<S extends Secret>`` interface shall be implemented. The generic parameter is a marker for the type of private key. For example, *PrivateKey25519* could be used. Inside the proposition, we could use two different public keys to lock the box.
 
 * Creating custom Proof interface ``Proof<P extends Proposition>`` shall be implemented where *P* is an appropriate Proposition class. ``Function boolean isValid(P proposition, byte[] messageToVerify);`` shall be implemented. That function defines whether Proof is valid for a given proposition and Proof or not. For example, in the case of Proposition with two different public keys, we could try to verify the message using public keys in Proposition one by one and return true if Proof had been created by one of the expected private keys.
 
@@ -306,7 +306,7 @@ ApplicationState:
   Try<ApplicationState> onRollback(byte[] version);
   }
 
-For example, the custom application may have the possibility to tokenize cars by the creation of Box entries - let us call them CarBox. Each CarBox token should represent a unique car by having a unique *VIN* (Vehicle Identification Number). To do this, the sidechain developer may define ApplicationState to store the list of actual VINs and reject transactions with CarBox tokens with VIN already existing.
+For example, the custom application may have the possibility to tokenize cars by the creation of box entries - let's call them CarBox. Each CarBox token should represent a unique car by having a unique VIN (Vehicle Identification Number). To do this, the sidechain developer may define the ApplicationState to store the list of VINs and reject transactions with CarBox tokens with any preexisting VINs.
 
 The next custom state checks could be done here:
 
@@ -316,12 +316,12 @@ The next custom state checks could be done here:
 
   * ``public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)`` -- any specific action after block applying in State could be defined here.
   
-  * ``public Try<ApplicationState> onRollback(byte[] version)`` -- any specific action after rollback of State (for example, in case of fork/invalid block) could be defined here.
+  * ``public Try<ApplicationState> onRollback(byte[] version)`` -- any specific action after a rollback of the state (for example, in case of fork/invalid block) could be defined here.
   
 Application Wallet 
 ##################
 
-The Wallet by default keeps user secret info and related balances. The actual data is updated when a new block is applied to the chain or when some blocks are reverted. Developers can specify custom secret types that will be processed by the wallet. The developer may extend the logic using `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
+The wallet keeps user secret info and related balances b default. The data is updated when a new block is applied to the chain or when blocks are reverted. Developers can specify custom secret types that will be processed by the wallet. The developer may extend the logic using `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
 ::
   interface ApplicationWallet {
     void onAddSecret(Secret secret);
@@ -330,7 +330,7 @@ The Wallet by default keeps user secret info and related balances. The actual da
     void onRollback(byte[] version);
   }
 
-For example, a developer needs to have some event-based data, like an auction slot that belongs to him, that will start in 10 blocks and expire in 100 blocks. So in ApplicationWallet, he will additionally keep this event-based info and will react when a new block is going to be applied (onChangeBoxes method execution) to activate or deactivate that slot in ApplicationWallet.
+For example, a developer needs to have event-based data, like an auction slot, that belongs to them and starts in 10 blocks and will expire in 100 blocks. The developer will keep this event-based info in the ApplicationWallet. THe developer will set the data to react by activating or deactivating a slot in ApplicationWallet when a new block is about to be applied (onChangeBoxes method execution).
 
 Custom API creation 
 ###################
@@ -402,7 +402,7 @@ Inside those functions, all required action could be defined, and with them also
 
   4. Add response classes
 
-As a result of an API request, the result shall be sent back via HTTP response. In a typical case, we could have two different responses: operation is successful, or some error had appeared during processing the API request. The SDK provides following way to declare those API responses:
+The result will be sent back via HTTP response as an outcome of an API request. In a most cases, we could have two different responses: operation is successful, or an error had appeared during processing the API request. The SDK provides the following way to declare those API responses:
 For a successful response, implement SuccessResponse interface with data to be returned. That data shall be accessible via getters. Also, that class shall have the next annotation required for marshaling and correct conversion to JSON: ``@JsonView(Views.Default.class)``. The developer can define here some other custom class for JSON marshaling. For example, if a string should be returned, then the following response class can be defined:
 
   ::
@@ -426,7 +426,7 @@ In such a case, the API response will be represented in the following JSON forma
   
     {"result": {“response” : “response from CustomSuccessResponse object”}}
     
-If an error shall be returned, then the response shall implement the ErrorResponse interface, which by default have these functions implemented:
+If an error is returned, then the response will implement the ErrorResponse interface. The ErrorResponse interface has the following default functions implemented:
 
 ```public String code()``` -- error code
 
