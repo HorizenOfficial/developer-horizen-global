@@ -11,7 +11,7 @@ Concept of a BOX
 ****************
 
 A box generalizes the concept of Bitcoin’s UTXOs.
-A box is a cryptographic object that can be created with some (one private key or multiple private keys?) secret keys . This box can be opened (spent) by the owner(owners ?) of those secret keys. Once opened by the owner (owners ?) of the secret keys the box may not be opened again.
+A box is a cryptographic object that can be created with one or more secret keys. This box can be opened ("spent") by the owner/owners of those secret keys. Once opened, the box may not be opened again.
 
 Node Main elements & intro to a "NodeView"
 ******************************************
@@ -27,7 +27,7 @@ Node Main elements & intro to a "NodeView"
       1. It holds the secret keys that belong to that specific node.
       2. It keeps track of objects that are of interest to this specific node, e.g. received coins (output boxes whose secret keys are known by the node) and views of them (e.g. balances).      
   * **Memory Pool**
-    * The “Memory pool” is a list of transactions that is known to the node but have not made it to a Sidechain block yet.
+    * The “Memory pool” is a list of transactions that are known to the node but have not made it to a sidechain block yet.
     
 Altogether these 4 objects represent a “NodeView.”
 
@@ -40,13 +40,13 @@ In terms of customization, the History object is the only one that is fully cont
 
 The core logic of State, Wallet and Memory Pool objects can be extended by sidechain developers:
 
- * The “State” is the set of objects that result from processing all the previous blocks. These objects are needed to validate the next block, to allow the Node to efficiently verify, before applying a block, that all the defined rules have been respected by it. The “State” can be extended to keep track of new objects that can be useful to enforce additional rules that can be implemented in the application state interface.
+ * The “state” is the set of objects that result from processing all the previous blocks. These objects are needed to validate the next block to allow the node to efficiently verify before applying a block that all the defined rules have been respected by it. The “state” can be extended to keep track of new objects that can be useful to enforce additional rules that can be implemented in the application state interface.
 
- * The “Wallet” can be extended through the ApplicationWallet interface, e.g. to change box ownership rules.
+ * The “wallet” can be extended through the ApplicationWallet interface, e.g. to change box ownership rules.
 
  * The logic to accept transactions in “Memory Pool” can be also extended, e.g. transaction incompatibility rules to address possible custom data conflicts.
 
-As mentioned before, the “Box” is an object that contains some data, e.g. an amount of ZEN coins, or data of a custom object (such as a car’s plate as we’ll see in Section 9), associated with some conditions (called “Proposition”) that protects it from being spent by anyone other than by a party (or parties) able to satisfy that proposition. Usually, the ability to satisfy a Proposition is given by knowledge of some data (called “Secret”), that can be used to produce a “Proof” that satisfies the Proposition and opens the Box, so that it can be spent. 
+As mentioned before, the “box” is an object that contains some data, e.g. an amount of ZEN, or data of a custom object (such as a car’s plate as we’ll see in Section 9), associated with some conditions (called a “proposition”) that protects it from being spent by anyone other than by a party (or parties) able to satisfy that proposition. Usually, the ability to satisfy a proposition is given by knowledge of some data (called a “secret”), that can be used to produce a “proof” that satisfies the proposition and opens the box, so that it can be spent. 
 
 If we translate the above into bitcoin-like terminology, a UTXO is a Box, a locking script of an output is a Proposition, e.g. a P2PK unlocking script, the signature is the proof, and its associated private key is the Secret.
 

@@ -2,7 +2,7 @@
 Node communication
 ==================
 
-Communication  between a user and a sidechain node is supported out of the box via HTTP POST requests API methods. Custom applications could extend them to add new, remove existing and/or replace core behaviours. (Is a behavior core if it CAN be replaced?)
+Communication  between a user and a sidechain node is supported out of the box via HTTP POST requests API methods. Custom applications could extend them to add new, remove existing and/or replace core behaviours.
 
 The API configuration can be found in the sidechain node's configuration file.
 
@@ -35,12 +35,12 @@ timeout -- Timeout in seconds on API requests
 
 `Base API <../reference/01-scnode-api-spec.html>`_ is organized into the following 5 groups:
 
- * `Block <../reference/01-scnode-api-spec.html#sidechain-block-operations>`_ -- Sidechain block operations like find best blockId, find blockId by block height etc. (If "find best block" appears instead as "find-best-block" in the API documentation, perhaps that style should be used here, or quoted.) Also here you could find forging-related commands like automatically starting/stopping forging, get information about forging like last epoch and slot index. Automatic forging gets current time to convert it into appropriate slot/epoch index. Thus, if for some reason a sidechain node skips the correct timeslot for an entire consensus epoch when forging in automatic mode, it will always fail. A sidechain where this occurs will be considered deceased, and communication between the sidechain and mainchain is no longer possible. However, forging a block with a manually set epoch/slot index is possible by API call /block/generate, which could be useful if the sidechain is run in isolated mode.
+ * `Block <../reference/01-scnode-api-spec.html#sidechain-block-operations>`_ -- Sidechain block operations, e.g. find a block by its blockId, find a blockId by block height, etc. Also here you could find forging-related commands like the ones to automatically start/stop forging, get information about forging like last epoch and slot index. Automatic forging gets current time and converts it into appropriate slot/epoch index. Thus, if for some reason a sidechain node skips the correct timeslot for an entire consensus epoch when forging in automatic mode, it will always fail. A sidechain where this occurs will be considered deceased, and communication between the sidechain and mainchain is no longer possible. However, forging a block with a manually set epoch/slot index is possible by API call /block/generate, which could be useful if the sidechain is run in isolated mode.
 
- * `Transaction <../reference/01-scnode-api-spec.html#sidechain-transaction-operations>`_ -- Sidechain transaction operations like find all transactions, create a transaction, without sending into memory pool, send transaction into memory pool, etc.
+ * `Transaction <../reference/01-scnode-api-spec.html#sidechain-transaction-operations>`_ -- Sidechain transaction operations like find all transactions, create a transaction without sending it into the memory pool, send transaction into memory pool, etc.
 
- * `Wallet <../reference/01-scnode-api-spec.html#sidechain-wallet-operations>`_ -- Sidechain wallet operations. Wallet operations could take optional parameter boxType for example in /wallet/balance API request. Box type could take as parameter RegularBox, ForgerBox etc., i.e. you could type here class name for required box type (in case of custom box type you are required to use the fully-qualified class name ). If box type is not relevant, you can simply omit that parameter, i.e. in case of /wallet/balance just use an empty body.
+ * `Wallet <../reference/01-scnode-api-spec.html#sidechain-wallet-operations>`_ -- Sidechain wallet operations. Wallet operations could take boxType as an optional parameter, for example in /wallet/balance API request. Box type could take as parameter RegularBox, ForgerBox etc., i.e. you could type here class name for required box type (in case of custom box type you are required to use the fully-qualified class name ). If box type is not relevant, you can simply omit that parameter, i.e. in case of /wallet/balance just use an empty body.
   
  * `Node <../reference/01-scnode-api-spec.html#sidechain-node-operations>`_ --Sidechain node operations like connect to the node, see all connections, etc.
   
- * `Mainchain <../reference/01-scnode-api-spec.html#sidechain-mainchain-operations>`_-- Sidechain mainchain operations like get the best MC header included in sidechain.
+ * `Mainchain <../reference/01-scnode-api-spec.html#sidechain-mainchain-operations>`_-- Sidechain mainchain operations like get the best mainchain header included in sidechain.
