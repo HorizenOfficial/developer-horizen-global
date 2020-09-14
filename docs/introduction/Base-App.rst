@@ -84,7 +84,7 @@ The SidechainCoreTransaction is the transaction which can send coins inside a si
 Serialization
 *************
 
-Because the SDK is based on Scorex, it implements the Scorex pattern for data serialization: any application custom object that needs to be serialized, like Box, BoxData, Secret, Proof, Transaction, must implement the  `Scorex BytesSerializable interface <https://github.com/ScorexFoundation/Scorex/blob/master/src/main/scala/scorex/core/serialization/BytesSerializable.scala>'_ ).
+Because the SDK is based on Scorex, it implements the Scorex pattern for data serialization: any application custom object that needs to be serialized, like Box, BoxData, Secret, Proof, Transaction, must implement the  `Scorex BytesSerializable interface <https://github.com/ScorexFoundation/Scorex/blob/master/src/main/scala/scorex/core/serialization/BytesSerializable.scala>`_.
 
 This interface defines two methods:
 
