@@ -330,9 +330,11 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 Internal storage used for transactions.
 Must be an instance of a class implementing this interface: com.horizen.storage.Storage
 
-bind(Storage.class)                                                                                        
-    .annotatedWith(Names.named("WalletTransactionStorage"))
-    .toInstance(..);      
+::
+
+	bind(Storage.class)                                                                                        
+		.annotatedWith(Names.named("WalletTransactionStorage"))
+		.toInstance(..);      
 
 
 -  WalletForgingBoxesInfoStorage
