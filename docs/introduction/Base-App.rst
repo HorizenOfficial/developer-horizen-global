@@ -238,7 +238,7 @@ Must be an instance of com.horizen.SidechainSettings, defining the sidechain con
 
 - Custom box serializers
 Serializers to be used for custom boxes, in the form ``HashMap<CustomboxId, BoxSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.         
+Use ``new HashMap<>();`` if no custom serializers are required.         
 
 ::
 
@@ -258,7 +258,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
 
 - Custom secrets serializers
 Serializers to be used for custom secrets, in the form ``HashMap<SecretId, SecretSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.          
+Use ``new HashMap<>();`` if no custom serializers are required.          
 
 bind(new TypeLiteral<HashMap<Byte, SecretSerializer<Secret>>>() {})                
     .annotatedWith(Names.named("CustomSecretSerializers"))    
@@ -266,7 +266,7 @@ bind(new TypeLiteral<HashMap<Byte, SecretSerializer<Secret>>>() {})
 
 - Custom proposition serializers
 Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>`. 
-Use just ``new HashMap<>();`` if no custom serializers are required          
+Use ``new HashMap<>();`` if no custom serializers are required          
 
 ::
 
@@ -276,7 +276,7 @@ Use just ``new HashMap<>();`` if no custom serializers are required
 
 - Custom transaction serializers
 Serializers to be used for custom transaction, in the form ``HashMap<CustomTransactionId, TransactionSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.
+Use ``new HashMap<>();`` if no custom serializers are required.
 
 ::
 
