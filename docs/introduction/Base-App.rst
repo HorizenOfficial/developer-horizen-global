@@ -392,9 +392,9 @@ Each pair on the passed list represents a path to be disabled (the key is the ba
 
 ::
 
-bind(new TypeLiteral<List<Pair<String, String>>> () {})
-    .annotatedWith(Names.named("RejectedApiPaths"))
-    .toInstance(...); 
+	bind(new TypeLiteral<List<Pair<String, String>>> () {})
+		.annotatedWith(Names.named("RejectedApiPaths"))
+		.toInstance(...); 
 
 
 
