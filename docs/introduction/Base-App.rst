@@ -326,7 +326,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("WalletBoxStorage"))
     	.toInstance(..);     
 
- -  WalletTransactionStorage
+-  WalletTransactionStorage
 Internal storage used for transactions.
 Must be an instance of a class implementing this interface: com.horizen.storage.Storage
 
