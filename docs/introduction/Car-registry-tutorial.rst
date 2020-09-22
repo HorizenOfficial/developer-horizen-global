@@ -83,7 +83,6 @@ Special proposition and proof:
        and 
        ::
         buyerPublicKeyBytes 
-
        So the seller or buyer's private keys could open that proposition.  
 
     b) **SellOrderSpendingProof**
