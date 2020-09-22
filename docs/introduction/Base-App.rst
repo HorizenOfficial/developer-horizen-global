@@ -248,7 +248,7 @@ Use just ``new HashMap<>();`` if no custom serializers are required.
 
 - Custom box data serializers
 Serializers to be used for custom data boxes, in the form ``HashMap<CustomBoxDataId, NoncedBoxDataSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.         
+Use ``new HashMap<>();`` if no custom serializers are required.         
 
 ::
 
