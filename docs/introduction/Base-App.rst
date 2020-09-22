@@ -260,9 +260,11 @@ Use ``new HashMap<>();`` if no custom serializers are required.
 Serializers to be used for custom secrets, in the form ``HashMap<SecretId, SecretSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.          
 
-bind(new TypeLiteral<HashMap<Byte, SecretSerializer<Secret>>>() {})                
-    .annotatedWith(Names.named("CustomSecretSerializers"))    
-    .toInstance(..);       
+::
+
+	bind(new TypeLiteral<HashMap<Byte, SecretSerializer<Secret>>>() {})                
+		.annotatedWith(Names.named("CustomSecretSerializers"))    
+		.toInstance(..);       
 
 - Custom proposition serializers
 Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>`. 
