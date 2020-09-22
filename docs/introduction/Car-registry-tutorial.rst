@@ -2,73 +2,76 @@
 Car Registry Tutorial
 ====================================
 
-Car Registry App high level overview
+Car Registry App High-Level Overview
 ####################################
 
-The Car Registry app is an example of a sidechain that implements specific custom data and logic. The purpose of the application is to manage a simplified service that keeps records of existing cars and their owners. It is simplified as sidechain users will be able to register cars by merely paying a transaction fee. In contrast, in a real-world scenario, the ability to create a car will be bound by the presentation of a certificate signed by the Department of Motor Vehicles or analogous authority, or some other consensus mechanism that guarantees that the car exists in the real world and it’s owned by a user with a given public key.
-Accepting that cars will show up in sidechain in our example, we want to build an application that can store information that identifies a specific car, such as vehicle identification number, model, production year, color.
-We will also want car owners to prove their ownership of the cars without disclosing information about their identity. We also want users to sell and buy cars against ZEN coins. 
+The Car Registry app is an example of a sidechain that implements specific custom data and logic. The purpose of the application is to provide a simplified service that keeps records of existing cars and their owners. It is simplified as sidechain users will be able to register cars by merely paying a transaction fee. In contrast, in a real-world scenario, the ability to create a car will be bound by the presentation of a certificate signed by the Department of Motor Vehicles or analogous authority, or some other consensus mechanism that guarantees that the car exists in the real world and it’s owned by a user with a given public key.
+Accepting that cars will show up in the sidechain in our example, we want to build an application that has the following capabilitis:
+
+    1. It can store information that identifies a specific car, such as vehicle identification number (VIN), model, production year, color.
+    2. Allows car owners to be able to prove their ownership of the cars anonymously.
+    3. Require the use of ZEN for all transactions. 
+
 
 
 User stories:
 #############
 
 1
-**Q: I want to add my car to a Car Registry Sidechain.**
+**Q: I want to add my car to the Car Registry App.**
 
-*A:* Create a new Car Entry Box, which contains car identification information (Unique car identifier, VIN, manufacturer, model, year, registration number), and certificate. Proposition in this box is my public key in this Sidechain. When I create a box, Sidechain should check car identification information and certificate to be unique in this Sidechain.
+*A:* Create a new Car Entry Box, which contains vehicle identification information (VIN, manufacturer, model, year, registration number), and a certificate. The proposition in this box is your public key in this sidechain. When you create a box, the sidechain should verify that the vehicle identification information and certificate are unique to this sidechain.
 
 2
-**Q: I want to create sell order to sell my car using Car Registry Sidechain.**
+**Q: I want to create a sell order to sell my vehicle using the Car Registry App.**
 
-*A:* I create a new Car Sell Order Box that contains the price in coins and information from the Car Entry Box. So cars can exist in the Sidechain as a Car Entry Box or as a Car Sell Order, but not at the same time. Also, this box contains the buyer’s public key. When I create a sell order, Sidechain should check if there is no other active sell order with this Car Entry Box. The current Sell Order consists of the same information that consists of the Car Entry Box plus description.
+*A:* You can create a new Car Sell Order Box that contains the price in coins and the vehicle information from the Car Entry Box. Cars can exist in the sidechain either as a Car Entry Box or as a Car Sell Order, but not both at the same time. This box must contains the buyer’s public key. When you create a sell order, the sidechain should verify that there is no other active sell order with this Car Entry Box. The current Sell Order consists of the same information that is contained in the Car Entry Box plus a description.
 
 3
-**Q: I want to see all available Sell orders in Sidechain**
+**Q: I want to see all available Sell Orders in the sidechain.**
 
-*A:* Have additional storage, which is managed by ApplicationState and stores all Car Sell Orders. All these orders can be retrieved using the new HTTP API call. 
-
+*A:* Have additional storage, which is managed by ApplicationState and stores all Car Sell Orders. All orders can be retrieved using the new HTTP API call. 
 
 4
 **Q: I want to accept a sell order and buy the car.**
 
-*A:* By accepting sell order, I create a new transaction in the Sidechain, which creates a new Car Entry Box with my public key as Proposition and transfers coins amount from me to the previous car owner.
+*A:* By accepting a sell order, you create a new transaction in the sidechain, which creates a new Car Entry Box with your public key as the proposition and transfers the correct value of coins from you to the seller.
 
 5
 **Q: I want to cancel my Car Sell Order.**
 
-*A:* I create a new transaction containing Car Sell Order as input and Car Entry Box with my public key as Proposition as output.
+*A:* You will create a new transaction containing the Car Sell Order as input and a Car Entry Box with your public key and the proposition as the output.
 
 6.
-**Q: I want to see my car entry boxes and car sell orders related to me (both created by me and proposed to me).**
+**Q: I want to see the car entry boxes and car sell orders related to me (both created by me and proposed to me).**
 
-*A:* Implement new storage that will be managed by the application state to store this information. Implement a new HTTP API, that contains a new method to get this information.
+*A:* Implement a new storage that will be managed by ApplicationState to store this information. Then implement a new HTTP API that contains a new method to get this information.
 
-So, the starting point of the development process is the data representation. A car is an example of a non-coin box because it represents some entity, but not money. Another example of a non-coin box is a car that is selling. We need another box for a selling car because a standard car box does not have additional data like sale price, seller proposition address, etc. For the money representation, standard Regular Box is used (Regular box is coin box), SDK provides that box. Besides new entities CarBox and CarSellOrder, we also need to define a way to create/destroy those new entities. For that purpose, new transactions shall be defined: transaction for creating a new car, a transaction that moves CarBox to CarSellOrder, transaction which declares car selling, i.e., moving CarSellOrder to the new CarBox. All created transactions are not automatically put into the memory pool, so a raw transaction in hex representation shall be put by /transaction/sendTransaction API request. In summary, we will add the next car boxes and transactions:
+The starting point of the development process is the data representation. A car is an example of a Non-CoinBox. It represents an item, but not money. Another example of a Non-CoinBox is a car that is for sale. We need another box for a car for sale because a standard CarBox does not have additional data like sale price, seller proposition address, etc. For the money representation, a standard RegularBox is used (a RegularBox is a CoinBox), which the SDK provides. Besides new entities CarBox and CarSellOrder, we also need to define a way to create/destroy those new entities. For that purpose, these new transactions are defined: a transaction for creating a new car, a transaction that moves a CarBox to a CarSellOrder, a transaction that declares a car was purchased i.e., moving CarSellOrder to the new CarBox. All created transactions are not automatically put into the memory pool, so a raw transaction in hex representation is created with the /transaction/sendTransaction API request. In summary, we will add the next car boxes and transactions:
 
 +---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Entity name         | Entity description                                                                                                                                                                                                    | Entity fields                                                                                                                                                                                                       |
 +=====================+=======================================================================================================================================================================================================================+=====================================================================================================================================================================================================================+
-| CarBox              | Box which contains car box data, which could be stored and operated in Sidechain                                                                                                                                      | boxData -- contains  car box data                                                                                                                                                                                   |
+| CarBox              | Is a box that contains CarBox data, which could be stored and operated in the sidechain.                                                                                                                                  | boxData -- contains  car box data                                                                                                                                                                                   |
 +---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | CarBoxData          | Description of the car by using defined properties                                                                                                                                                                    | vin -- vehicle identification number which contains unique identification number of the car                                                                                                                         |
 |                     |                                                                                                                                                                                                                       | year -- vehicle year production                                                                                                                                                                                     |
 |                     |                                                                                                                                                                                                                       | model -- car model                                                                                                                                                                                                  |
 |                     |                                                                                                                                                                                                                       | color -- car color                                                                                                                                                                                                  |
 +---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarSellOrderBox     | Box which contains car sell order data, which could be stored and operated in Sidechain.                                                                                                                              | boxData -- contains  car sell order data                                                                                                                                                                            |
+| CarSellOrderBox     | is a box which contains CarSellOrder data which could be stored and operated in the sidechain.| boxData -- contains CarSellOrder data|
 +---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarSellOrderBoxData | Description of the car which is in sell status. That box data contains a special type of proposition SellOrderProposition. That proposition allows us to spent the box in two different ways: by seller and by buyer  | vin -- vehicle identification number which contains unique identification number of the car                                                                                                                         |
+| CarSellOrderBoxData | Is the description of a vehicle for sale. The box data contains a special type of proposition, a SellOrderProposition. This proposition allows us to spend the box in two different ways: by seller and by buyer| VIN -- vehicle identification number contains the unique identification number of the car|
 |                     |                                                                                                                                                                                                                       | year -- vehicle year production                                                                                                                                                                                     |
 |                     |                                                                                                                                                                                                                       | model -- car model                                                                                                                                                                                                  |
 |                     |                                                                                                                                                                                                                       | color -- car color                                                                                                                                                                                                  |
 +---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarSellOrderInfo    | Information about car’s selling as well as proof of a current car owner. Used in transaction processing.                                                                                                              | carBoxToOpen -- car box for start selling                                                                                                                                                                           |
+| CarSellOrderInfo    | Is information about the car being sold as well as proof of ownership of seller. Used in transaction processing.                                                                                                        | carBoxToOpen -- A CarBox to initiate a sale                                                                                                                                                                           |
 |                     |                                                                                                                                                                                                                       | proof -- proof for open initial car box                                                                                                                                                                             |
 |                     |                                                                                                                                                                                                                       | price -- selling price                                                                                                                                                                                              |
 |                     |                                                                                                                                                                                                                       | buyerProposition -- current implementation expect to have the specific buyer which had been found off chain. Thus during creation of car sell order we already know buyer and shall put his future car proposition  |
 +---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarBuyOrderInfo     | Data required for buying a car or recall a car sell order. Used in transaction processing.                                                                                                                            | carSellOrderBoxToOpen -- Car sell order box to be open                                                                                                                                                              |
+| CarBuyOrderInfo     |  Is data required for buying a car or recalling a CarSellOrder. Used in transaction processing.                                                                                                                    | carSellOrderBoxToOpen -- A CarSellOrder box to be opened.|
 |                     |                                                                                                                                                                                                                       | proof -- specific proof of type SellOrderSpendingProof                                                                                                                                                              |
 |                     |                                                                                                                                                                                                                       | for confirming buying of the car or recall car sell order                                                                                                                                                           |
 +---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -77,9 +80,9 @@ Special proposition and proof:
 ##############################
 
     a) **SellOrderProposition** 
-       The standard proposition only contains one public key, i.e., only one specific secret key could open that proposition. 
+       The standard proposition only contains one public key, i.e., only one specific private key could open that proposition. 
        However, for a sell order, we need a way to open and spend the box in two different ways, so we need to specify an additional proposition/proof. 
-       SellOrderProposition contains two public keys: 
+       A SellOrderProposition contains two public keys: 
        ::
         ownerPublicKeyBytes
        
@@ -94,7 +97,7 @@ Special proposition and proof:
        ::
         CarSellOrderBox 
        
-       in two different ways: opened by the buyer and thus buy the car or opened by the seller and thus recall car sell order. Such proof creation requires two different API calls, but as a result, in both cases, we will have the same type of transaction with the same proof type. 
+       A SellOrderProposition is presented in two different ways: opened by the buyer (meaning they buy the car), or opened by the seller (meaning the seller recalled the CarSellOrder). This proof creation requires two different API calls, but as a result in both cases, we will have the same type of transaction with the same proof type. 
 
 
 Transactions:
@@ -111,7 +114,7 @@ Base custom transaction, all other custom transactions extend this base transact
             ``inputRegularBoxProofs`` - appropriate list of proofs for box opening for each regular box in ``inputRegularBoxIds``
             ``outputRegularBoxesData`` - list of output regular boxes, used as the change from paying a fee, as well as a new regular box for payment for the car.
             ``fee`` - transaction fee
-            ``timestamp`` - transaction timestamp
+            ``timestamp`` - transaction timestamp 
 
         *Output boxes:*
                 
@@ -151,7 +154,7 @@ Transaction to initiate the selling process of the car.
 
         *Output boxes:*
          
-            CarSellOrderBox, which represents the car to be sold, that box could be opened by the initial car owner or specified buyer in case if a buyer buys that car.    
+            A CarSellOrderBox represents a car to be sold. This box could be opened by the car owner to recall the order, or by a specified buyer if a someone buys the car.    
 
 BuyCarTransaction 
 *****************
@@ -169,25 +172,25 @@ This transaction allows us to buy a car or recall a car sell order.
             
         *Output boxes:*
         
-            Two possible outputs are possible. In the case of buying a car, new CarBox with a new owner, a new Regular box with a value declared in carBuyOrderInfo for the Car's former owner. 
+            Two outputs are possible. In the case of buying a car, a new CarBox with a new owner, a new RegularBox with a value declared in CarBuyOrderInfo for the car's former owner. 
 
 Car registry implementation
 ###########################
 
 First of all, we need to define new boxes. 
-As described before, a Car Box is a non-coin box as defined before we need Car Box Data class to describe custom data. So we need to define CarBox and CarBoxData as separate classes for setting proper way to serialization/deserialization.  
+As described before, a CarBox is a Non-CoinBox, and similarly we need the CarBoxData class to describe custom data. So we need to define the CarBox and the CarBoxData as separate classes to allow proper serialization/deserialization.  
 
 Implementation of CarBoxData:
 *****************************
 
-CarBoxData is implemented according description from ``Custom Box Data Creation`` section as ``public class CarBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CarBox, CarBoxData>`` with custom data as:
+CarBoxData is implemented according to the description from the Custom Box Data Creation section as a public class CarBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CarBox, CarBoxData> with custom data as:
 ::    
  private final BigInteger vin;
  private final int year;
  private final String model;
  private final String color;
         
-Few comments about implementation:
+A few comments about implementation:
 
     1. @JsonView(Views.Default.class) is used during class declaration. That annotation allows SDK core to do proper JSON serialization.
     2. Serialization is implemented in  public byte[] bytes() function as well as parsing implemented in public static CarBoxData parseBytes(byte[] bytes) function. SDK developer, as described before, shall include proposition and value into serialization/deserialization. The order doesn't matter. 
@@ -202,9 +205,9 @@ Implementation of CarBoxDataSerializer:
 Implementation of CarBox:
 *************************
 
- ``CarBox`` is implemented according to description from ``Custom Box Class creation`` section as ``public class CarBox extends AbstractNoncedBox<PublicKey25519Proposition, CarBoxData, CarBox>``
+ A ``CarBox`` is implemented according to the description from ``Custom Box Class creation`` section as ``public class CarBox extends AbstractNoncedBox<PublicKey25519Proposition, CarBoxData, CarBox>``
 
-Few comments about implementation:
+A few comments about implementation:
 
     1. As a serialization part SDK developer shall include ``long nonce`` as a part of serialization, thus serialization is implemented in the following way:
        ::
@@ -216,7 +219,7 @@ Few comments about implementation:
             );
         }
 
-    2. ``CarBox`` defines his own unique id by implementation of the function ``public byte boxTypeId()``. Similar function is defined in ``CarBoxData`` but it is a different ids despite value returned in ``CarBox`` and ``CarBoxData`` is the same.
+    2. A ``CarBox`` defines its own unique id by implementing the function ``public byte boxTypeId()``. A similar function is defined in ``CarBoxData`` but it is a different id despite the value returned in ``CarBox`` and ``CarBoxData`` being the same.
 
 Implementation of CarBoxSerializer:
 ***********************************
@@ -232,7 +235,7 @@ A SellOrderProposition is implemented as
 ::
  public final class SellOrderProposition implements ProofOfKnowledgeProposition<PrivateKey25519>
 
-A point to note is that the proposition contains two public keys, thus that proposition could be opened by two different keys.
+A point to note is that the proposition contains two public keys, thus that proposition could be opened by two different private keys.
 
 Implementation of SellOrderPropositionSerializer
 ************************************************
@@ -240,14 +243,13 @@ A SellOrderPropositionSerializer is implemented as
 ::
  public final class SellOrderPropositionSerializer implements PropositionSerializer<SellOrderProposition>
 
-
 Implementation of SellOrderSpendingProof  
 ****************************************
 A SellOrderSpendingProof is implemented as  
 ::
  extends AbstractSignature25519<PrivateKey25519, SellOrderProposition>
 
-Implementation Comments: Information about proof type is defined by the result of method boolean isSeller(). For example an implementation of method isValid uses that flag:
+Implementation Comments: Information about the proof type is defined by the result of the boolean method isSeller(). For example an implementation of the method isValid uses the flag:
 ::
  public boolean isValid(SellOrderProposition proposition, byte[] message) {
   if(isSeller) {
@@ -258,7 +260,6 @@ Implementation Comments: Information about proof type is defined by the result o
    return Ed25519.verify(signatureBytes, message, proposition.getBuyerPublicKeyBytes());
   }
  }
-
 
 Implementation of CarSellOrderBoxData
 *************************************
@@ -274,14 +275,10 @@ with custom data as:
  private final String model;
  private final String color;
 
-
-Few comments about implementation:
-Proposition and value shall be included in serialization as it done in CarBoxData 
+A few comments about implementation:
+Proposition and value shall be included in serialization as is done in CarBoxData 
 Id of that box data could be different than in CarBoxData
-CarSellOrderBoxData  uses custom proposition type, thus *proposition* field have *SellOrderProposition* type 
-
-
-
+CarSellOrderBoxData uses custom proposition type, thus *proposition* field has *SellOrderProposition* type 
 
 Implementation of CarSellOrderBoxDataSerializer
 ***********************************************
@@ -290,15 +287,12 @@ A CarSellOrderDataSerializer is implemented according to the description from th
 ::
  public class CarSellOrderBoxDataSerializer implements NoncedBoxDataSerializer<CarSellOrderData>
 
-
-
 Implementation of CarSellOrderBox
 *********************************
 
-A CarSellorder is implemented according to description from the (`“Custom Box Class creation section” <Sidechain-SDK-extension.html#custom-box-class-creation>`_) as
+A CarSellorder is implemented according to the description from the (`“Custom Box Class creation section” <Sidechain-SDK-extension.html#custom-box-class-creation>`_) as
 ::
  public final class CarSellOrderBox extends AbstractNoncedBox<SellOrderProposition, CarSellOrderBoxData, CarSellOrderBox>
-
 
 AbstractRegularTransaction
 **************************
@@ -309,29 +303,30 @@ AbstractRegularTransaction
 
 Basic functionality is implemented for building required unlockers for input Regular boxes and returning a list of output Regular boxes according to input parameter *outputRegularBoxesData*. Also, basic transaction semantic validity is checked here. 
 
-
 CarDeclarationTransaction 
 *************************
 
 *CarDeclarationTransaction* extends previously declared *AbstractRegularTransaction* in the following way: ``public final class CarDeclarationTransaction extends AbstractRegularTransaction``
-newBoxes() -- a new box with a newly created car shall be added as well. Thus that function shall be overridden as well for adding new CarBox additional to regular boxes.  
+newBoxes() -- a new box for a new car must be added as well. This function will be overridden by adding a new CarBox to the RegularBoxes.  
 
 SellCarTransaction 
 ******************
 
-*SellCarTransaction* extends previously declared AbstractRegularTransaction in next way: ``public final class SellCarTransaction extends AbstractRegularTransaction``
-Similar to *CarDeclarationTransaction, newBoxes()* function shall also return a new specific box. In our case that new box is *CarSellOrderBox*. Also due we have specific box to open (CarBox), we also need to add unlocker for CarBox, so unlocker for that CarBox had been added in ``public List<BoxUnlocker<Proposition>> unlockers()``
+A *SellCarTransaction* extends previously declared AbstractRegularTransaction in following way: ``public final class SellCarTransaction extends AbstractRegularTransaction``
+Similar to the *CarDeclarationTransaction* function, the *newBoxes()* function will also return a new specific box. In our case that new box is a *CarSellOrderBox*.Since we have a specific box to open (CarBox), we also need to add an unlocker for CarBox. The unlocker for that CarBox had been added to the ``public List<BoxUnlocker<Proposition>> unlockers()``
+
 
 BuyCarTransaction
 *****************
 
-Few comments about implementation: 
-During the creation of unlockers in function *unlockers()*, we need to also create a specific unlocker for opening a car sell order. Another *newBoxes()* function has a bit specific implementation. That function forces to create a new RegularBox as payment for a car in case the car has been sold. Anyway, a new Car box also shall be created according to information in ``carBuyOrderInfo``. 
+A few comments about implementation: 
+During the creation of the unlockers in function *unlockers()*, we need to create a specific unlocker for opening a CarSellOrder. Another *newBoxes()* function has a bit-specific implementation. That function forces the creation of a new RegularBox as payment for a car (if the vehicle has sold). A NewCarBox will be created according to information provided in  ``carBuyOrderInfo``. 
+
 
 Extend API: 
 ***********
 
-* Create a new class CarApi which extends ApplicationApiGroup class, add that new class to Route by it in SimpleAppModule, like described in Custom API manual. In our case it is done in ``CarRegistryAppModule`` by 
+* Create a new class CarAPI which extends ApplicationAPIGroup class. Add this new class to route it in SimpleAppModule, as described in the Custom API manual. In our case it is done in ``CarRegistryAppModule`` by 
 
     * Creating ``customApiGroups`` as a list of custom API Groups:
     * ``List<ApplicationApiGroup> customApiGroups = new ArrayList<>()````;
@@ -362,7 +357,7 @@ Extend API:
        public String proposition; // hex representation of public key proposition
        public long fee;
 
-       // Setters to let Akka jackson JSON library to automatically deserialize the request body.
+       // Setters to let Akka Jackson JSON library to automatically deserialize the request body.
             public void setVin(String vin) {
                 this.vin = vin;
             }
@@ -401,9 +396,11 @@ Request class shall have appropriate setters and getters for all class members. 
     "boxId": "d59f80b39d24716b4c9a54cfed4bff8e6f76597a7b11761d0d8b7b27ddf8bd3c"
  }
         
-Few notes: setter’s input parameter could have a different type than set class member. It allows us to make all necessary conversation in setters.
+A few notes: setter’s input parameter could have a different type than set class member. It allows us to make all necessary conversion in setters.
 
-* Define response for Car creation transaction, the result of transaction shall be defined by implementing SuccessResponse interface with class members which shall be returned as API response, all members shall have properly set getters, also response class shall have proper annotation ``@JsonView(Views.Default.class)`` thus jackson library is able correctly represent response class in JSON format. In our case, we expect to return transaction bytes, so response class is next:
+
+Define the response for the car creation transaction, the result of transaction shall be defined by implementing the SuccessResponse interface with the class members. Class members will be returned as an API response. All members will have properly set getters and the response class will have proper annotation ``@JsonView(Views.Default.class)`` thus the Jackson library is able to correctly represent the response class in JSON format. In our case, we expect to return transaction bytes. The response class is next:
+
   ::
     @JsonView(Views.Default.class)
     class TxResponse implements SuccessResponse {
@@ -413,14 +410,13 @@ Few notes: setter’s input parameter could have a different type than set class
         }
     }
 
-
 * Define Car creation transaction itself
   ::
    private ApiResponse createCar(SidechainNodeView view, CreateCarBoxRequest ent)
 
 As a first parameter we pass reference to SidechainNodeView, second reference is previously defined class on step 1 for representation of JSON request. 
 
-* Define request for Car sell order transaction CreateCarSellOrderRequest  similar as it was done for Car creation transaction request
+* Define the request for the CarSellOrder transaction with a CreateCarSellOrderRequest as we did for the car creation transaction request.
 
     * Define request class for Car sell order transaction CreateCarSellOrderRequest as it was done for Car creation transaction request:
       ::
@@ -430,7 +426,7 @@ As a first parameter we pass reference to SidechainNodeView, second reference is
         public long sellPrice;
         public long fee;
 
-        // Setters to let Akka jackson JSON library to automatically deserialize the request body.
+        // Setters to let Akka Jackson JSON library to automatically deserialize the request body.
 
         public void setCarBoxId(String carBoxId) {
             this.carBoxId = carBoxId;
@@ -452,8 +448,6 @@ As a first parameter we pass reference to SidechainNodeView, second reference is
 * Define Car Sell order transaction itself -- ``private ApiResponse createCarSellOrder(SidechainNodeView view, CreateCarSellOrderRequest ent)`` Required actions are similar as it was done to Create Car transaction. The main idea is a moving Car Box into CarSellOrderBox.
 
 * Define Car sell order response --  As a result of Car sell order we could still use TxResponse
-
-
  
 * Create AcceptCarSellorder transaction
     * Specify request as  
@@ -461,7 +455,7 @@ As a first parameter we pass reference to SidechainNodeView, second reference is
        public class SpendCarSellOrderRequest {
         public String carSellOrderId; // hex representation of box id
         public long fee;
-        // Setters to let Akka jackson JSON library to automatically deserialize the request body.
+        // Setters to let the Akka Jackson JSON library automatically deserialize the request body.
         public void setCarSellOrderId(String carSellOrderId) {
         this.carSellOrderId = carSellOrderId;
         }
@@ -490,7 +484,7 @@ As a first parameter we pass reference to SidechainNodeView, second reference is
             public String carSellOrderId; // hex representation of box id
             public long fee;
 
-            // Setters to let Akka jackson JSON library to automatically deserialize the request body.
+            // Setters to let Akka Jackson JSON library to automatically deserialize the request body.
 
             public void setCarSellOrderId(String carSellOrderId) {
                 this.carSellOrderId = carSellOrderId;
@@ -500,7 +494,7 @@ As a first parameter we pass reference to SidechainNodeView, second reference is
                 this.fee = fee;
             }
         }
-    * Specify transaction itself. Because we recall our sell order then isSeller parameter during transaction creation is set to false.
+    * Specify the transaction itself. Because we recalled our sell order, the isSeller parameter during transaction creation is set to false.
 
 
 
