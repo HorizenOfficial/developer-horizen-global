@@ -132,7 +132,7 @@ The communication between a node and its users is available through http end poi
 Physical storage
 ****************
 
-The SDK introduces the unified physical storage interface, and this default implementation is based on the `IODB Library <https://github.com/input-output-hk/iodb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. In case of custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes.
+The SDK introduces the unified physical storage interface, and this default implementation is based on the `IODB Library <https://github.com/input-output-hk/iodb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. When using a custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes.
 
 User-specific settings
 **********************
