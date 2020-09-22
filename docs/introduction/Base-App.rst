@@ -215,7 +215,7 @@ You can define a Guice module which declares all the bindings, then use that mod
 	sidechainApp.run();
 
 	
-The Guice module class (MyAppModule in the example above) must extend the class com.google.inject.AbstractModule, and define the bindings inside its config() method. Binding definition could be done in the following ways:
+The Guice module class (MyAppModule in the example above) must extend the class com.google.inject.AbstractModule, and define the bindings inside its config() method. A binding definition could be done in the following ways:
 
 ::
     
