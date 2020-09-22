@@ -393,8 +393,7 @@ A few notes: setter’s input parameter could have a different type than set cla
 
 
 Define the response for the car creation transaction, the result of transaction shall be defined by implementing the SuccessResponse interface with the class members. Class members will be returned as an API response. All members will have properly set getters and the response class will have proper annotation ``@JsonView(Views.Default.class)`` thus the Jackson library is able to correctly represent the response class in JSON format. In our case, we expect to return transaction bytes. The response class is next:
-
-  ::
+::
     @JsonView(Views.Default.class)
     class TxResponse implements SuccessResponse {
     public String transactionBytes;
