@@ -335,7 +335,7 @@ bind(Storage.class)
     .toInstance(..);      
 
 
- -  WalletForgingBoxesInfoStorage
+-  WalletForgingBoxesInfoStorage
 Internal storage used for forging boxes.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -345,7 +345,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("WalletForgingBoxesInfoStorage"))
     	.toInstance(..);    
 
- -  StateStorage
+-  StateStorage
 Internal storage used to save the current State, e.g. store information about boxes currently still closed, perform rollbacks in case of forks, etc.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -355,7 +355,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("StateStorage"))
     	.toInstance(..);   
 
- -  HistoryStorage
+-  HistoryStorage
 Internal storage used to store all the History data, including blocks of all forks.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -365,7 +365,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("HistoryStorage"))
     	.toInstance(..);   
 
- -  ConsensusStorage
+-  ConsensusStorage
 Internal storage to save consensus data.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
