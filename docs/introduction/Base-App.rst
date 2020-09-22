@@ -334,13 +334,6 @@ bind(Storage.class)
     .annotatedWith(Names.named("WalletTransactionStorage"))
     .toInstance(..);      
 
- -  WalletTransactionStorage
-Internal storage used for forging boxes.
-Must be an instance of a class implementing this interface: com.horizen.storage.Storage
-
-bind(Storage.class)                                                                                        
-    .annotatedWith(Names.named("WalletForgingBoxesInfoStorage"))
-    .toInstance(..);      
 
  -  WalletForgingBoxesInfoStorage
 Internal storage used for forging boxes.
