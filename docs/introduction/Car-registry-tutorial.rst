@@ -17,32 +17,26 @@ Accepting that cars will show up in the sidechain in our example, we want to bui
 User stories:
 #############
 
-1
 **Q: I want to add my car to the Car Registry App.**
 
 *A:* Create a new Car Entry Box, which contains vehicle identification information (VIN, manufacturer, model, year, registration number), and a certificate. The proposition in this box is your public key in this sidechain. When you create a box, the sidechain should verify that the vehicle identification information and certificate are unique to this sidechain.
 
-2
 **Q: I want to create a sell order to sell my vehicle using the Car Registry App.**
 
 *A:* You can create a new Car Sell Order Box that contains the price in coins and the vehicle information from the Car Entry Box. Cars can exist in the sidechain either as a Car Entry Box or as a Car Sell Order, but not both at the same time. This box must contains the buyer’s public key. When you create a sell order, the sidechain should verify that there is no other active sell order with this Car Entry Box. The current Sell Order consists of the same information that is contained in the Car Entry Box plus a description.
 
-3
 **Q: I want to see all available Sell Orders in the sidechain.**
 
 *A:* Have additional storage, which is managed by ApplicationState and stores all Car Sell Orders. All orders can be retrieved using the new HTTP API call. 
 
-4
 **Q: I want to accept a sell order and buy the car.**
 
 *A:* By accepting a sell order, you create a new transaction in the sidechain, which creates a new Car Entry Box with your public key as the proposition and transfers the correct value of coins from you to the seller.
 
-5
 **Q: I want to cancel my Car Sell Order.**
 
 *A:* You will create a new transaction containing the Car Sell Order as input and a Car Entry Box with your public key and the proposition as the output.
 
-6.
 **Q: I want to see the car entry boxes and car sell orders related to me (both created by me and proposed to me).**
 
 *A:* Implement a new storage that will be managed by ApplicationState to store this information. Then implement a new HTTP API that contains a new method to get this information.
