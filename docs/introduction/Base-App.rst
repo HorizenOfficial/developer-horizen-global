@@ -267,7 +267,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
 		.toInstance(..);       
 
 - Custom proposition serializers
-Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>`. 
+Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required          
 
 ::
