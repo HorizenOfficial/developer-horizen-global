@@ -4,9 +4,9 @@ Build Status
 
 [![Documentation Status](https://readthedocs.org/projects/developerhorizenglobal/badge/?version=latest)](https://docs.horizen.global/en/latest/?badge=latest)
 
-#Horizen Sidechains SDK documentation Sphinx source code.
+# Horizen Sidechains SDK documentation.
 
-### This repo contains the restructured text source for our [Sidechain SDK wiki](https://docs.horizen.io) which are hosted via [readthedocs.org](https://readthedocs.org)
+### This repo contains the restructured text source files for our [Sidechain SDK wiki](https://docs.horizen.io) which are hosted via [readthedocs.org](https://readthedocs.org)
 
 ### We encourage community input to this repo. You will find the requirements to do so below.
 
