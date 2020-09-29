@@ -166,17 +166,25 @@ Then, the developer could implement the needed custom state checks in the follow
   * 
     ::
 
-      public boolean validate(SidechainStateReader stateReader, SidechainBlock block)
-      
+      public boolean validate(SidechainStateReader stateReader, SidechainBlock block)  
     custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node.
   
-  * ``public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)`` 
+  * 
+    ::
+
+      public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)
     custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid and will not be included in the memory pool.
 
-  * ``public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)`` 
+  * 
+    ::
+
+      public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)
     any specific action to be performed after applying the block to the State should be defined here.
   
-  * ``public Try<ApplicationState> onRollback(byte[] version)`` 
+  * 
+    ::
+
+      public Try<ApplicationState> onRollback(byte[] version)`` 
     any specific action after a rollback of the state (for example, in case of fork/invalid block) should be defined here.
   
 
@@ -185,7 +193,7 @@ Application Wallet
 
 Every sidechain node has a local wallet associated to it, in a similar way as the mainchain Zend node wallet.
 The wallet stores the user secret info and related balances. It is initialized with the genesis account key and the ZEN amount transferred by the sidechain creation transaction.
-New private keys can be added by calling the http method /wallet/createPrivateKey25519.
+New private keys can be added by calling the http endpoint /wallet/createPrivateKey25519.
 The local wallet data is updated when a new block is added to the sidechain, and when blocks are reverted. 
 
 Developers can extend Wallet logic by defining a class that implements the interface `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
