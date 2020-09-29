@@ -53,7 +53,7 @@ The serializer is responsible to convert the box into bytes, and parse it back l
 - Box ``parse(scorex.util.serialization.Reader reader)``
   perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-Also any instances of AbstractNoncedBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.NoncedBoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/NoncedBoxDataSerializer.java>`_
+Also any instance of AbstractNoncedBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.NoncedBoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/NoncedBoxDataSerializer.java>`_
 
       
 Specific actions for extension of Coin-box
