@@ -270,27 +270,28 @@ To add custom API you have to create a class which extends the com.horizen.api.h
       }
 
       you should code a request class like this one:
+      ::
 
-      public class MyCustomRequest {
-        byte[] someBytes;
-        int number;
+        public class MyCustomRequest {
+          byte[] someBytes;
+          int number;
 
-        public byte[] getSomeBytes(){
-          return someBytes;
+          public byte[] getSomeBytes(){
+            return someBytes;
+          }
+
+          public void setSomeBytes(String bytesInHex){
+            someBytes = BytesUtils.fromHexString(bytesInHex);
+          }
+
+          public int getNumber(){
+            return number;
+          }
+
+          public void setNumber(int number){
+            this.number = number;
+          }
         }
-
-        public void setSomeBytes(String bytesInHex){
-          someBytes = BytesUtils.fromHexString(bytesInHex);
-        }
-
-        public int getNumber(){
-          return number;
-        }
-
-        public void setNumber(int number){
-          this.number = number;
-        }
-      }
 
 API response classes
 
