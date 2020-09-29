@@ -9,7 +9,7 @@ Custom box creation
 
 The first step of the development process of a distributed app implemented as a sidechain, is the representation of the needed data. In the SDK, application data are modeled as "Boxes". 
 
-Every custom box should at least implement the com.horizen.box.NoncedBox interface. 
+Every custom box should at least implement the ``com.horizen.box.NoncedBox`` interface. 
 The methods defined in the interface are the following:
 
 - long nonce()
