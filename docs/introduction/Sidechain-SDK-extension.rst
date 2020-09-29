@@ -2,7 +2,7 @@
 Sidechains SDK extension
 ========================
 
-To build a distributed, blockchain application, a developer typically needs to do more than just receive, transfer, and send coins back to maichain, as you can do with the basic components provided out-of-the-box by the SDK. Usually, the need is to to define some custom data, that the sidechain users can process and exchange according to some defined logic. In this chapter, we'll see what are the steps that should be taken to code a sidechain which implements custom data and logic. In the next one, we'll look in detail at a specific, customized sidechain example.
+To build a distributed, blockchain application, a developer typically needs to do more than just receive, transfer, and send coins back to the mainchain, as you can do with the basic components provided out-of-the-box by the SDK. Usually, there is the need is to to define some custom data, that the sidechain users can process and exchange according to some defined logic. In this chapter, we'll see what are the steps that should be taken to code a sidechain which implements custom data and logic. In the next one, we'll look in detail at a specific, customized sidechain example.
 
 Custom box creation
 ###################
