@@ -65,46 +65,51 @@ A Coin Box is a Box that has a value in ZEN. The creation process is the same ju
 Transaction extension
 #####################
 
-A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. To define a new custom transaction, you have to extend the *com.horizen.transaction.BoxTransaction* class.
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. To define a new custom transaction, you have to extend the `com.horizen.transaction.BoxTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/BoxTransaction.java>`_ class.
 The most relevant methods of this class are detailed below:
 
-- public List<BoxUnlocker<Proposition>> unlockers()
-Defines the list of Boxes that are opened when the transaction is executed, together with the information (Proof) needed to open them.
-Each element of the returned list is an instance of BoxUnlocker, which is an interface with two methods:
+- ``public List<BoxUnlocker<Proposition>> unlockers()``
 
-  public interface BoxUnlocker<P extends Proposition>
-  {
-    byte[] closedBoxId();
-    Proof<P> boxKey();
-  }
+  Defines the list of Boxes that are opened when the transaction is executed, together with the information (Proof) needed to open them.
+  Each element of the returned list is an instance of BoxUnlocker, which is an interface with two methods:
 
-The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the the process requires to spend the box and create a new one with the updated values.
+  ::
 
-- public List<NoncedBox<Proposition>> newBoxes()
-This function returns the list of new boxes which will be created by the current transaction. 
-As a good practice, you should use the Collections.unmodifiableList() method to wrap the returned list into a not updatable Collection:
+    public interface BoxUnlocker<P extends Proposition>
+    {
+      byte[] closedBoxId();
+      Proof<P> boxKey();
+    }
 
-::
- @Override
- public List<NoncedBox<Proposition>> newBoxes() {
-   List<NoncedBox<Proposition>> newBoxes =  .....  //new boxes are created here  
-   //....
-   return Collections.unmodifiableList(newBoxes);
- }   
+  The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the the process requires to spend the box and create a new one with the updated values.
 
-- public long fee()
-Returns the fee to be paid to execute this transaction.
+- ``public List<NoncedBox<Proposition>> newBoxes()``
 
-- public long timestamp()
-Returns the timestamp of the transaction creation.
-As a good practice, timestamp should be created outside transaction, passed in the transaction's constructor, and returned here.
+  This function returns the list of new boxes which will be created by the current transaction. 
+  As a good practice, you should use the Collections.unmodifiableList() method to wrap the returned list into a not updatable Collection:
 
-- public byte transactionTypeId()
-Returns the type of this transaction. Each custom transaction must have its own unique type.
+  ::
 
-- public boolean transactionSemanticValidity()
-Confirms whethera or not a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
-This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
+    @Override
+    public List<NoncedBox<Proposition>> newBoxes() {
+      List<NoncedBox<Proposition>> newBoxes =  .....  //new boxes are created here  
+      //....
+      return Collections.unmodifiableList(newBoxes);
+    }   
+
+- ``public long fee()``
+  Returns the fee to be paid to execute this transaction.
+
+- ``public long timestamp()``
+  Returns the timestamp of the transaction creation.
+  As a good practice, timestamp should be created outside transaction, passed in the transaction's constructor, and returned here.
+
+- ``public byte transactionTypeId()``
+  Returns the type of this transaction. Each custom transaction must have its own unique type.
+
+- ``public boolean transactionSemanticValidity()``
+  Confirms if a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
+  This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
 
 Apart from the semantic check, the Sidechain will need to make also sure that all transactions are compliant with the application logic and syntax. Such checks need to be implemented in the validate() method of the *custom ApplicationState* class.
 
