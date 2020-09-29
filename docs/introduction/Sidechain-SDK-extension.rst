@@ -356,6 +356,7 @@ Custom api group injection:
 
 Finally, you have to instruct the SDK to use your ApiGroup.
 This can be done with Guice, by binding the ""CustomApiGroups" field:
+::
 
    bind(new TypeLiteral<List<ApplicationApiGroup>> () {})
          .annotatedWith(Names.named("CustomApiGroups"))
