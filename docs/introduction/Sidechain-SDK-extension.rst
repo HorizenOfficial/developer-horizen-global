@@ -136,10 +136,10 @@ Custom Proof / Proposition creation
 A proposition is a locker for a box, and a proof is an unlocker for a box. How a box is locked and unlocked can be changed by the developer. For example, a custom box might require to be opened by two or more independent private keys. This kind of customization is achieved by defining custom Proposition and Proof.
 
 * Creating custom Proposition
-  You can create a custom proposition by implementing the ``ProofOfKnowledgeProposition<S extends Secret>`` interface. The generic parameter represents the kind of private key, e.g. one could use *PrivateKey25519*. With the example above, you would use two different public keys inside the proposition to lock the box: EXAMPLE HERE!!
+  You can create a custom proposition by implementing the ``ProofOfKnowledgeProposition<S extends Secret>`` interface. The generic parameter represents the kind of private key, e.g. one could use *PrivateKey25519*. With the example above, you would use two different public keys inside the proposition to lock the box: (EXAMPLE TBD) .. TODO
 
 * Creating custom Proof interface 
-  You can create a custom proof by implementing ``Proof<P extends Proposition>``, where *P* is an appropriate Proposition class. The ``Function boolean isValid(P proposition, byte[] messageToVerify);`` funchion also needs to be implemented. It's a function that cchecks and states whether Proof is valid for a given Proposition or not. For example, in the case of Proposition with two different public keys, we could try to verify the message using public keys in Proposition one by one and return true if Proof had been created by one of the expected private keys.
+  You can create a custom proof by implementing ``Proof<P extends Proposition>``, where ``P`` is an appropriate Proposition class. The ``boolean isValid(P proposition, byte[] messageToVerify);`` function also needs to be implemented. It's a function that checks and states whether Proof is valid for a given Proposition or not. For example, in the case of Proposition with two different public keys, we could try to verify the message using public keys in Proposition one by one and return true if Proof had been created by one of the expected private keys.
 
 Application State
 ###########################
