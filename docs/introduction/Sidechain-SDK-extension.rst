@@ -29,17 +29,17 @@ The methods defined in the interface are the following:
 - ``byte boxTypeId()``
   should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
 
-As a common design rule, you usually do not implement the NoncedBox interface direclty, but extend instead the abstract class com.horizen.box.AbstractNoncedBox, which already provides default implementations of 
-some useful methods like id(), equals() and hashCode().
-This class requires the definition of another object: a class extending com.horizen.box.data.AbstractNoncedBoxData, where you should put all the properties of the box, including the proposition. You can think of the AbstractNoncedBoxData as an inner container of all the fields of your box.
+As a common design rule, you usually do not implement the NoncedBox interface direclty, but extend instead the abstract class `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, which already provides default implementations of 
+some useful methods like ``id()``, ``equals()`` and ``hashCode()``.
+This class requires the definition of another object: a class extending `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractNoncedBoxData as an inner container of all the fields of your box.
 This data object must be passed in the constructor of AbstractNoncedBox, along with the nonce.
 The important methods of AbstractNoncedBoxData that need to be implemented are:
 
-- byte[] customFieldsHash() 
+- ``byte[] customFieldsHash()``
   Must return a hash of all custom data values, otherwise those data will not be "protected," i.e., some malicious actor can change custom data during transaction creation. 
-- Box getBox(long nonce) 
+- ``Box getBox(long nonce)`` 
   creates a new Box containing this BoxData for a given nonce.
-- NoncedBoxDataSerializer serializer()
+- ``NoncedBoxDataSerializer serializer()``
   should return the serializer of this box data (see below)
 
 BoxSerializer and NoncedBoxDataSerializer
