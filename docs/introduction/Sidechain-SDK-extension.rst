@@ -46,13 +46,14 @@ BoxSerializer and NoncedBoxDataSerializer
 #########################################
 
 Each box must define its own serializer and return it from the serializer() method.
-The serializer is responsible to convert the box into bytes, and parse it back later. It should implement the com.horizen.box.BoxSerializer interface, which defines two methods:
-- void serialize(Box box, scorex.util.serialization.Writer writer)
+The serializer is responsible to convert the box into bytes, and parse it back later. It should implement the `com.horizen.box.BoxSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ interface, which defines two methods:
+
+- void ``serialize(Box box, scorex.util.serialization.Writer writer)``
   writes the box content into a Scorex writer  
-- Box parse(scorex.util.serialization.Reader reader)
+- Box ``parse(scorex.util.serialization.Reader reader)``
   perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-Also AbstractNoncedBoxData need to have their own serilizers: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is com.horizen.box.data.NoncedBoxDataSerializer
+Also any instances of AbstractNoncedBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.NoncedBoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/NoncedBoxDataSerializer.java>`_
 
       
 Specific actions for extension of Coin-box
