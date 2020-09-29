@@ -126,7 +126,7 @@ Transactions handling coin boxes will generally perform some basic, standard ope
 
 - check that the sum of the input boxes + fee is equal to the sum of the output coin boxes. 
 
-Inside the Lambo-registry demo application,  you can find an example of implementation of a transaction that handles regular coin boxes and implements the basic operations just mentioned: io.horizen.lambo.car.transaction.AbstractRegularTransaction. 
+Inside the Lambo-registry demo application, you can find an example of implementation of a transaction that handles regular coin boxes and implements the basic operations just mentioned: `io.horizen.lambo.car.transaction.AbstractRegularTransaction <https://github.com/HorizenOfficial/lambo-registry/blob/master/src/main/java/io/horizen/lambo/car/transaction/AbstractRegularTransaction.java>`_. 
 Please note that, in a decentralized environment, transactions generally require the payment of a fee, so that their inclusion in a block can be rewarded and so incentivised. So, even if a transaction is not meant to process coin boxes, it still needs to handle coins to pay its fee.
 
 
