@@ -244,9 +244,8 @@ To add custom API you have to create a class which extends the com.horizen.api.h
 
     Let's look in more details at the 3 parameters of the bindPostRequest method.
 
-    - |the endpoint path: 
-      defines the endpoint path, that appended to the basePath will represent the http endpoint url.
-      |For example, if your API group has a basepath = "carApi", and you define a route with endpoint path "createCar", the overall url will be: http://<node_host>:<api_port>/carAPi/createCar
+    - the endpoint path: defines the endpoint path, that appended to the basePath will represent the http endpoint url.
+       | For example, if your API group has a basepath = "carApi", and you define a route with endpoint path "createCar", the overall url will be: http://<node_host>:<api_port>/carAPi/createCar
 
     - the function to process the request:
       Currently we support three types of function’s signature:
