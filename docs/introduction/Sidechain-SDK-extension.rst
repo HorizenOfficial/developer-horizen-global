@@ -218,26 +218,30 @@ A user application can extend the default standard API (see chapter 6) and add c
 
 To add custom API you have to create a class which extends the com.horizen.api.http.ApplicationApiGroup abstract class, and implements the following methods:
 
--  public String basePath()
+-  ``public String basePath()``
    returns the base path of this group of endpoints (the first part of the URL)
 
--  public List<Route> getRoutes() 
+-  ``public List<Route> getRoutes()``
    returns a list of Route objects: each one is an instance of a `akka.Http Route object <https://doc.akka.io/docs/akka-http/current/routing-dsl/routes.html>`_ and defines a specific endpoint url and its logic.
    To simplify the developement, the ApplicationApiGroup abstract class provides a method (bindPostRequest) that builds a akka Route that responds to a specific http request with an (optional) json body as input. This method receives the following parameters:
+   
    - the endpoint path
+
    - the function to process the request 
+   
    - the class that represents the input data received by the  HTTP request call 
    
    Example:
+    ::
 
-   public List<Route> getRoutes() {
-        List<Route> routes = new ArrayList<>();
-        routes.add(bindPostRequest("createCar", this::createCar, CreateCarBoxRequest.class));
-        routes.add(bindPostRequest("createCarSellOrder", this::createCarSellOrder, CreateCarSellOrderRequest.class));
-        routes.add(bindPostRequest("acceptCarSellOrder", this::acceptCarSellOrder, SpendCarSellOrderRequest.class));
-        routes.add(bindPostRequest("cancelCarSellOrder", this::cancelCarSellOrder, SpendCarSellOrderRequest.class));
-        return routes;
-    }
+      public List<Route> getRoutes() {
+            List<Route> routes = new ArrayList<>();
+            routes.add(bindPostRequest("createCar", this::createCar, CreateCarBoxRequest.class));
+            routes.add(bindPostRequest("createCarSellOrder", this::createCarSellOrder, CreateCarSellOrderRequest.class));
+            routes.add(bindPostRequest("acceptCarSellOrder", this::acceptCarSellOrder, SpendCarSellOrderRequest.class));
+            routes.add(bindPostRequest("cancelCarSellOrder", this::cancelCarSellOrder, SpendCarSellOrderRequest.class));
+            return routes;
+        }
 
     Let's look in more details at the 3 parameters of the bindPostRequest method.
 
