@@ -23,13 +23,13 @@ The methods defined in the interface are the following:
 - ``byte[] id()``
   should return a unique identifier of each box instance.
 - ``byte[] bytes()``
-  shoud return the byte representation of this box.
+  should return the byte representation of this box.
 - ``BoxSerializer serializer()``
   should return the serializer of the box (see below).
 - ``byte boxTypeId()``
   should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
 
-As a common design rule, you usually do not implement the NoncedBox interface direclty, but extend instead the abstract class `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, which already provides default implementations of 
+As a common design rule, you usually do not implement the NoncedBox interface directly, but extend instead the abstract class `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, which already provides default implementations of 
 some useful methods like ``id()``, ``equals()`` and ``hashCode()``.
 This class requires the definition of another object: a class extending `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractNoncedBoxData as an inner container of all the fields of your box.
 This data object must be passed in the constructor of AbstractNoncedBox, along with the nonce.
@@ -144,8 +144,8 @@ A proposition is a locker for a box, and a proof is an unlocker for a box. How a
 Application State
 ###########################
 
-If we consider the representation of a blockchain in a node as a finite state machine, then the application state can be seen as the state of all the "registers" of the machine at the present moment. The present moment starts whem the most recent block is received (or forged!) by the node, and ends when a new one is received/forged. A new block updates the state, so it needs to be checked for both semantic and contextual validity; if ok, the state needs to be updated according to what is in the block.
-A customized blockchain will likely include custom data and transactions. The ApplicationState interface needs to be extended to code the rules that stete validity of blocks and transactions, and the actions to be performed when a block modifies the state, and when it is removed (blocks can be reverted):
+If we consider the representation of a blockchain in a node as a finite state machine, then the application state can be seen as the state of all the "registers" of the machine at the present moment. The present moment starts when the most recent block is received (or forged!) by the node, and ends when a new one is received/forged. A new block updates the state, so it needs to be checked for both semantic and contextual validity; if ok, the state needs to be updated according to what is in the block.
+A customized blockchain will likely include custom data and transactions. The ApplicationState interface needs to be extended to code the rules that state validity of blocks and transactions, and the actions to be performed when a block modifies the state, and when it is removed (blocks can be reverted):
 
 ApplicationState:
 ::
@@ -159,7 +159,7 @@ ApplicationState:
   Try<ApplicationState> onRollback(byte[] version);
   }
 
-An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can rapresent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
+An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can represent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
 
 Then, the developer could implement the needed custom state checks in the following way:
 
@@ -177,7 +177,7 @@ Application Wallet
 
 Every sidechain node has a local wallet associated to it, in a similar way as the mainchain Zend node wallet.
 The wallet stores the user secret info and related balances. It is initialized with the genesis account key and the ZEN amount transferred by the sidechain creation transaction.
-New private keys can be added by calling the http mehod /wallet/createPrivateKey25519.
+New private keys can be added by calling the http method /wallet/createPrivateKey25519.
 The local wallet data is updated when a new block is added to the sidechain, and when blocks are reverted. 
 
 Developers can extend Wallet logic by defining a class that implements the interface `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
@@ -206,7 +206,7 @@ To add custom API you have to create a class which extends the com.horizen.api.h
 
 -  public List<Route> getRoutes() 
    returns a list of Route objects: each one is an instance of a `akka.Http Route object <https://doc.akka.io/docs/akka-http/current/routing-dsl/routes.html>`_ and defines a specific endpoint url and its logic.
-   To simplify the developement, the ApplicationApiGroup abtract class provides a method (bindPostRequest) that builds a akka Route that responds to a specific http request with an (optional) json body as input. This method receives the following parameters:
+   To simplify the developement, the ApplicationApiGroup abstract class provides a method (bindPostRequest) that builds a akka Route that responds to a specific http request with an (optional) json body as input. This method receives the following parameters:
    - the endpoint path
    - the function to process the request 
    - the class that represents the input data received by the  HTTP request call 
