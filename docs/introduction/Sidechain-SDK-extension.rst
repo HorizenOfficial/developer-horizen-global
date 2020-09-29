@@ -163,7 +163,10 @@ An example might help to understand the purpose of these methods. Let's assume, 
 
 Then, the developer could implement the needed custom state checks in the following way:
 
-  * ``public boolean validate(SidechainStateReader stateReader, SidechainBlock block)`` 
+  * 
+    ::
+      public boolean validate(SidechainStateReader stateReader, SidechainBlock block)
+      
     custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node.
   
   * ``public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)`` 
