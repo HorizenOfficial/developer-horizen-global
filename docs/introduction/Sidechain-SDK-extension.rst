@@ -183,7 +183,7 @@ Then, the developer could implement the needed custom state checks in the follow
   * Any specific action after a rollback of the state (for example, in case of fork/invalid block) should be defined here.
     ::
 
-      public Try<ApplicationState> onRollback(byte[] version)`` 
+      public Try<ApplicationState> onRollback(byte[] version)
     
   
 
@@ -246,7 +246,7 @@ To add custom API you have to create a class which extends the com.horizen.api.h
 
     - the endpoint path: 
       defines the endpoint path, that appended to the basePath will represent the http endpoint url.
-      For example, if your API group has a basepath = "carApi", and you define a route with endpoint path "createCar", the overall url will be: http://<node_host>:<api_port>/carAPi/createCar
+      | For example, if your API group has a basepath = "carApi", and you define a route with endpoint path "createCar", the overall url will be: http://<node_host>:<api_port>/carAPi/createCar
 
     - the function to process the request:
       Currently we support three types of function’s signature:
@@ -263,11 +263,12 @@ To add custom API you have to create a class which extends the com.horizen.api.h
       This needs to be a java bean, defining some private fields and  getter and setter methods for each field.
       Each field in the json input will be mapped to the corresponding field by name-matching.
       For example to handle the  following json body :
-
-      {
-      "number": "342",
-      "someBytes": "a5b10622d70f094b7276e04608d97c7c699c8700164f78e16fe5e8082f4bb2ac"
-      }
+      ::
+        
+        {
+        "number": "342",
+        "someBytes": "a5b10622d70f094b7276e04608d97c7c699c8700164f78e16fe5e8082f4bb2ac"
+        }
 
       you should code a request class like this one:
       ::
