@@ -45,7 +45,7 @@ The important methods of AbstractNoncedBoxData that need to be implemented are:
 BoxSerializer and NoncedBoxDataSerializer
 #########################################
 
-Each box must define its own serializer and return it from the serializer() method.
+Each box must define its own serializer and return it from the ``serializer()`` method.
 The serializer is responsible to convert the box into bytes, and parse it back later. It should implement the `com.horizen.box.BoxSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ interface, which defines two methods:
 
 - void ``serialize(Box box, scorex.util.serialization.Writer writer)``
