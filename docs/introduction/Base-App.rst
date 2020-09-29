@@ -132,7 +132,7 @@ The communication between a node and its users is available through http end poi
 Physical storage
 ****************
 
-The SDK introduces the unified physical storage interface, and this default implementation is based on the `IODB Library <https://github.com/input-output-hk/iodb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. In case of custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes.
+The SDK introduces the unified physical storage interface, and this default implementation is based on the `IODB Library <https://github.com/input-output-hk/iodb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. When using a custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes.
 
 User-specific settings
 **********************
@@ -215,7 +215,7 @@ You can define a Guice module which declares all the bindings, then use that mod
 	sidechainApp.run();
 
 	
-The Guice module class (MyAppModule in the example above) must extend the class com.google.inject.AbstractModule, and define the bindings inside its config() method. Binding definition could be done in the following ways:
+The Guice module class (MyAppModule in the example above) must extend the class com.google.inject.AbstractModule, and define the bindings inside its config() method. A binding definition could be done in the following ways:
 
 ::
     
@@ -238,7 +238,7 @@ Must be an instance of com.horizen.SidechainSettings, defining the sidechain con
 
 - Custom box serializers
 Serializers to be used for custom boxes, in the form ``HashMap<CustomboxId, BoxSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.         
+Use ``new HashMap<>();`` if no custom serializers are required.         
 
 ::
 
@@ -248,7 +248,7 @@ Use just ``new HashMap<>();`` if no custom serializers are required.
 
 - Custom box data serializers
 Serializers to be used for custom data boxes, in the form ``HashMap<CustomBoxDataId, NoncedBoxDataSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.         
+Use ``new HashMap<>();`` if no custom serializers are required.         
 
 ::
 
@@ -258,15 +258,17 @@ Use just ``new HashMap<>();`` if no custom serializers are required.
 
 - Custom secrets serializers
 Serializers to be used for custom secrets, in the form ``HashMap<SecretId, SecretSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.          
+Use ``new HashMap<>();`` if no custom serializers are required.          
 
-bind(new TypeLiteral<HashMap<Byte, SecretSerializer<Secret>>>() {})                
-    .annotatedWith(Names.named("CustomSecretSerializers"))    
-    .toInstance(..);       
+::
+
+	bind(new TypeLiteral<HashMap<Byte, SecretSerializer<Secret>>>() {})                
+		.annotatedWith(Names.named("CustomSecretSerializers"))    
+		.toInstance(..);       
 
 - Custom proposition serializers
-Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>`. 
-Use just ``new HashMap<>();`` if no custom serializers are required          
+Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>``. 
+Use ``new HashMap<>();`` if no custom serializers are required          
 
 ::
 
@@ -276,7 +278,7 @@ Use just ``new HashMap<>();`` if no custom serializers are required
 
 - Custom transaction serializers
 Serializers to be used for custom transaction, in the form ``HashMap<CustomTransactionId, TransactionSerializer>``. 
-Use just ``new HashMap<>();`` if no custom serializers are required.
+Use ``new HashMap<>();`` if no custom serializers are required.
 
 ::
 
@@ -324,23 +326,18 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("WalletBoxStorage"))
     	.toInstance(..);     
 
- -  WalletTransactionStorage
+-  WalletTransactionStorage
 Internal storage used for transactions.
 Must be an instance of a class implementing this interface: com.horizen.storage.Storage
 
-bind(Storage.class)                                                                                        
-    .annotatedWith(Names.named("WalletTransactionStorage"))
-    .toInstance(..);      
+::
 
- -  WalletTransactionStorage
-Internal storage used for forging boxes.
-Must be an instance of a class implementing this interface: com.horizen.storage.Storage
+	bind(Storage.class)                                                                                        
+		.annotatedWith(Names.named("WalletTransactionStorage"))
+		.toInstance(..);      
 
-bind(Storage.class)                                                                                        
-    .annotatedWith(Names.named("WalletForgingBoxesInfoStorage"))
-    .toInstance(..);      
 
- -  WalletForgingBoxesInfoStorage
+-  WalletForgingBoxesInfoStorage
 Internal storage used for forging boxes.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -350,7 +347,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("WalletForgingBoxesInfoStorage"))
     	.toInstance(..);    
 
- -  StateStorage
+-  StateStorage
 Internal storage used to save the current State, e.g. store information about boxes currently still closed, perform rollbacks in case of forks, etc.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -360,7 +357,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("StateStorage"))
     	.toInstance(..);   
 
- -  HistoryStorage
+-  HistoryStorage
 Internal storage used to store all the History data, including blocks of all forks.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -370,7 +367,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("HistoryStorage"))
     	.toInstance(..);   
 
- -  ConsensusStorage
+-  ConsensusStorage
 Internal storage to save consensus data.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -395,9 +392,9 @@ Each pair on the passed list represents a path to be disabled (the key is the ba
 
 ::
 
-bind(new TypeLiteral<List<Pair<String, String>>> () {})
-    .annotatedWith(Names.named("RejectedApiPaths"))
-    .toInstance(...); 
+	bind(new TypeLiteral<List<Pair<String, String>>> () {})
+		.annotatedWith(Names.named("RejectedApiPaths"))
+		.toInstance(...); 
 
 
 
@@ -409,8 +406,8 @@ SidechainApp arguments can be split into 4 groups:
 		* Developers will most likely want to add their custom data and business logic. For example, an application for tokenization of real-estate properties will want to create custom Box and BoxData types. These custom objects will have to be managed by the SDK, so that they can be sent through the network or stored on the disk. The SDK then need to know how to serialize them to bytes and how to deserialize them. This information is coded be the Sidechain developers, who must specify custom objects serializers and add them to the Serializer map. This will be better described in chapter 8.1, "Sidechain SDK extension, Data serialization".
 	3. Application node extension of State and Wallet logic
 		* As seen above, the state is a snapshot of all unspent boxes on the blockchain at a given moment. So when a new block arrives, the ApplicationState validates the block, e.g. to prevent the spending of non-existing boxes, or to discard transactions with inconsistencies in their input/output balance. Developers can extend this validation process by introducing additional logic in ApplicationState and ApplicationWallet.
-	4. **API extension** - `link <../Node-communication.html>`_
-	5. **Node communication** `link <../Sidechain-SDK-extension.html#custom-api-creation>`_
+	4. **API extension** - `link <../Sidechain-SDK-extension.html#custom-api-creation>`_
+	5. **Node communication** - `link <../Node-communication.html>`_
 	
 	
 The SDK repository includes in its "examples" folder, the "SimpleApp" sidechain;  it's an application that does not introduce any custom logic: no custom boxes or transactions, no custom API, an empty ApplicationState and ApplicationWallet. "SimpleApp" shows the basic SDK functionalities, that are immediately available to the developer, and it's the fastest way to get started with our SDK.
