@@ -19,7 +19,7 @@ The methods defined in the interface are the following:
   In the case of a Non-Coin box, this value is still required, and could have a customized meaning chosen by the developer, or no meaning, i.e. not used. In the latter case, by convention is generally set to 1.
 - ``Proposition proposition()``  
   should return the proposition that locks this box.
-  The proposition that is used in the SDK examples is com.horizen.proposition.PublicKey25519Proposition; it's based on Curve25519, a fast and secure elliptic curve used by Horizen mainchain. A developer may want to define and use custom propositions.
+  The proposition that is used in the SDK examples is `com.horizen.proposition.PublicKey25519Proposition <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/proposition/PublicKey25519Proposition.java>`_; it's based on `Curve 25519 <https://en.wikipedia.org/wiki/Curve25519>`_, a fast and secure elliptic curve used by Horizen mainchain. A developer may want to define and use custom propositions.
 - ``byte[] id()``
   should return a unique identifier of each box instance.
 - ``byte[] bytes()``
