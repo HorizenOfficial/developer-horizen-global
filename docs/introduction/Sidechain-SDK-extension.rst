@@ -86,7 +86,7 @@ The most relevant methods of this class are detailed below:
 - ``public List<NoncedBox<Proposition>> newBoxes()``
 
   This function returns the list of new boxes which will be created by the current transaction. 
-  As a good practice, you should use the Collections.unmodifiableList() method to wrap the returned list into a not updatable Collection:
+  As a good practice, you should use the ``Collections.unmodifiableList()`` method to wrap the returned list into a not updatable Collection:
 
   ::
 
