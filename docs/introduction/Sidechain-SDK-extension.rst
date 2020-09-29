@@ -12,21 +12,21 @@ The first step of the development process of a distributed app implemented as a 
 Every custom box should at least implement the ``com.horizen.box.NoncedBox`` interface. 
 The methods defined in the interface are the following:
 
-- long nonce()
+- ``long nonce()``
   The nonce guarantees that two boxes having the same properties and values, produce different and unique ids.
-- long value()
+- ``long value()``
   If the box type is a Coin-Box,  this value is required and will contain the coin value of the Box. 
   In the case of a Non-Coin box, this value is still required, and could have a customized meaning chosen by the developer, or no meaning, i.e. not used. In the latter case, by convention is generally set to 1.
-- Proposition proposition()  
+- ``Proposition proposition()``  
   should return the proposition that locks this box.
   The proposition that is used in the SDK examples is com.horizen.proposition.PublicKey25519Proposition; it's based on Curve25519, a fast and secure elliptic curve used by Horizen mainchain. A developer may want to define and use custom propositions.
-- byte[] id()
+- ``byte[] id()``
   should return a unique identifier of each box instance.
-- byte[] bytes()
+- ``byte[] bytes()``
   shoud return the byte representation of this box.
-- BoxSerializer serializer()
+- ``BoxSerializer serializer()``
   should return the serializer of the box (see below).
-- byte boxTypeId()
+- ``byte boxTypeId()``
   should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
 
 As a common design rule, you usually do not implement the NoncedBox interface direclty, but extend instead the abstract class com.horizen.box.AbstractNoncedBox, which already provides default implementations of 
