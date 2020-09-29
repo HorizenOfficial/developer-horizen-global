@@ -163,13 +163,17 @@ An example might help to understand the purpose of these methods. Let's assume, 
 
 Then, the developer could implement the needed custom state checks in the following way:
 
-  * ``public boolean validate(SidechainStateReader stateReader, SidechainBlock block)`` -- custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node.
+  * ``public boolean validate(SidechainStateReader stateReader, SidechainBlock block)`` 
+    custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node.
   
-  * ``public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)`` -- custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid and will not be included in the memory pool.
+  * ``public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)`` 
+    custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid and will not be included in the memory pool.
 
-  * ``public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)`` -- any specific action to be performed after applying the block to the State should be defined here.
+  * ``public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)`` 
+    any specific action to be performed after applying the block to the State should be defined here.
   
-  * ``public Try<ApplicationState> onRollback(byte[] version)`` -- any specific action after a rollback of the state (for example, in case of fork/invalid block) should be defined here.
+  * ``public Try<ApplicationState> onRollback(byte[] version)`` 
+    any specific action after a rollback of the state (for example, in case of fork/invalid block) should be defined here.
   
 
 Application Wallet 
