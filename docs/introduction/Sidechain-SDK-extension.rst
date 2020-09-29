@@ -246,8 +246,7 @@ To add custom API you have to create a class which extends the com.horizen.api.h
 
     - The endpoint path: 
       defines the endpoint path, that appended to the basePath will represent the http endpoint url.
-      | For example, if your API group has a basepath = "carApi", and you define a route with endpoint path "createCar", the overall url will be: 
-      | ``http://<node_host>:<api_port>/carAPi/createCar``
+       | For example, if your API group has a basepath = "carApi", and you define a route with endpoint path "createCar", the overall url will be: ``http://<node_host>:<api_port>/carAPi/createCar``
 
     - The function to process the request:
       Currently we support three types of function’s signature:
@@ -260,10 +259,11 @@ To add custom API you have to create a class which extends the com.horizen.api.h
 
         The format of the ApiResponse to be returned will be described later in this chapter.
 
-    - the class that represents the body in the HTTP request
-      This needs to be a java bean, defining some private fields and  getter and setter methods for each field.
-      Each field in the json input will be mapped to the corresponding field by name-matching.
-      For example to handle the  following json body :
+    - The class that represents the body in the HTTP request
+      
+      | This needs to be a java bean, defining some private fields and  getter and setter methods for each field.
+      | Each field in the json input will be mapped to the corresponding field by name-matching.
+      | For example to handle the  following json body :
       ::
         
         {
