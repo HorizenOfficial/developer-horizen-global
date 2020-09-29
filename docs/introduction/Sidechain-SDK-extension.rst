@@ -119,9 +119,13 @@ Transactions that process Coins
 | A key element of sidechains is the ability to trade ZEN. 
 | ZEN are represented as Coin boxes, that can be spent and created. 
 Transactions handling coin boxes will generally perform some basic, standard operations, such as: 
+
 - select and collect a list of coin boxes in input which sum up to a value that is equal or higher than the amount to be spent plus fee
+
 - create a coin box with the change
+
 - check that the sum of the input boxes + fee is equal to the sum of the output coin boxes. 
+
 Inside the Lambo-registry demo application,  you can find an example of implementation of a transaction that handles regular coin boxes and implements the basic operations just mentioned: io.horizen.lambo.car.transaction.AbstractRegularTransaction. 
 Please note that, in a decentralized environment, transactions generally require the payment of a fee, so that their inclusion in a block can be rewarded and so incentivised. So, even if a transaction is not meant to process coin boxes, it still needs to handle coins to pay its fee.
 
