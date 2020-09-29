@@ -165,6 +165,7 @@ Then, the developer could implement the needed custom state checks in the follow
 
   * 
     ::
+
       public boolean validate(SidechainStateReader stateReader, SidechainBlock block)
       
     custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node.
@@ -191,6 +192,7 @@ Developers can extend Wallet logic by defining a class that implements the inter
 The interface methods are listed below:
 
 ::
+
   interface ApplicationWallet {
     void onAddSecret(Secret secret);
     void onRemoveSecret(Proposition proposition);
