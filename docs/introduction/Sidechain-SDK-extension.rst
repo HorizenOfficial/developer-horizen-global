@@ -111,7 +111,7 @@ The most relevant methods of this class are detailed below:
   Confirms if a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
   This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
 
-Apart from the semantic check, the Sidechain will need to make also sure that all transactions are compliant with the application logic and syntax. Such checks need to be implemented in the validate() method of the *custom ApplicationState* class.
+Apart from the semantic check, the Sidechain will need to make also sure that all transactions are compliant with the application logic and syntax. Such checks need to be implemented in the ``validate()`` method of the ``custom ApplicationState`` class.
 
 Transactions that process Coins
 -------------------------------
