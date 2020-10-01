@@ -138,36 +138,37 @@ A proposition is a locker for a box, and a proof is an unlocker for a box. How a
 * Creating custom Proposition
   You can create a custom proposition by implementing the ``ProofOfKnowledgeProposition<S extends Secret>`` interface. The generic parameter S represents the kind of private key used to unlock the proposition, e.g. you could use *PrivateKey25519*. 
   Let's see how you could declare a new kind of Proposition that accepts two different public keys, and that can be opened by just one of two corresponding private keys:
-
-  public final class MultiProposition implements ProofOfKnowledgeProposition<PrivateKey25519> {
+  ::
     
-    // Specify json attribute name for the firstPublicKeyBytes field.
-    @JsonProperty("firstPublicKey")
-    private final byte[] firstPublicKeyBytes;
+    public final class MultiProposition implements ProofOfKnowledgeProposition<PrivateKey25519> {
+      
+      // Specify json attribute name for the firstPublicKeyBytes field.
+      @JsonProperty("firstPublicKey")
+      private final byte[] firstPublicKeyBytes;
 
-    // Specify json attribute name for the secondPublicKeyBytes field.
-    @JsonProperty("secondPublicKey")
-    private final byte[] secondPublicKeyBytes;
+      // Specify json attribute name for the secondPublicKeyBytes field.
+      @JsonProperty("secondPublicKey")
+      private final byte[] secondPublicKeyBytes;
 
-    public MultiProposition(byte[] firstPublicKeyBytes, byte[] secondPublicKeyBytes) {
-        if(firstPublicKeyBytes.length != KEY_LENGTH)
-            throw new IllegalArgumentException(String.format("Incorrect firstPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, firstPublicKeyBytes.length));
+      public MultiProposition(byte[] firstPublicKeyBytes, byte[] secondPublicKeyBytes) {
+          if(firstPublicKeyBytes.length != KEY_LENGTH)
+              throw new IllegalArgumentException(String.format("Incorrect firstPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, firstPublicKeyBytes.length));
 
-        if(secondPublicKeyBytes.length != KEY_LENGTH)
-            throw new IllegalArgumentException(String.format("Incorrect secondPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, secondPublicKeyBytes.length));
+          if(secondPublicKeyBytes.length != KEY_LENGTH)
+              throw new IllegalArgumentException(String.format("Incorrect secondPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, secondPublicKeyBytes.length));
 
-        this.firstPublicKeyBytes = Arrays.copyOf(firstPublicKeyBytes, KEY_LENGTH);
-        this.secondPublicKeyBytes = Arrays.copyOf(secondPublicKeyBytes, KEY_LENGTH);
+          this.firstPublicKeyBytes = Arrays.copyOf(firstPublicKeyBytes, KEY_LENGTH);
+          this.secondPublicKeyBytes = Arrays.copyOf(secondPublicKeyBytes, KEY_LENGTH);
+      }
+
+      public  byte[] getFirstPublicKeyBytes() { return firstPublicKeyBytes;}
+      public  byte[] getScondPublicKeyBytes() { return secondPublicKeyBytes;}
+
+      //other required methods for serialization omitted here:
+      //byte[] bytes()
+      //PropositionSerializer serializer();
+
     }
-
-    public  byte[] getFirstPublicKeyBytes() { return firstPublicKeyBytes;}
-    public  byte[] getScondPublicKeyBytes() { return secondPublicKeyBytes;}
-
-    //other required methods for serialization omitted here:
-    //byte[] bytes()
-    //PropositionSerializer serializer();
-
-  }
 
 * Creating custom Proof interface 
   You can create a custom proof by implementing ``Proof<P extends Proposition>``, where *P* is the Proposition class that this Proof can open.
