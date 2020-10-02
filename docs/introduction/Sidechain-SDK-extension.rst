@@ -136,16 +136,74 @@ Custom Proof / Proposition creation
 A proposition is a locker for a box, and a proof is an unlocker for a box. How a box is locked and unlocked can be changed by the developer. For example, a custom box might require to be opened by two or more independent private keys. This kind of customization is achieved by defining custom Proposition and Proof.
 
 * Creating custom Proposition
-  You can create a custom proposition by implementing the ``ProofOfKnowledgeProposition<S extends Secret>`` interface. The generic parameter represents the kind of private key, e.g. one could use *PrivateKey25519*. With the example above, you would use two different public keys inside the proposition to lock the box: (EXAMPLE TBD) .. TODO
+  You can create a custom proposition by implementing the ``ProofOfKnowledgeProposition<S extends Secret>`` interface. The generic parameter S represents the kind of private key used to unlock the proposition, e.g. you could use *PrivateKey25519*. 
+  Let's see how you could declare a new kind of Proposition that accepts two different public keys, and that can be opened by just one of two corresponding private keys:
+  ::
+    
+    public final class MultiProposition implements ProofOfKnowledgeProposition<PrivateKey25519> {
+      
+      // Specify json attribute name for the firstPublicKeyBytes field.
+      @JsonProperty("firstPublicKey")
+      private final byte[] firstPublicKeyBytes;
+
+      // Specify json attribute name for the secondPublicKeyBytes field.
+      @JsonProperty("secondPublicKey")
+      private final byte[] secondPublicKeyBytes;
+
+      public MultiProposition(byte[] firstPublicKeyBytes, byte[] secondPublicKeyBytes) {
+          if(firstPublicKeyBytes.length != KEY_LENGTH)
+              throw new IllegalArgumentException(String.format("Incorrect firstPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, firstPublicKeyBytes.length));
+
+          if(secondPublicKeyBytes.length != KEY_LENGTH)
+              throw new IllegalArgumentException(String.format("Incorrect secondPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, secondPublicKeyBytes.length));
+
+          this.firstPublicKeyBytes = Arrays.copyOf(firstPublicKeyBytes, KEY_LENGTH);
+          this.secondPublicKeyBytes = Arrays.copyOf(secondPublicKeyBytes, KEY_LENGTH);
+      }
+
+      public  byte[] getFirstPublicKeyBytes() { return firstPublicKeyBytes;}
+      public  byte[] getScondPublicKeyBytes() { return secondPublicKeyBytes;}
+
+      //other required methods for serialization omitted here:
+      //byte[] bytes()
+      //PropositionSerializer serializer();
+
+    }
 
 * Creating custom Proof interface 
-  You can create a custom proof by implementing ``Proof<P extends Proposition>``, where ``P`` is an appropriate Proposition class. The ``boolean isValid(P proposition, byte[] messageToVerify);`` function also needs to be implemented. It's a function that checks and states whether Proof is valid for a given Proposition or not. For example, in the case of Proposition with two different public keys, we could try to verify the message using public keys in Proposition one by one and return true if Proof had been created by one of the expected private keys.
+  You can create a custom proof by implementing ``Proof<P extends Proposition>``, where *P* is the Proposition class that this Proof can open.
+  You also need to implement the ``boolean isValid(P proposition, byte[] messageToVerify);`` function; it checks and states whether Proof is valid for a given Proposition or not. For example, the Proof to open the "two public keys" Proposition shown above could be coded this way:
+
+  ::
+
+    public class MultiSpendingProof extends Proof<MultiProposition> {
+
+          protected final byte[] signatureBytes;
+
+          public MultiSpendingProof(byte[] signatureBytes) {
+              this.signatureBytes = Arrays.copyOf(signatureBytes, signatureBytes.length);
+          }
+
+          @Override
+          public boolean isValid(MultiProposition proposition, byte[] message) {
+              return (
+                Ed25519.verify(signatureBytes, message, proposition.getFirstPublicKeyBytes()) || 
+                Ed25519.verify(signatureBytes, message, proposition.getSecondPublicKeyBytes()
+                );
+          }
+
+          //other required methods for serialization omitted here:
+          //byte[] bytes();
+          //ProofSerializer serializer();
+          //byte proofTypeId();
+    }
+
 
 Application State
 ###########################
 
 If we consider the representation of a blockchain in a node as a finite state machine, then the application state can be seen as the state of all the "registers" of the machine at the present moment. The present moment starts when the most recent block is received (or forged!) by the node, and ends when a new one is received/forged. A new block updates the state, so it needs to be checked for both semantic and contextual validity; if ok, the state needs to be updated according to what is in the block.
-A customized blockchain will likely include custom data and transactions. The ApplicationState interface needs to be extended to code the rules that state validity of blocks and transactions, and the actions to be performed when a block modifies the state, and when it is removed (blocks can be reverted):
+A customized blockchain will likely include custom data and transactions. The ApplicationState interface needs to be extended to code the rules that state validity of blocks and transactions, and the actions to be performed when a block modifies the state ("onApplyChanges"), and when it is removed ("onRollback", blocks can be reverted!):
 
 ApplicationState:
 ::
@@ -162,25 +220,29 @@ ApplicationState:
 An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can represent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
 
 Then, the developer could implement the needed custom state checks in the following way:
+    ::
 
-  * Custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node.
+      public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) 
+
+  * Custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid. This method is called either before including a transaction inside the memory pool or before accepting a new block from the network.
     ::
 
       public boolean validate(SidechainStateReader stateReader, SidechainBlock block)  
     
   
-  * Custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid and will not be included in the memory pool.
+  * Custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node. Note that each transaction contained in the block had been already validated by the previous method, so here you should include only block-related checks (e.g. check that two different transactions in the same block don't declare the same VIN car)
     ::
 
       public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)
 
   * Any specific action to be performed after applying the block to the State should be defined here.
+
     ::
 
       public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)
     
   
-  * Any specific action after a rollback of the state (for example, in case of fork/invalid block) should be defined here.
+  * Any specific action after a rollback of the state (for example, in case of fork/reverted block) should be defined here.
     ::
 
       public Try<ApplicationState> onRollback(byte[] version)
