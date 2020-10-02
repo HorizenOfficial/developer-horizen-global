@@ -88,13 +88,13 @@ Because the SDK is based on Scorex, it implements the Scorex pattern for data se
 
 This interface defines two methods:
 
-- ```byte[] bytes()``` - returns a bytearray representing the object
-- ```Serializer serializer()``` - returns the class responsible to parse and write the object through Scorex Reader and Writer, which are wrappers on byte streams
+- ``byte[] bytes()`` - returns a bytearray representing the object
+- ``Serializer serializer()`` - returns the class responsible to parse and write the object through Scorex Reader and Writer, which are wrappers on byte streams
 
 The SDK provides basic serializer interfaces for its objects (for example `BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ for BoxData, `TransactionSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/TransactionSerializer.java>`_ for Transactions), ready to be extended when writing specific custom serializers.
 
 We also need to instruct the dependency injection system on what appropriate serializer must be used for each object: this must be performed inside the AppModule configure() method, by adding key-value maps: the key is the specific type-id of each object (each object type must declare a unique type id), and the value is the serializer instance to be used for that object.
-There are separate maps for each class of object (one for Boxes, one for BoxDatas, one for Transactions and so on). Please refer to the SDK extension section for more information.
+There are separate maps for each class of object (one for Boxes, one for BoxData, one for Transactions and so on). Please refer to the SDK extension section for more information.
 
 
 SidechainNodeView

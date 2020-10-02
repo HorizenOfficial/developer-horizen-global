@@ -2,297 +2,150 @@
 Sidechains SDK extension
 ========================
 
-
-Data serialization
-##################
-
-Any data like **Box**/**BoxData**/**Secret**/**Proposition**/**Proof**/**Transaction** shall provide a way to  serialize itself to bytes and provide a way to parse it from bytes.
-Serialization is performed via a special Serializer class. Any custom data needs to define its own Serializer and definition of parsing/serializing
-and needs to declare those Serializers for the SDK. Thus SDK will be able to use proper Serializer for custom data. The steps to describe serialization/parsing for some
-CustomData are the following:
-
-* Implement `BytesSerializable <https://github.com/ScorexFoundation/Scorex/blob/master/src/main/scala/scorex/core/serialization/BytesSerializable.scala>`_ interface for *CustomData*, i.e.  ``functions byte[] bytes()`` and ``Serializer serializer()`` (which shall return CustomDataSerializer), also implement ``public static CustomData parseBytes(byte[] bytes)`` function for parsing from bytes
-* Create ``CustomDataSerializer`` and implement ``ScorexSerializer interface``, i.e. functions  ``void serialize(CustomData customData, Writer writer)`` and ``CustomData parse(Reader reader)``;
-* Provide a unique id for that data type by implementing a special function. List of data type and appropriate functions is next:
-
-+-------------------------------+---------------------------+
-| Data type / Base class        | Function to be overridden |
-+===============================+===========================+
-| interface Box                 | byte boxTypeId()          |
-+-------------------------------+---------------------------+
-| interface NoncedBoxData       | byte boxDataTypeId()      |
-+-------------------------------+---------------------------+
-| interface Proof               | byte proofTypeId()        |
-+-------------------------------+---------------------------+
-| interface Secret              | byte secretTypeId()       |
-+-------------------------------+---------------------------+
-| abstract class BoxTransaction | byte transactionTypeId()  |
-+-------------------------------+---------------------------+
-
-
-* In your AppModule class (i.e. class which extends  ```AbstractModule```, in SimpleApp it is ```SimpleAppModule```) define Custom Serializer map, for example for boxes it could be ```Map<Byte, BoxSerializer<Box<Proposition>>> customBoxSerializers = new HashMap<>();``` where key is data type id and value is CustomSerializer for those data type id.
-  
-* Add your custom serializer to the map, for example it could be something  ```like customBoxSerializers.put((byte)MY_CUSTOM_BOX_ID, (BoxSerializer) CustomBoxSerializer.getSerializer());```
-
-* Bind map with custom serializers to your application in the app model class:
-  ::
-
-   TypeLiteral<HashMap<Byte, Common serializer type>() {})
-         .annotatedWith(Names.named(Bound property name))
-         .toInstance(Created map with custom serializers);
-       
-Where **Common serializer type** and **Bound property name** can have the following values 
-
-
-+--------------------------------+----------------------------------------+
-| Bound property name            | Common serializer type                 |
-+================================+========================================+
-| CustomBoxSerializers           | BoxSerializer<Box<Proposition>>>       |  
-+--------------------------------+----------------------------------------+
-| CustomBoxDataSerializers       | NoncedBoxDataSerializer<NoncedBoxData  |
-|                                | <Proposition, NoncedBox<Proposition>>> |           
-+--------------------------------+----------------------------------------+
-| CustomSecretSerializers        | SecretSerializer<Secret>>              |           
-+--------------------------------+----------------------------------------+
-| CustomProofSerializers         | ProofSerializer<Proof<Proposition>>    |        
-+--------------------------------+----------------------------------------+
-| CustomTransactionSerializers   |  TransactionSerializer<BoxTransaction  |                                  
-|                                |  <Proposition, Box<Proposition>>>      |
-+--------------------------------+----------------------------------------+
-
-Example: 
-
-::
-
-  bind(new TypeLiteral<HashMap<Byte, BoxSerializer<Box<Proposition>>>>() {})
-       .annotatedWith(Names.named("CustomBoxSerializers"))
-       .toInstance(customBoxSerializers);
-
-Where
-
-* **BoxSerializer<Box<Proposition>>>** -- common serializer type
-* **"CustomBoxSerializers"** -- bound property name 
-* **customBoxSerializers** -- created map with all defined custom serializers.
+To build a distributed, blockchain application, a developer typically needs to do more than just receive, transfer, and send coins back to the mainchain, as you can do with the basic components provided out-of-the-box by the SDK. Usually, there is the need is to to define some custom data, that the sidechain users can process and exchange according to some defined logic. In this chapter, we'll see what are the steps that should be taken to code a sidechain which implements custom data and logic. In the next one, we'll look in detail at a specific, customized sidechain example.
 
 Custom box creation
 ###################
 
-  a) SDK Box extension Overview
+The first step of the development process of a distributed app implemented as a sidechain, is the representation of the needed data. In the SDK, application data are modeled as "Boxes". 
 
-To build a real application, a developer will need to do more than receive, transfer, and send coins back. A distributed app, built on a sidechain, will typically have to define some custom data that the sidechain users will be able to exchange according to a defined logic. The creation of new Boxes requires the definition of four new classes. We will use the name Custom Box as a definition for some abstract custom Box:  
+Every custom box should at least implement the ``com.horizen.box.NoncedBox`` interface. 
+The methods defined in the interface are the following:
 
+- ``long nonce()``
+  The nonce guarantees that two boxes having the same properties and values, produce different and unique ids.
+- ``long value()``
+  If the box type is a Coin-Box,  this value is required and will contain the coin value of the Box. 
+  In the case of a Non-Coin box, this value is still required, and could have a customized meaning chosen by the developer, or no meaning, i.e. not used. In the latter case, by convention is generally set to 1.
+- ``Proposition proposition()``  
+  should return the proposition that locks this box.
+  The proposition that is used in the SDK examples is `com.horizen.proposition.PublicKey25519Proposition <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/proposition/PublicKey25519Proposition.java>`_; it's based on `Curve 25519 <https://en.wikipedia.org/wiki/Curve25519>`_, a fast and secure elliptic curve used by Horizen mainchain. A developer may want to define and use custom propositions.
+- ``byte[] id()``
+  should return a unique identifier of each box instance.
+- ``byte[] bytes()``
+  should return the byte representation of this box.
+- ``BoxSerializer serializer()``
+  should return the serializer of the box (see below).
+- ``byte boxTypeId()``
+  should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
 
-+--------------------------------------+------------------------------------------------------------------------------------+
-| Class type                           | Class description                                                                  |
-+======================================+====================================================================================+
-| Custom Box Data class                | -- Contains all custom data definitions plus proposition for Box                   |
-|                                      | -- Provides required information for serialization of Box Data                     |
-|                                      | -- Defines the way to create a new Custom Box from current Custom Box Data         |
-+--------------------------------------+------------------------------------------------------------------------------------+
-| Custom Box Data Serializer Singleton | -- Defines how to parse bytes from Reader into Custom Box Data object              |
-|                                      | -- Defines the way to put boxData object into Writer Parsing function used in a    |
-|                                      | Serializer class can be put in that class as well. However, it can be defined      |
-|                                      | somewhere else                                                                     |
-+--------------------------------------+------------------------------------------------------------------------------------+
-| Custom Box                           | Representation new entity in Sidechain, contains appropriate Custom Box Data class |
-+--------------------------------------+------------------------------------------------------------------------------------+
-| Custom Box Serializer Singleton      | -- Defines how to parse bytes from Reader into Box object                          |
-|                                      | -- Defines the way how to put boxData object into Writer Parsing function used in a|
-|                                      | Serializer class can be put in that class as well. However, it can be defined      |
-|                                      | somewhere else                                                                     |
-+--------------------------------------+------------------------------------------------------------------------------------+
+As a common design rule, you usually do not implement the NoncedBox interface directly, but extend instead the abstract class `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, which already provides default implementations of 
+some useful methods like ``id()``, ``equals()`` and ``hashCode()``.
+This class requires the definition of another object: a class extending `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractNoncedBoxData as an inner container of all the fields of your box.
+This data object must be passed in the constructor of AbstractNoncedBox, along with the nonce.
+The important methods of AbstractNoncedBoxData that need to be implemented are:
 
-Custom Box Data class creation
-##############################
+- ``byte[] customFieldsHash()``
+  Must return a hash of all custom data values, otherwise those data will not be "protected," i.e., some malicious actor can change custom data during transaction creation. 
+- ``Box getBox(long nonce)`` 
+  creates a new Box containing this BoxData for a given nonce.
+- ``NoncedBoxDataSerializer serializer()``
+  should return the serializer of this box data (see below)
 
-The SDK provides a base class for any Box Data class: 
-
-::
-
-  AbstractNoncedBoxData<P extends Proposition, B extends AbstractNoncedBox<P, BD, B>, BD extends AbstractNoncedBoxData<P, B, BD>>
-
-
-**where**
-
-``P extends Proposition`` -- Proposition type for the box, for common purposes ``PublicKey25519Proposition`` can be used as it used in regular boxes
-  
-``BD extends AbstractNoncedBoxData<P, B, BD>`` -- Definition of type for Box Data which contains all custom data for a new custom box
-
-``B extends AbstractNoncedBox<P, BD, B>`` -- Definition of type for Box itself, required for description inside of new Custom Box data 
-
-
-That base class provides the following data by default:
-
-::
-
-  proposition of type P long value
-
-If the box type is a Coin-Box, then this value is required and will contain data such as coin value. In the case of a Non-Coin box it will be used in custom logic only. As a common practice for non-Coin box you can set it always equal to 1 
-
-So the creation of new Custom Box Data takes place as follows:
-::
-  public class CustomBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CustomBox, CustomBoxData>
-
-The new custom box data class requires the following:
-
-1. Custom data definition
-  * Custom data itself
-  * Hash of all added custom data shall be returned in "public byte[] customFieldsHash() "function, otherwise, custom data will not be "protected," i.e., some malicious actor can change custom data during transaction creation.  
-    
-2. Serialization definition
-  * Serialization to bytes shall be provided by Custom Box Data by overriding and implementing the method ``public byte[] bytes()`` this function serializes the proposition, value and any added custom data.
-  * Additionally definition of Custom Box Data id for serialization by overriding ``public byte boxDataTypeId()`` function, please check the serialization section for more information about using ids. 
-  * Override ``public NoncedBoxDataSerializer serializer()`` function with proper **Custom Box Data serializer**. Parsing Custom Box Data from bytes can be defined in that class as well, please refer to the serialization section for more information about it
-
-3. Custom Box creation
-  * Any Box Data class shall provide the way how to create a new Box for a given nonce. For that purpose override the function 
-    ::
-     public CustomBox getBox(long nonce) 
-
-Custom Box Data Serializer class creation
+BoxSerializer and NoncedBoxDataSerializer
 #########################################
 
-The SDK provides a base class for Custom Box Data Serializer
-``NoncedBoxDataSerializer<D extends NoncedBoxData>`` where **D** is type of serialized Custom Box Data
+Each box must define its own serializer and return it from the ``serializer()`` method.
+The serializer is responsible to convert the box into bytes, and parse it back later. It should implement the `com.horizen.box.BoxSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ interface, which defines two methods:
 
-So creation of a Custom Box Data Serializer can be done in following way:
-::
- public class CustomBoxDataSerializer implements NoncedBoxDataSerializer<CustomBoxData>
+- void ``serialize(Box box, scorex.util.serialization.Writer writer)``
+  writes the box content into a Scorex writer  
+- Box ``parse(scorex.util.serialization.Reader reader)``
+  perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-The new Custom Box Data Serializer requires the following:
+Also any instance of AbstractNoncedBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.NoncedBoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/NoncedBoxDataSerializer.java>`_
 
-  1. Definition of a function for writing Custom Box Data into the Scorex Writer by implementation of the following method.
-     ::
-      public void serialize(CustomBoxData boxData, Writer writer)
-
-  2. Definition of a function for reading Custom Box Data from Scorex *Reader* by implementation of the function 
-     ::
-      public CustomBoxData parse(Reader reader)
-
-  3. Class shall be converted to singleton. For example, this can be done as follows:
-
-     ::
-        
-      private static final CustomBoxDataSerializer serializer = new CustomBoxDataSerializer();
-
-      private CustomBoxDataSerializer() {
-      super();
-      }
-
-      public static CustomBoxDataSerializer getSerializer() {
-      return serializer;
-      }
-  
-Custom Box class creation
-#########################
-
-The SDK provides a base class for creation of a Custom Box:
-::
- public class CustomBox extends AbstractNoncedBox<PublicKey25519Proposition, CustomBoxData, CustomBoxBox>
-
-As parameters for **AbstractNoncedBox** three template parameters shall be provided:
-::
- P extends Proposition
-
-- Proposition type for the box, for common purposes. ``PublicKey25519Proposition`` could be used as it is used in regular boxes
-  ::
-   BD extends AbstractNoncedBoxData<P, B, BD>
-   
-- Definition of type for Box Data which contains all custom data for a new custom box
-  ::
-   B extends AbstractNoncedBox<P, BD, B>
-
-- The definition of the type for the box itself is required for the description inside of the new Custom Box Data.
-  
-  
-The Custom Box itself requires implementation of following functionality:
-
-  1. Serialization definition
-
-    * The box itself provides the way to be serialized into bytes, thus function ``public byte[] bytes()`` shall be implemented 
-    * Method for creation of a new Car Box object from bytes ``public static CarBox parseBytes(byte[] bytes)``
-    * Providing box type id by implementation of function  ``public byte boxTypeId()`` which return custom box type id. Finally, proper serializer for the Custom Box shall be returned by implementing function ``public BoxSerializer serializer()``
-
-Custom Box Serializer Class
-###########################
-
-SDK provide base class for Custom Box Serializer BoxSerializer<B extends Box> where B is type of serialized Custom Box
-So the creation of Custom Box Serializer can be done in the following way:
-::
- public class CustomBoxSerializer implements NoncedBoxSerializer<CustomBox>
-
-The new Custom Box Serializer requires the following:
-
-  1. Definition of function for writing *Custom Box* into the *Scorex Writer* by implementation of the following.
-     ::
-      public void serialize(CustomBox box, Writer writer)
-
-  2. Definition of function for reading *Custom Box* from *Scorex Reader* by implementation of the following method
-     ::
-      public CustomBox parse(Reader reader)
-
-  3. Class shall be converted to singleton, for example it could be done in following way:
-     ::
-      private static final CustomBoxSerializer serializer = new CustomBoxSerializer();
-      private CustomBoxSerializer() {
-       super();
-      }
-      public static CustomBoxSerializer getSerializer() {
-       return serializer;
-      }
-      
       
 Specific actions for extension of Coin-box
 ###########################################
 
-A Coin box is created and extended as a usual non-coin box, only one additional action is required: *Coin box class* shall also implement interface ``CoinsBox<P extends PublicKey25519Proposition>`` interface without any additional function implementations, i.e., it is a mixin interface.
+A Coin Box is a Box that has a value in ZEN. The creation process is the same just described, with only one extra action: a *Coin box class* needs to implement the ``CoinsBox<P extends PublicKey25519Proposition>`` interface, without the implementation of any additional function (i.e. it's a mixin interface).
+
 
 Transaction extension
 #####################
 
-A transaction in the SDK is represented by the following class.
-::
- public abstract class BoxTransaction<P extends Proposition, B extends Box<P>>
- 
-This class provides access to data such as which boxes will be created, unlockers for input boxes, fees, etc. the 
-SDK developer could add a custom transaction check by implementing *custom ApplicationState* 
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. To define a new custom transaction, you have to extend the `com.horizen.transaction.BoxTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/BoxTransaction.java>`_ class.
+The most relevant methods of this class are detailed below:
 
-Any custom transaction shall implement three important functions:
-``public boolean transactionSemanticValidity()`` -- this function defines if a transaction is semantically valid or not, i.e. verify stateless (without context) transaction correctness. Non-zero fee and positive timestamp are examples of such verification.
+- ``public List<BoxUnlocker<Proposition>> unlockers()``
 
-``public List<BoxUnlocker<Proposition>> unlockers()`` -- The SDK core does box opening verification by checking proofs against input box ids. However, information about closed boxes and proofs for that box shall be returned separately by each transaction. For such purposes, each transaction shall return a list of `unlockers <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxUnlocker.java>`_ which are implemented by the following interface:
-::
-  public interface BoxUnlocker<P extends Proposition>
-  {
-    byte[] closedBoxId();
-    Proof<P> boxKey();
-  }
+  Defines the list of Boxes that are opened when the transaction is executed, together with the information (Proof) needed to open them.
+  Each element of the returned list is an instance of BoxUnlocker, which is an interface with two methods:
 
-Where *closedBoxId* is the id of the closed box and *boxKey* is correct proof for that box.
+  ::
 
-``public List<NoncedBox<Proposition>> newBoxes()`` -- function returns list of new boxes which shall be created by current transaction. Be aware that due to some internal implementation of SDK that function must be implemented in the following way:
-::
- @Override
- public List<NoncedBox<Proposition>> newBoxes() {
-   if(newBoxes == null) {
-   //new boxes are created here, newBoxes shall be updated by those new boxes
-       }
-   }
-   return Collections.unmodifiableList(newBoxes);
- }
+    public interface BoxUnlocker<P extends Proposition>
+    {
+      byte[] closedBoxId();
+      Proof<P> boxKey();
+    }
+
+  The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the the process requires to spend the box and create a new one with the updated values.
+
+- ``public List<NoncedBox<Proposition>> newBoxes()``
+
+  This function returns the list of new boxes which will be created by the current transaction. 
+  As a good practice, you should use the ``Collections.unmodifiableList()`` method to wrap the returned list into a not updatable Collection:
+
+  ::
+
+    @Override
+    public List<NoncedBox<Proposition>> newBoxes() {
+      List<NoncedBox<Proposition>> newBoxes =  .....  //new boxes are created here  
+      //....
+      return Collections.unmodifiableList(newBoxes);
+    }   
+
+- ``public long fee()``
+  Returns the fee to be paid to execute this transaction.
+
+- ``public long timestamp()``
+  Returns the timestamp of the transaction creation.
+  As a good practice, timestamp should be created outside transaction, passed in the transaction's constructor, and returned here.
+
+- ``public byte transactionTypeId()``
+  Returns the type of this transaction. Each custom transaction must have its own unique type.
+
+- ``public boolean transactionSemanticValidity()``
+  Confirms if a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
+  This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
+
+Apart from the semantic check, the Sidechain will need to make also sure that all transactions are compliant with the application logic and syntax. Such checks need to be implemented in the ``validate()`` method of the ``custom ApplicationState`` class.
+
+Transactions that process Coins
+-------------------------------
+
+| A key element of sidechains is the ability to trade ZEN. 
+| ZEN are represented as Coin boxes, that can be spent and created. 
+Transactions handling coin boxes will generally perform some basic, standard operations, such as: 
+
+- select and collect a list of coin boxes in input which sum up to a value that is equal or higher than the amount to be spent plus fee
+
+- create a coin box with the change
+
+- check that the sum of the input boxes + fee is equal to the sum of the output coin boxes. 
+
+Inside the Lambo-registry demo application, you can find an example of implementation of a transaction that handles regular coin boxes and implements the basic operations just mentioned: `io.horizen.lambo.car.transaction.AbstractRegularTransaction <https://github.com/HorizenOfficial/lambo-registry/blob/master/src/main/java/io/horizen/lambo/car/transaction/AbstractRegularTransaction.java>`_. 
+Please note that, in a decentralized environment, transactions generally require the payment of a fee, so that their inclusion in a block can be rewarded and so incentivised. So, even if a transaction is not meant to process coin boxes, it still needs to handle coins to pay its fee.
+
 
 Custom Proof / Proposition creation
 ###################################
 
-A proposition is a locker for a box, and a proof is an unlocker for a box. The manner in which a box is locked/unlocked can be changed by the developer. For example, a special box can be opened by two or more independent private keys. For this reason, a custom Proof/Proposition can be created.
+A proposition is a locker for a box, and a proof is an unlocker for a box. How a box is locked and unlocked can be changed by the developer. For example, a custom box might require to be opened by two or more independent private keys. This kind of customization is achieved by defining custom Proposition and Proof.
 
 * Creating custom Proposition
-  To create a custom proposition  ``ProofOfKnowledgeProposition<S extends Secret>`` interface shall be implemented. The generic parameter is a marker for the type of private key. For example, *PrivateKey25519* could be used. Inside the proposition, we could use two different public keys to lock the box.
+  You can create a custom proposition by implementing the ``ProofOfKnowledgeProposition<S extends Secret>`` interface. The generic parameter represents the kind of private key, e.g. one could use *PrivateKey25519*. With the example above, you would use two different public keys inside the proposition to lock the box: (EXAMPLE TBD) .. TODO
 
-* Creating custom Proof interface ``Proof<P extends Proposition>`` shall be implemented where *P* is an appropriate Proposition class. ``Function boolean isValid(P proposition, byte[] messageToVerify);`` shall be implemented. That function defines whether Proof is valid for a given proposition and Proof or not. For example, in the case of Proposition with two different public keys, we could try to verify the message using public keys in Proposition one by one and return true if Proof had been created by one of the expected private keys.
+* Creating custom Proof interface 
+  You can create a custom proof by implementing ``Proof<P extends Proposition>``, where ``P`` is an appropriate Proposition class. The ``boolean isValid(P proposition, byte[] messageToVerify);`` function also needs to be implemented. It's a function that checks and states whether Proof is valid for a given Proposition or not. For example, in the case of Proposition with two different public keys, we could try to verify the message using public keys in Proposition one by one and return true if Proof had been created by one of the expected private keys.
 
-ApplicationState and Wallet
+Application State
 ###########################
+
+If we consider the representation of a blockchain in a node as a finite state machine, then the application state can be seen as the state of all the "registers" of the machine at the present moment. The present moment starts when the most recent block is received (or forged!) by the node, and ends when a new one is received/forged. A new block updates the state, so it needs to be checked for both semantic and contextual validity; if ok, the state needs to be updated according to what is in the block.
+A customized blockchain will likely include custom data and transactions. The ApplicationState interface needs to be extended to code the rules that state validity of blocks and transactions, and the actions to be performed when a block modifies the state, and when it is removed (blocks can be reverted):
 
 ApplicationState:
 ::
@@ -306,118 +159,167 @@ ApplicationState:
   Try<ApplicationState> onRollback(byte[] version);
   }
 
-For example, the custom application may have the possibility to tokenize cars by the creation of box entries - let's call them CarBox. Each CarBox token should represent a unique car by having a unique VIN (Vehicle Identification Number). To do this, the sidechain developer may define the ApplicationState to store the list of VINs and reject transactions with CarBox tokens with any preexisting VINs.
+An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can represent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
 
-The next custom state checks could be done here:
+Then, the developer could implement the needed custom state checks in the following way:
 
-  * ``public boolean validate(SidechainStateReader stateReader, SidechainBlock block)`` -- any custom block validation could be done here. If the function returns false, then the block will not be accepted by the sidechain node.
-  
-  * ``public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)`` -- any custom checks for the transaction could be done here. If the function returns false, then the transaction is assumed as invalid and, for example, will not be included in a memory pool. 
+  * Custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node.
+    ::
 
-  * ``public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)`` -- any specific action after block applying in State could be defined here.
+      public boolean validate(SidechainStateReader stateReader, SidechainBlock block)  
+    
   
-  * ``public Try<ApplicationState> onRollback(byte[] version)`` -- any specific action after a rollback of the state (for example, in case of fork/invalid block) could be defined here.
+  * Custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid and will not be included in the memory pool.
+    ::
+
+      public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)
+
+  * Any specific action to be performed after applying the block to the State should be defined here.
+    ::
+
+      public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove)
+    
   
+  * Any specific action after a rollback of the state (for example, in case of fork/invalid block) should be defined here.
+    ::
+
+      public Try<ApplicationState> onRollback(byte[] version)
+    
+  
+
 Application Wallet 
 ##################
 
-The wallet keeps user secret info and related balances b default. The data is updated when a new block is applied to the chain or when blocks are reverted. Developers can specify custom secret types that will be processed by the wallet. The developer may extend the logic using `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
+Every sidechain node has a local wallet associated to it, in a similar way as the mainchain Zend node wallet.
+The wallet stores the user secret info and related balances. It is initialized with the genesis account key and the ZEN amount transferred by the sidechain creation transaction.
+New private keys can be added by calling the http endpoint /wallet/createPrivateKey25519.
+The local wallet data is updated when a new block is added to the sidechain, and when blocks are reverted. 
+
+Developers can extend Wallet logic by defining a class that implements the interface `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
+The interface methods are listed below:
+
 ::
+
   interface ApplicationWallet {
     void onAddSecret(Secret secret);
     void onRemoveSecret(Proposition proposition);
-    void onChangeBoxes(byte[] version, List<Box<Proposition>> boxesToUpdate, List<byte[]> boxIdsToRemove);
+    void onChangeBoxes(byte[] version, List<Box<Proposition>> boxesToBeAdded, List<byte[]> boxIdsToRemove);
     void onRollback(byte[] version);
   }
 
-For example, a developer needs to have event-based data, like an auction slot, that belongs to them and starts in 10 blocks and will expire in 100 blocks. The developer will keep this event-based info in the ApplicationWallet. THe developer will set the data to react by activating or deactivating a slot in ApplicationWallet when a new block is about to be applied (onChangeBoxes method execution).
+As an example, the onChangeBoxes method gets called every time new blocks are added or removed from the chain; it can be used to implement for instance the update to a local storage of values that are modified by the opening and/or creation of specific box types.
+
 
 Custom API creation 
 ###################
 
-  Steps to extend the API:
-  
-    1. Create a class (e.g. MyCustomApi) which extends the ApplicationApiGroup abstract class (you could create multiple classes, for example, to group functions by functionality).
+A user application can extend the default standard API (see chapter 6) and add custom API endpoints. For example if your application defines a custom transaction, you may want to add an endpoint that creates one.
 
-    2. In a class where all dependencies are declared (e.g. SimpleAppModule in our Simple App example ), we need to create the following variable: ``List<ApplicationApiGroup> customApiGroups = new ArrayList<>();``
+To add custom API you have to create a class which extends the com.horizen.api.http.ApplicationApiGroup abstract class, and implements the following methods:
 
-    3. Create a new instance of the class MyCustomApi, and then add it to *customApiGroups* 
+-  ``public String basePath()``
+   returns the base path of this group of endpoints (the first part of the URL)
 
-At this point, MyCustomApi will be included in the API route, but we still need to declare the HTTP address. To do that:
+-  ``public List<Route> getRoutes()``
+   returns a list of Route objects: each one is an instance of a `akka.Http Route object <https://doc.akka.io/docs/akka-http/current/routing-dsl/routes.html>`_ and defines a specific endpoint url and its logic.
+   To simplify the developement, the ApplicationApiGroup abstract class provides a method (bindPostRequest) that builds a akka Route that responds to a specific http request with an (optional) json body as input. This method receives the following parameters:
+   
+   - the endpoint path
 
-  1. Override the basepath() method -
-     ::   
-      public String basePath() {
-       return "myCustomAPI";
-      }
+   - the function to process the request 
 
-Where "myCustomAPI" is part of the HTTP path for that API group 
-
-  2.  Define HTTP request classes -- i.e. the JSON body in the HTTP request will be converted to that request class. For example, if as “request” we want to use byte array data with some integer value, we could define the following class:
-  
-  ::
-  
-    public static class MyCustomRequest {
-     byte[] someBytes;
-     int number;
-
-    public byte[] getSomeBytes(){
-     return someBytes;
-    }
-
-    public void setSomeBytes(String bytesInHex){
-     someBytes = BytesUtils.fromHexString(bytesInHex);
-    }
-
-    public int getNumber(){
-     return number;
-    }
-
-    public void setNumber(int number){
-    this.number = number;
-    }
-    }
-
-Setters are defined to expect data from JSON. So, for the given MyCustomRequest we could use this JSON: 
-
+   - the class that represents the input data received by the  HTTP request call 
+   
+   Example:
     ::
+
+      public List<Route> getRoutes() {
+            List<Route> routes = new ArrayList<>();
+            routes.add(bindPostRequest("createCar", this::createCar, CreateCarBoxRequest.class));
+            routes.add(bindPostRequest("createCarSellOrder", this::createCarSellOrder, CreateCarSellOrderRequest.class));
+            routes.add(bindPostRequest("acceptCarSellOrder", this::acceptCarSellOrder, SpendCarSellOrderRequest.class));
+            routes.add(bindPostRequest("cancelCarSellOrder", this::cancelCarSellOrder, SpendCarSellOrderRequest.class));
+            return routes;
+        }
+
+    Let's look in more details at the 3 parameters of the bindPostRequest method.
+
+    - The endpoint path: 
+      defines the endpoint path, that appended to the basePath will represent the http endpoint url.
+       | For example, if your API group has a basepath = "carApi", and you define a route with endpoint path "createCar", the overall url will be: ``http://<node_host>:<api_port>/carAPi/createCar``
+
+    - The function to process the request:
+      Currently we support three types of function’s signature:
     
-      {
-      "number": "342",
-      "someBytes": "a5b10622d70f094b7276e04608d97c7c699c8700164f78e16fe5e8082f4bb2ac"
-      }
+        * ApiResponse ``custom_function_name(Custom_HTTP_request_type)`` -- a function that by default does not have access to *SidechainNodeView*. 
 
- And it will be converted to an instance of the *MyCustomRequest* class with vin = 342, and someBytes = bytes which are represented by hex string "a5b10622d70f094b7276e04608d97c7c699c8700164f78e16fe5e8082f4bb2ac"
+        * ``ApiResponse custom_function_name(SidechainNodeView, Custom_HTTP_request_type)`` -- a function that offers by default access to SidechainNodeView
+        
+        * ``ApiResponse custom_function_name(SidechainNodeView)`` -- a function to process empty HTTP requests, i.e. endpoints that can be called without a JSON body in the request
 
+        The format of the ApiResponse to be returned will be described later in this chapter.
 
-  3. Define a function to process the HTTP request: Currently we support three types of function’s signature:
-  
-      * ApiResponse ``custom_function_name(Custom_HTTP_request_type)`` -- a function that by default does not have access to *SidechainNodeView*. To have access to *SidechainNodeViewHolder*, this special call should be used: ``getFunctionsApplierOnSidechainNodeView().applyFunctionOnSidechainNodeView(Function<SidechainNodeView, T> function)``
+    - The class that represents the body in the HTTP request
       
-      * ``ApiResponse custom_function_name(SidechainNodeView, Custom_HTTP_request_type)`` -- a function that offers by default access to SidechainNodeView
-      
-      * ``ApiResponse custom_function_name(SidechainNodeView)`` -- a function to process empty HTTP requests, i.e. JSON body shall be empty
-      
-Inside those functions, all required action could be defined, and with them also function response results. Responses could be based on *SuccessResponse* or *ErrorResponse* interfaces. The JSON response will be formatted by using the defined getters.  
+      | This needs to be a java bean, defining some private fields and  getter and setter methods for each field.
+      | Each field in the json input will be mapped to the corresponding field by name-matching.
+      | For example to handle the  following json body :
+      ::
+        
+        {
+        "number": "342",
+        "someBytes": "a5b10622d70f094b7276e04608d97c7c699c8700164f78e16fe5e8082f4bb2ac"
+        }
 
-  4. Add response classes
+      you should code a request class like this one:
+      ::
 
-The result will be sent back via HTTP response as an outcome of an API request. In a most cases, we could have two different responses: operation is successful, or an error had appeared during processing the API request. The SDK provides the following way to declare those API responses:
-For a successful response, implement SuccessResponse interface with data to be returned. That data shall be accessible via getters. Also, that class shall have the next annotation required for marshaling and correct conversion to JSON: ``@JsonView(Views.Default.class)``. The developer can define here some other custom class for JSON marshaling. For example, if a string should be returned, then the following response class can be defined:
+        public class MyCustomRequest {
+          byte[] someBytes;
+          int number;
+
+          public byte[] getSomeBytes(){
+            return someBytes;
+          }
+
+          public void setSomeBytes(String bytesInHex){
+            someBytes = BytesUtils.fromHexString(bytesInHex);
+          }
+
+          public int getNumber(){
+            return number;
+          }
+
+          public void setNumber(int number){
+            this.number = number;
+          }
+        }
+
+API response classes
+
+The function that processes the request must return an object of type com.horizen.api.http.ApiResponse.
+In most cases, we can have two different responses: either the operation is successful, or an error has occurred during the API request processing. 
+
+For a successful response, you have to:
+- define an object implementing the  SuccessResponse interface
+- add the annotation  @JsonView(Views.Default.class) on top of the class, to allow the automatic conversion of the object into a json format.
+- add some getters representing the values you want to return.
+
+ For example, if a string should be returned, then the following response class can be defined:
 
   ::
   
     @JsonView(Views.Default.class)
     class CustomSuccessResponce implements SuccessResponse{
-    private final String response;
+      private final String response;
 
-    public CustomSuccessResponce (String response) {
-    this.response = response;
-    }
+      public CustomSuccessResponce (String response) {
+        this.response = response;
+      }
 
-    public String getResponse() {
-    return response;
-    }
+      public String getResponse() {
+        return response;
+      }
     }
 
 In such a case, the API response will be represented in the following JSON format:
@@ -425,6 +327,8 @@ In such a case, the API response will be represented in the following JSON forma
   ::
   
     {"result": {“response” : “response from CustomSuccessResponse object”}}
+
+
     
 If an error is returned, then the response will implement the ErrorResponse interface. The ErrorResponse interface has the following default functions implemented:
 
@@ -439,30 +343,22 @@ As a result the following JSON will be returned in case of error:
   ::
   
     {
-    "error": {
-    "code": "Defined error code",
-    "description": "Defined error description",
-    "Detail": “Exception stack trace”
+      "error": 
+      {
+      "code": "Defined error code",
+      "description": "Defined error description",
+      "Detail": “Exception stack trace”
+      }
     }
-    }
-    
-  5. Add defined route processing functions to route
 
-  Override ``public List<Route> getRoutes() function`` by returning all defined routes, for example:
+  
+Custom api group injection:
 
-    ::
-      
-      List<Route> routes = new ArrayList<>();
-      routes.add(bindPostRequest("getNSecrets", this::getNSecretsFunction, GetSecretRequest.class));
-      routes.add(bindPostRequest("getNSecretOtherImplementation", this::getNSecretOtherImplementationFunction, GetSecretRequest.class));
-      routes.add(bindPostRequest("getAllSecretByEmptyHttpBody", this::getAllSecretByEmptyHttpBodyFunction));
-      return routes;
-      
- Where 
+Finally, you have to instruct the SDK to use your ApiGroup.
+This can be done with Guice, by binding the ""CustomApiGroups" field:
+::
+
+   bind(new TypeLiteral<List<ApplicationApiGroup>> () {})
+         .annotatedWith(Names.named("CustomApiGroups"))
+         .toInstance(mycustomApiGroups);
  
- ``getNSecrets``, ``getNSecretOtherImplementation``, ``getAllSecretByEmptyHttpBody`` are defined API end points; ``this::getNSecretsFunction``, ``this::getNSecretOtherImplementationFunction``, ``getAllSecretByEmptyHttpBodyFunction`` binded functions;
-``GetSecretRequest.class`` -- class for defining type of HTTP request
-
-
-
-      
