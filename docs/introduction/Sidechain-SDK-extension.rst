@@ -174,28 +174,29 @@ A proposition is a locker for a box, and a proof is an unlocker for a box. How a
   You can create a custom proof by implementing ``Proof<P extends Proposition>``, where *P* is the Proposition class that this Proof can open.
   You also need to implement the ``boolean isValid(P proposition, byte[] messageToVerify);`` function; it checks and states whether Proof is valid for a given Proposition or not. For example, the Proof to open the "two public keys" Proposition shown above could be coded this way:
 
+  ::
 
-  public class MultiSpendingProof extends Proof<MultiProposition> {
+    public class MultiSpendingProof extends Proof<MultiProposition> {
 
-        protected final byte[] signatureBytes;
+          protected final byte[] signatureBytes;
 
-        public MultiSpendingProof(byte[] signatureBytes) {
-            this.signatureBytes = Arrays.copyOf(signatureBytes, signatureBytes.length);
-        }
+          public MultiSpendingProof(byte[] signatureBytes) {
+              this.signatureBytes = Arrays.copyOf(signatureBytes, signatureBytes.length);
+          }
 
-        @Override
-        public boolean isValid(MultiProposition proposition, byte[] message) {
-            return (
-              Ed25519.verify(signatureBytes, message, proposition.getFirstPublicKeyBytes()) || 
-              Ed25519.verify(signatureBytes, message, proposition.getSecondPublicKeyBytes()
-              );
-        }
+          @Override
+          public boolean isValid(MultiProposition proposition, byte[] message) {
+              return (
+                Ed25519.verify(signatureBytes, message, proposition.getFirstPublicKeyBytes()) || 
+                Ed25519.verify(signatureBytes, message, proposition.getSecondPublicKeyBytes()
+                );
+          }
 
-        //other required methods for serialization omitted here:
-        //byte[] bytes();
-        //ProofSerializer serializer();
-        //byte proofTypeId();
-  }
+          //other required methods for serialization omitted here:
+          //byte[] bytes();
+          //ProofSerializer serializer();
+          //byte proofTypeId();
+    }
 
 
 Application State
