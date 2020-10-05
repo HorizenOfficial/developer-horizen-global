@@ -33,4 +33,4 @@ From the terminal change directory to the root of the project and issue the foll
 
     After the build finishes you can open your browser and head to **[http://127.0.0.1:8100](http://127.0.0.1:8100)**.
 
-    This browser window will automatically refresh on every code edit to the local source files to allow you to see how the documentation would look like as if it were live on our system.
+    The browser window will automatically refresh on every code edit to the local source files to allow you to see how the documentation would look like as if it were live on our system.
