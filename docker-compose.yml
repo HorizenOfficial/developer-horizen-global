@@ -7,6 +7,8 @@ services:
     volumes:
       - ./docs:/etc/Sphinx/source
       - ./build:/etc/Sphinx/build
+    environment:
+      - IS_LOCAL_BUILD=1
     ports:
       - 8100:80
 

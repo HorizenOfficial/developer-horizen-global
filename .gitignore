@@ -2,3 +2,4 @@
 pre-edit-backups/
 .vscode/
 build/
+docs/local-config/conf.py
