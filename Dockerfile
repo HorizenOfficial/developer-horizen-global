@@ -9,5 +9,4 @@ RUN pip3 install git+https://github.com/sphinx-doc/sphinx && \
     pip3 install sphinxcontrib.httpdomain && \
     pip3 install sphinx-rtd-theme
 
-#CMD sphinx-autobuild -b html --host 0.0.0.0 --port 80 -c /etc/Sphinx/source/local-config /etc/Sphinx/source /etc/Sphinx/build
 CMD sphinx-autobuild -b html --host 0.0.0.0 --port 80 /etc/Sphinx/source /etc/Sphinx/build
