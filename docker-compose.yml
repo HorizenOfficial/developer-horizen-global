@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+  service_doc:
+    container_name: service_doc
+    build: .
+    volumes:
+      - ./docs:/etc/Sphinx/source
+      - ./build:/etc/Sphinx/build
+    ports:
+      - 8100:80
+
+    
+    
+
