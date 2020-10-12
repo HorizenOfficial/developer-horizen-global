@@ -9,7 +9,7 @@ assignees: mauriziobinello, zennermac
 
 **Is your feature request related to a specific page or section in the documentation?**
 
-Please either add a link to the page from **https://docs.horizen.global** or the filename from the source files here for example
+Please either add a link to the page from **https://docs.horizen.io** or the filename from the source files here for example
 
 The page is **https://docs.horizen.io/en/latest/introduction/overview.html**
 
