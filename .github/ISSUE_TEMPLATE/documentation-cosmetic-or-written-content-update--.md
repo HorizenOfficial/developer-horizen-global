@@ -21,7 +21,7 @@ or
 The source file is **https://github.com/HorizenOfficial/developer-horizen-global/blob/master/docs/introduction/overview.rst**
 
 **If this is a cosmetic update**
-**To Reproduce**
+**Describe how to reproduce the problem**
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
