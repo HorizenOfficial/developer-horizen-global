@@ -13,7 +13,6 @@ We need to know what a “box” is before we get to know these four elements.
 Concept of a Box
 ****************
 
-
 A box generalizes the concept of Bitcoin’s UTXOs. A box is a cryptographic object that can be created with secret keys. This box can be opened (spent) by the 
 owner of those secret keys. 
 Once the owner of the secret keys opens it, the box may not be opened again.
@@ -41,7 +40,7 @@ NodeViewHelper
 All communication between NodeView objects is controlled by NodeViewHolder, 
 which also provides a layer of communication within the application for local data processing of blocks, transactions, secrets, etc.
 
-n terms of customization, the history object is the only one that is fully controlled by the core and that in almost all circumstances does not need to be 
+In terms of customization, the history object is the only one that is fully controlled by the core and that in almost all circumstances does not need to be 
 extended. It contains a ready-made implementation of the Latus consensus and of the Cross-Chain Transfer Protocol.
 
 
@@ -63,10 +62,7 @@ Box Unique ID & Transactions
 Each Box should have a unique id, which is deterministically assigned using the box data as input. Since we may have several boxes locked by the same proposition, and representing the same data inside, we can avoid conflicts by using NoncedBox, which inherits Box and contains some Nonce data. Nonce data is a value that is deterministically assigned to the box depending on the Transaction that includes it, and the index of the Box inside the Transaction outputs list. This way we can guarantee that two boxes with the same data (proposition, amount and other custom fields) will have different nonces, so will have different unique box ids.
 
 A Transaction is a sequence of inputs and outputs. Each input consists of a reference to the Box being opened, and a Proof that satisfies the condition of its Proposition.
-Each output is a new Box instance. Block is the only chain modifier, and it’s made of header (“BlockHeader”) and data (“BlockData”), similarly to the bitcoin block structure. 
-
-
-
+Each output is a new Box instance.
 
 
 
