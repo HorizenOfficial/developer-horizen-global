@@ -5,488 +5,1723 @@ Car Registry Tutorial
 Car Registry App High-Level Overview
 ####################################
 
-The Car Registry app is an example of a sidechain that implements specific custom data and logic. The purpose of the application is to provide a simplified service that keeps records of existing cars and their owners. It is simplified as sidechain users will be able to register cars by merely paying a transaction fee. In contrast, in a real-world scenario, the ability to create a car will be bound by the presentation of a certificate signed by the Department of Motor Vehicles or analogous authority, or some other consensus mechanism that guarantees that the car exists in the real world and it’s owned by a user with a given public key.
-Accepting that cars will show up in the sidechain in our example, we want to build an application that has the following capabilitis:
+The `Lambo-Registry app <https://github.com/HorizenOfficial/lambo-registry>`_ is a demo dApp implemented as a sidechain, that makes use of custom data and logic. It was developed to serve as a practical example of how the SDK can be extended.
+From a functional point of view, the application acts as a repository of existing cars and their owners, and offers to its users the possibility to sell and buy cars. It is a demo application, so it does not include all the needed checks and functionalities that a production application would need; for instance, users are now able to register a car by broadcasting a simple "Car Declaration" transaction. We could think that, in a real-world scenario, the ability to declare the existence of a new car in the sidechain, might be instead subject to the inclusion in the transaction of a certificate signed by the Department of Motor Vehicles, that guarantees that the car exists and it’s owned by a user with a specified public key.
 
-    1. It can store information that identifies a specific car, such as vehicle identification number (VIN), model, production year, color.
-    2. Allows car owners to be able to prove their ownership of the cars anonymously.
-    3. Require the use of ZEN for all transactions. 
+To sum up, the Lambo-Registry applications just accepts transactions that create cars, and then provides the following functionalities:
+
+    1. It stores information that identifies a specific car, such as vehicle identification number (VIN), model, production year, colour.
+    2. It allows car owners to be able to prove their ownership of the cars anonymously.
+    3. It gives the possibility to sell a car in exchange for ZEN. 
 
 
 
 User stories:
 #############
 
-**Q: I want to add my car to the Car Registry App.**
+As usual, the first step of software development is the analysis. Let's list the functional requirements of our dApp as some simple user requests ("R"), and then the associated design decisions ("D"):
 
-*A:* Create a new Car Entry Box, which contains vehicle identification information (VIN, manufacturer, model, year, registration number), and a certificate. The proposition in this box is your public key in this sidechain. When you create a box, the sidechain should verify that the vehicle identification information and certificate are unique to this sidechain.
+**R: I want to add my car to the Car Registry App.**
 
-**Q: I want to create a sell order to sell my vehicle using the Car Registry App.**
+*D:* We'll introduce a transaction that creates a "Car Entry Box", with all the vehicle's identification information (VIN, manufacturer, model, year, registration number). The proposition associated to this box is the public key of the owner of the car. When a Car Box is created, the sidechain should verify that the vehicle identification information are unique to this sidechain.
 
-*A:* You can create a new Car Sell Order Box that contains the price in coins and the vehicle information from the Car Entry Box. Cars can exist in the sidechain either as a Car Entry Box or as a Car Sell Order, but not both at the same time. This box must contains the buyer’s public key. When you create a sell order, the sidechain should verify that there is no other active sell order with this Car Entry Box. The current Sell Order consists of the same information that is contained in the Car Entry Box plus a description.
+**R: I want to sell my car.**
 
-**Q: I want to see all available Sell Orders in the sidechain.**
-
-*A:* Have additional storage, which is managed by ApplicationState and stores all Car Sell Orders. All orders can be retrieved using the new HTTP API call. 
-
-**Q: I want to accept a sell order and buy the car.**
-
-*A:* By accepting a sell order, you create a new transaction in the sidechain, which creates a new Car Entry Box with your public key as the proposition and transfers the correct value of coins from you to the seller.
-
-**Q: I want to cancel my Car Sell Order.**
-
-*A:* You will create a new transaction containing the Car Sell Order as input and a Car Entry Box with your public key and the proposition as the output.
-
-**Q: I want to see the car entry boxes and car sell orders related to me (both created by me and proposed to me).**
-
-*A:* Implement a new storage that will be managed by ApplicationState to store this information. Then implement a new HTTP API that contains a new method to get this information.
-
-The starting point of the development process is the data representation. A car is an example of a Non-CoinBox. It represents an item, but not money. Another example of a Non-CoinBox is a car that is for sale. We need another box for a car for sale because a standard CarBox does not have additional data like sale price, seller proposition address, etc. For the money representation, a standard RegularBox is used (a RegularBox is a CoinBox), which the SDK provides. Besides new entities CarBox and CarSellOrder, we also need to define a way to create/destroy those new entities. For that purpose, these new transactions are defined: a transaction for creating a new car, a transaction that moves a CarBox to a CarSellOrder, a transaction that declares a car was purchased i.e., moving CarSellOrder to the new CarBox. All created transactions are not automatically put into the memory pool, so a raw transaction in hex representation is created with the /transaction/sendTransaction API request. In summary, we will add the next car boxes and transactions:
-
-+---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Entity name         | Entity description                                                                                                                                                                                                    | Entity fields                                                                                                                                                                                                       |
-+=====================+=======================================================================================================================================================================================================================+=====================================================================================================================================================================================================================+
-| CarBox              | Is a box that contains CarBox data, which could be stored and operated in the sidechain.                                                                                                                              | boxData -- contains  car box data                                                                                                                                                                                   |
-+---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarBoxData          | Description of the car by using defined properties                                                                                                                                                                    | vin -- vehicle identification number which contains unique identification number of the car                                                                                                                         |
-|                     |                                                                                                                                                                                                                       | year -- vehicle year production                                                                                                                                                                                     |
-|                     |                                                                                                                                                                                                                       | model -- car model                                                                                                                                                                                                  |
-|                     |                                                                                                                                                                                                                       | color -- car color                                                                                                                                                                                                  |
-+---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarSellOrderBox     | Is a box which contains CarSellOrder data which could be stored and operated in the sidechain.                                                                                                                        | boxData -- contains CarSellOrder data                                                                                                                                                                               |
-+---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarSellOrderBoxData | Is the description of a vehicle for sale. The box data contains a special type of proposition, a SellOrderProposition. This proposition allows us to spend the box in two different ways: by seller and by buyer      | VIN -- vehicle identification number contains the unique identification number of the car                                                                                                                           |
-|                     |                                                                                                                                                                                                                       | year -- vehicle year production                                                                                                                                                                                     |
-|                     |                                                                                                                                                                                                                       | model -- car model                                                                                                                                                                                                  |
-|                     |                                                                                                                                                                                                                       | color -- car color                                                                                                                                                                                                  |
-+---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarSellOrderInfo    | Is information about the car being sold as well as proof of ownership of seller. Used in transaction processing.                                                                                                      | carBoxToOpen -- A CarBox to initiate a sale                                                                                                                                                                         |
-|                     |                                                                                                                                                                                                                       | proof -- proof for open initial car box                                                                                                                                                                             |
-|                     |                                                                                                                                                                                                                       | price -- selling price                                                                                                                                                                                              |
-|                     |                                                                                                                                                                                                                       | buyerProposition -- current implementation expect to have the specific buyer which had been found off chain. Thus during creation of car sell order we already know buyer and shall put his future car proposition  |
-+---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CarBuyOrderInfo     | Is data required for buying a car or recalling a CarSellOrder. Used in transaction processing.                                                                                                                       | carSellOrderBoxToOpen -- A CarSellOrder box to be opened.                                                                                                                                                           |
-|                     |                                                                                                                                                                                                                       | proof -- specific proof of type SellOrderSpendingProof                                                                                                                                                              |
-|                     |                                                                                                                                                                                                                       | for confirming buying of the car or recall car sell order                                                                                                                                                           |
-+---------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
-Special proposition and proof:
-##############################
-
-    a) **SellOrderProposition** 
-       The standard proposition only contains one public key, i.e., only one specific private key could open that proposition. 
-       However, for a sell order, we need a way to open and spend the box in two different ways, so we need to specify an additional proposition/proof. 
-       A SellOrderProposition contains two public keys: 
-       ::
-        ownerPublicKeyBytes
-       
-       and 
-       ::
-        buyerPublicKeyBytes 
-       So the seller or buyer's private keys could open that proposition.  
-
-    b) **SellOrderSpendingProof**
-       The proof that allows us to open and spend
-       ::
-        CarSellOrderBox 
-       
-       A SellOrderProposition is presented in two different ways: opened by the buyer (meaning they buy the car), or opened by the seller (meaning the seller recalled the CarSellOrder). This proof creation requires two different API calls, but as a result in both cases, we will have the same type of transaction with the same proof type. 
+*D:* We'll introduce a "Car Sell Order Box" that includes the vehicle's information and its price in ZEN. Cars can exist in the sidechain either as a "Car Entry Box" or as a "Car Sell Order Box", but not both at the same time. The Car Sell Order Box will contain also the public key of the prospective buyer, so we assume that some kind of negotiation/agreement between the seller and the buyer took place off-chain. When a sell order is created, the sidechain will have to verify that there is no other active sell order for the same vehicle.
 
 
-Transactions:
+**R: I want to buy a car.**
+
+*D:* To buy a car, the user will have to create a new transaction that accepts a sell order. That sell order must specify the user's public key. The transaction will create a new Car Entry Box, closed by the new owner's public key as proposition. The transaction will also transfer the correct amount of ZEN coins from the buyer to the seller.
+
+**R: I've changed my mind, and don't want to sell my car any more.**
+
+*D:* If the sell order is still active, it can be recalled by its creator. The car owner will create a new transaction containing the Car Sell Order as input, and a Car Entry Box closed by his public key as output.
+
+**R: I want to see all the cars I own, and the ones that have been offered to me.**
+
+*D:* This piece of information will be managed by ApplicationWallet. We can use the SDK standard endpoint "wallet/allBlocks" and filter by box type.
+
+
+We can now start the development process, by addressing the data representation.
+
+
+Boxes
 #############
 
-AbstractRegularTransaction 
-**************************
+When designing a new application, the preliminary step is to identify the needed custom boxes and their respective properties. Boxes are the basic objects that describe the state of our application. The Lambo-registry example implements the following custom boxes:
 
-Base custom transaction, all other custom transactions extend this base transaction. 
+- **CarBox**  
+  A Box that represents a car instance. The following properties were selected to describe a car:
 
-        *Input parameters are:*
-        
-            ``inputRegularBoxIds`` - list of regular boxes for payments like fee and car buying
-            ``inputRegularBoxProofs`` - appropriate list of proofs for box opening for each regular box in ``inputRegularBoxIds``
-            ``outputRegularBoxesData`` - list of output regular boxes, used as the change from paying a fee, as well as a new regular box for payment for the car.
-            ``fee`` - transaction fee
-            ``timestamp`` - transaction timestamp 
+  - vehicle identification number (vin)
+  - year of production
+  - model
+  - color
+  
+- **CarSellOrderBox**  
+  A Box that represents the intention to sell a car to someone. It has the same properties of a car, a price (in ZEN), and it is closed by a special proposition which can be opened either by the seller (to remove the car from sale) or the buyer (to complete the purchase).
 
-        *Output boxes:*
-                
-            Regular Boxes created by change or car payment 
+Let's have a closer look at the code that defines a CarBox:
 
-CarDeclarationTransaction
-*************************
+  ::
 
-Transaction for declaring a car in the Sidechain, this transaction extends ``AbstractRegularTransaction`` thus some base functionality already is implemented. 
+    @JsonView(Views.Default.class)
+    @JsonIgnoreProperties({"carId", "value"})
+    public final class CarBox extends AbstractNoncedBox<PublicKey25519Proposition, CarBoxData, CarBox> {
 
-        *Input parameters are:*
-        
-            ``inputRegularBoxIds`` -- list of regular boxes for payments like fee and car buying
-            ``inputRegularBoxProofs`` -- appropriate list of proofs for box opening for each regular box in inputRegularBoxIds
-            ``outputRegularBoxesData`` -- list of output regular boxes, used as change from paying a fee, as well as a new regular box for car payment.
-            ``fee`` -- transaction fee
-            ``timestamp`` -- transaction timestamp
-            ``outputCarBoxData`` -- box data which contains information about a new car.
+        public CarBox(CarBoxData boxData, long nonce) {
+            super(boxData, nonce);
+        }
 
-        *Output boxes:*
-        
-            New CarBox with new declared car
+        @Override
+        public byte boxTypeId() {
+            return CarBoxId.id();
+        }
 
-SellCarTransaction 
-******************
+        @Override
+        public BoxSerializer serializer() {
+            return CarBoxSerializer.getSerializer();
+        }
 
-Transaction to initiate the selling process of the car. 
-
-         *Input parameters are:*
-         
-            ``inputRegularBoxIds`` - list of regular boxes for payments like fee and car buying
-            ``inputRegularBoxProofs`` - appropriate list of proofs for box opening for each regular box in inputRegularBoxIds
-            ``outputRegularBoxesData`` - list of output regular boxes, used as change from paying fee, as well as new regular box for payment for car.
-            ``fee`` -- transaction fee
-            ``timestamp`` - transaction timestamp
-            ``carSellOrderInfo`` - information about car selling, including such information as car description and specific proposition ``SellOrderProposition``.
-
-        *Output boxes:*
-         
-            A CarSellOrderBox represents a car to be sold. This box could be opened by the car owner to recall the order, or by a specified buyer if a someone buys the car.    
-
-BuyCarTransaction 
-*****************
-
-This transaction allows us to buy a car or recall a car sell order. 
-
-        *Input parameters are:*
-        
-            ``inputRegularBoxIds`` - list of regular boxes for payments like fee and purchasing the car 
-            ``inputRegularBoxProofs`` - appropriate list of proofs for box opening for each regular box in inputRegularBoxIds
-            ``outputRegularBoxesData`` - list of output regular boxes, used as change from paying fee, as well as a new regular box for payment for the car.
-            ``fee`` - transaction fee
-            ``timestamp`` - transaction timestamp
-            ``carBuyOrderInfo`` - information for buy car or recall car sell order.      
-            
-        *Output boxes:*
-        
-            Two outputs are possible. In the case of buying a car, a new CarBox with a new owner, a new RegularBox with a value declared in CarBuyOrderInfo for the car's former owner. 
-
-Car registry implementation
-###########################
-
-First of all, we need to define new boxes. 
-As described before, a CarBox is a Non-CoinBox, and similarly we need the CarBoxData class to describe custom data. So we need to define the CarBox and the CarBoxData as separate classes to allow proper serialization/deserialization.  
-
-Implementation of CarBoxData:
-*****************************
-
-CarBoxData is implemented according to the description from the Custom Box Data Creation section as a public class CarBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CarBox, CarBoxData> with custom data as:
-::    
- private final BigInteger vin;
- private final int year;
- private final String model;
- private final String color;
-        
-A few comments about implementation:
-
-    1. @JsonView(Views.Default.class) is used during class declaration. That annotation allows SDK core to do proper JSON serialization.
-    2. Serialization is implemented in  public byte[] bytes() function as well as parsing implemented in public static CarBoxData parseBytes(byte[] bytes) function. SDK developer, as described before, shall include proposition and value into serialization/deserialization. The order doesn't matter. 
-    3. CarBoxData shall have a value parameter as a Scorex limitation, but in our business logic, CarBoxData does not use that data at all because each car is unique and doesn't have any inherent value. Thus value is hidden, i.e., value is not present in the constructor parameter and just set by default to "1" in the class constructor.
-    4. ``public byte[] customFieldsHash()`` shall be implemented because we introduce some new custom data.
-    
-Implementation of CarBoxDataSerializer:
-***************************************
-
-``CarBoxDataSerializer`` is implemented according to the description from ``Custom Box Data Serializer Creation`` section as ``public class CarBoxDataSerializer implements NoncedBoxDataSerializer<CarBoxData>``. 
-
-Implementation of CarBox:
-*************************
-
- A ``CarBox`` is implemented according to the description from ``Custom Box Class creation`` section as ``public class CarBox extends AbstractNoncedBox<PublicKey25519Proposition, CarBoxData, CarBox>``
-
-A few comments about implementation:
-
-    1. As a serialization part SDK developer shall include ``long nonce`` as a part of serialization, thus serialization is implemented in the following way:
-       ::
-        public byte[] bytes()
-        {
+        @Override
+        public byte[] bytes() {
             return Bytes.concat(
-                Longs.toByteArray(nonce),
-                CarBoxDataSerializer.getSerializer().toBytes(boxData)
+                    Longs.toByteArray(nonce),
+                    CarBoxDataSerializer.getSerializer().toBytes(boxData)
             );
         }
 
-    2. A ``CarBox`` defines its own unique id by implementing the function ``public byte boxTypeId()``. A similar function is defined in ``CarBoxData`` but it is a different id despite the value returned in ``CarBox`` and ``CarBoxData`` being the same.
-
-Implementation of CarBoxSerializer:
-***********************************
-
-A CarBoxSerializer is implemented according to the description from the (`“Custom Box Data Serializer Creation section” <Sidechain-SDK-extension.html#custom-box-data-serializer-class-creation>`_) as 
-::
- public class CarBoxSerializer implements BoxSerializer<CarBox> 
-
-Implementation of SellOrderProposition
-**************************************
-
-A SellOrderProposition is implemented as 
-::
- public final class SellOrderProposition implements ProofOfKnowledgeProposition<PrivateKey25519>
-
-A point to note is that the proposition contains two public keys, thus that proposition could be opened by two different private keys.
-
-Implementation of SellOrderPropositionSerializer
-************************************************
-A SellOrderPropositionSerializer is implemented as 
-::
- public final class SellOrderPropositionSerializer implements PropositionSerializer<SellOrderProposition>
-
-Implementation of SellOrderSpendingProof  
-****************************************
-A SellOrderSpendingProof is implemented as  
-::
- extends AbstractSignature25519<PrivateKey25519, SellOrderProposition>
-
-Implementation Comments: Information about the proof type is defined by the result of the boolean method isSeller(). For example an implementation of the method isValid uses the flag:
-::
- public boolean isValid(SellOrderProposition proposition, byte[] message) {
-  if(isSeller) {
-   // Car seller wants to discard selling.
-   return Ed25519.verify(signatureBytes, message, proposition.getOwnerPublicKeyBytes());
-  } else {
-   // Specific buyer wants to buy the car.
-   return Ed25519.verify(signatureBytes, message, proposition.getBuyerPublicKeyBytes());
-  }
- }
-
-Implementation of CarSellOrderBoxData
-*************************************
-
-A CarSellOrderBoxData is implemented according to the description from the (`“Custom Box Data class creation section” <Sidechain-SDK-extension.html#custom-box-data-class-creation>`_) as 
-::
- public class CarSellOrderData extends AbstractNoncedBoxData<SellOrderProposition, CarSellOrderBox, CarSellOrderBoxData> 
- 
-with custom data as:
-::
- private final String vin;
- private final int year;
- private final String model;
- private final String color;
-
-A few comments about implementation:
-Proposition and value shall be included in serialization as is done in CarBoxData 
-Id of that box data could be different than in CarBoxData
-CarSellOrderBoxData uses custom proposition type, thus *proposition* field has *SellOrderProposition* type 
-
-Implementation of CarSellOrderBoxDataSerializer
-***********************************************
-
-A CarSellOrderDataSerializer is implemented according to the description from the (`“Custom Box Data Serializer creation section” <Sidechain-SDK-extension.html#custom-box-data-serializer-class-creation>`_) as
-::
- public class CarSellOrderBoxDataSerializer implements NoncedBoxDataSerializer<CarSellOrderData>
-
-Implementation of CarSellOrderBox
-*********************************
-
-A CarSellorder is implemented according to the description from the (`“Custom Box Class creation section” <Sidechain-SDK-extension.html#custom-box-class-creation>`_) as
-::
- public final class CarSellOrderBox extends AbstractNoncedBox<SellOrderProposition, CarSellOrderBoxData, CarSellOrderBox>
-
-AbstractRegularTransaction
-**************************
-
-*AbstractRegularTransaction* is implemented as 
-::
- public abstract class AbstractRegularTransaction extends SidechainTransaction<Proposition, NoncedBox<Proposition>>
-
-Basic functionality is implemented for building required unlockers for input Regular boxes and returning a list of output Regular boxes according to input parameter *outputRegularBoxesData*. Also, basic transaction semantic validity is checked here. 
-
-CarDeclarationTransaction 
-*************************
-
-*CarDeclarationTransaction* extends previously declared *AbstractRegularTransaction* in the following way: ``public final class CarDeclarationTransaction extends AbstractRegularTransaction``
-newBoxes() -- a new box for a new car must be added as well. This function will be overridden by adding a new CarBox to the RegularBoxes.  
-
-SellCarTransaction 
-******************
-
-A *SellCarTransaction* extends previously declared AbstractRegularTransaction in following way: ``public final class SellCarTransaction extends AbstractRegularTransaction``
-Similar to the *CarDeclarationTransaction* function, the *newBoxes()* function will also return a new specific box. In our case that new box is a *CarSellOrderBox*.Since we have a specific box to open (CarBox), we also need to add an unlocker for CarBox. The unlocker for that CarBox had been added to the ``public List<BoxUnlocker<Proposition>> unlockers()``
-
-
-BuyCarTransaction
-*****************
-
-A few comments about implementation: 
-During the creation of the unlockers in function *unlockers()*, we need to create a specific unlocker for opening a CarSellOrder. Another *newBoxes()* function has a bit-specific implementation. That function forces the creation of a new RegularBox as payment for a car (if the vehicle has sold). A NewCarBox will be created according to information provided in  ``carBuyOrderInfo``. 
-
-
-Extend API: 
-***********
-
-* Create a new class CarAPI which extends ApplicationAPIGroup class. Add this new class to route it in SimpleAppModule, as described in the Custom API manual. In our case it is done in ``CarRegistryAppModule`` by 
-
-    * Creating ``customApiGroups`` as a list of custom API Groups:
-    * ``List<ApplicationApiGroup> customApiGroups = new ArrayList<>()````;
-
-    * Adding created ``CarApi`` into ``customApiGroups: customApiGroups.add(new CarApi())``;
-
-    * Binding that custom api group via dependency injection:
-      ::
-       bind(new TypeLiteral<List<ApplicationApiGroup>> () {})
-               .annotatedWith(Names.named("CustomApiGroups"))
-               .toInstance(customApiGroups);
-
-
-* Define Car creation transaction.
-
-    * Defining request class/JSON request body
-      As input for the transaction we expected: 
-      Regular box id  as input for paying fee; 
-      Fee value; 
-      Proposition address which will be recognized as a Car Proposition; 
-      Vehicle identification number of car. So next request class shall be created:
-      :: 
-       public class CreateCarBoxRequest {
-       public String vin;
-       public int year;
-       public String model;
-       public String color;
-       public String proposition; // hex representation of public key proposition
-       public long fee;
-
-       // Setters to let Akka Jackson JSON library to automatically deserialize the request body.
-            public void setVin(String vin) {
-                this.vin = vin;
-            }
-
-            public void setYear(int year) {
-                this.year = year;
-            }
-
-            public void setModel(String model) {
-                this.model = model;
-            }
-
-            public void setColor(String color) {
-                this.color = color;
-            }
-
-            public void setProposition(String proposition) {
-                this.proposition = proposition;
-            }
-
-            public void setFee(long fee) {
-                this.fee = fee;
-            }
+        public static CarBox parseBytes(byte[] bytes) {
+            long nonce = Longs.fromByteArray(Arrays.copyOf(bytes, Longs.BYTES));
+            CarBoxData boxData = CarBoxDataSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, Longs.BYTES, bytes.length));
+            return new CarBox(boxData, nonce);
         }
 
+        public String getVin() {
+            return boxData.getVin();
+        }
 
-Request class shall have appropriate setters and getters for all class members. Class members' names define a structure for related JSON structure according to `Jackson library <https://github.com/FasterXML/jackson-databind/>`_, so next JSON structure is expected to be set: 
-::
- {
-    "vin":"30124",
-    “year”:1984,
-    “model”: “Lamborghini”
-    “color”:”deep black”
-    "carProposition":"a5b10622d70f094b7276e04608d97c7c699c8700164f78e16fe5e8082f4bb2ac",
-    "fee": 1,
-    "boxId": "d59f80b39d24716b4c9a54cfed4bff8e6f76597a7b11761d0d8b7b27ddf8bd3c"
- }
-        
-A few notes: setter’s input parameter could have a different type than set class member. It allows us to make all necessary conversion in setters.
+        public int getYear() {
+            return boxData.getYear();
+        }
+
+        public String getModel() {
+            return boxData.getModel();
+        }
+
+        public String getColor() {
+            return boxData.getColor();
+        }
+
+        public byte[] getCarId() {
+            return Bytes.concat(
+                    getVin().getBytes(),
+                    Ints.toByteArray(getYear()),
+                    getModel().getBytes(),
+                    getColor().getBytes()
+            );
+        }
+    }
 
 
-Define the response for the car creation transaction, the result of transaction shall be defined by implementing the SuccessResponse interface with the class members. Class members will be returned as an API response. All members will have properly set getters and the response class will have proper annotation ``@JsonView(Views.Default.class)`` thus the Jackson library is able to correctly represent the response class in JSON format. In our case, we expect to return transaction bytes. The response class is next:
-::
+Let's start from the top declaration:
+
+  ::
+
+    
     @JsonView(Views.Default.class)
-    class TxResponse implements SuccessResponse {
-    public String transactionBytes;
+    @JsonIgnoreProperties({"carId", "value"})
+    public final class CarBox extends AbstractNoncedBox<PublicKey25519Proposition, CarBoxData, CarBox> {
+   
+
+ Our class extends the *AbstractNoncedBox* default class, is locked by a standard *PublicKey25519Proposition* and keeps all its properties into an object of type CarBoxData.
+ The annotation *@JsonView* instructs the SDK to use a default viewer to convert an instance of this class into JSON format when a CarBox is included in the result of an http API endpoint. With that, there is no need to write the conversion code: all the properties associated to getter methods of the class are automatically converted to json attributes. 
+ For example, since our class has a getter method "*getModel()*", the json will contain the attribute "model" with its value. 
+ We can specify some properties that must be excluded from the json output with the *@JsonIgnoreProperties* annotation.
+
+ The constructor of boxes extending AbstractNoncedBox is very simple, it just calls the superclass with two parameters: the BoxData and the nonce.
+
+ 
+  ::
+
+    public CarBox(CarBoxData boxData, long nonce) {
+        super(boxData, nonce);
+    }
+   
+The BoxData is a container of all the properties of our Box, we'll have a look at it later.
+The nonce is a random number that allows the generation of different hash values also if the inner properties of two boxes have the same values.
+
+
+ 
+  ::
+
+    @Override
+    public byte boxTypeId() {
+        return CarBoxId.id();
+    }
+    
+
+The method *boxTypeId()* returns the id of this box type: every custom box needs to have a unique type id inside the application. Note that the ids of custom boxes can overlap with the ids of the standard boxes (e.g. you can re-use the id type 1 that is already used for standard coin boxes).
+
+The next three methods are used for serialization and deserialization of our Box: they define the serializer to be used, and the methods used to generate a byte array from the box and to obtain the box back from the byte array (note that they delegate the byte handling logic to the CarBoxData):
+
+
+
+  ::
+
+    @Override
+    public BoxSerializer serializer() {
+        return CarBoxSerializer.getSerializer();
+    }
+
+    @Override
+    public byte[] bytes() {
+        return Bytes.concat(
+                Longs.toByteArray(nonce),
+                CarBoxDataSerializer.getSerializer().toBytes(boxData)
+        );
+    }
+
+    public static CarBox parseBytes(byte[] bytes) {
+        long nonce = Longs.fromByteArray(Arrays.copyOf(bytes, Longs.BYTES));
+        CarBoxData boxData = CarBoxDataSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, Longs.BYTES, bytes.length));
+        return new CarBox(boxData, nonce);
+    }
+ 
+
+ The last methods of the class are just the getters of the box properties. In particular *getCarId()* is an example of a property that is the result of operations performed on other stored properties.
+
+ There are three more classes related to our CarBox: the boxdata and the serializers. Let's have a closer look at them.
+
+BoxData
+***********
+
+ BoxData allows us to group all the box properties and their serialization and deserialization logic in a single container object. Although its use is not mandatory (you can define field properties directly inside the Box), it is required if you choose to extend the base class AbstractNoncedBox, as we did for the CarBox, and it is in any case a good practice.
+
+
+
+  ::
+
+    @JsonView(Views.Default.class)
+	public final class CarBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
+
+    	private final String vin;   // Vehicle Identification Number
+    	private final int year;     // Car manufacture year
+    	private final String model; // Car Model
+    	private final String color; // Car color
+
+    	public CarBoxData(PublicKey25519Proposition proposition, String vin,
+                      int year, String model, String color) {
+        	super(proposition, 0);
+        	this.vin = vin;
+        	this.year = year;
+        	this.model = model;
+        	this.color = color;
+    	}
+
+
+    	@Override
+    	public CarBox getBox(long nonce) {
+        	return new CarBox(this, nonce);
+    	}
+
+    	@Override
+    	public byte[] customFieldsHash() {
+        	return Blake2b256.hash(
+        	        Bytes.concat(
+        	                vin.getBytes(),
+        	                Ints.toByteArray(year),
+        	                model.getBytes(),
+        	                color.getBytes()));
+    	}
+
+    	@Override
+    	public NoncedBoxDataSerializer serializer() {
+        	return CarBoxDataSerializer.getSerializer();
+    	}
+
+    	@Override
+    	public byte boxDataTypeId() {
+        	return CarBoxDataId.id();
+    	}
+
+    	@Override
+    	public byte[] bytes() {
+        	return Bytes.concat(
+        	        proposition().bytes(),
+        	        Ints.toByteArray(vin.getBytes().length),
+        	        vin.getBytes(),
+        	        Ints.toByteArray(year),
+        	        Ints.toByteArray(model.getBytes().length),
+        	        model.getBytes(),
+        	        Ints.toByteArray(color.getBytes().length),
+        	        color.getBytes()
+        	);
+    	}
+
+    	public static CarBoxData parseBytes(byte[] bytes) {
+        	int offset = 0;
+
+        	PublicKey25519Proposition proposition = PublicKey25519PropositionSerializer.getSerializer()
+                .parseBytes(Arrays.copyOf(bytes, PublicKey25519Proposition.getLength()));
+        	offset += PublicKey25519Proposition.getLength();
+
+        	int size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
+        	offset += Ints.BYTES;
+
+        	String vin = new String(Arrays.copyOfRange(bytes, offset, offset + size));
+        	offset += size;
+
+        	int year = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
+        	offset += Ints.BYTES;
+
+        	size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
+        	offset += Ints.BYTES;
+
+        	String model = new String(Arrays.copyOfRange(bytes, offset, offset + size));
+        	offset += size;
+
+        	size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
+        	offset += Ints.BYTES;
+
+        	String color = new String(Arrays.copyOfRange(bytes, offset, offset + size));
+
+        	return new CarBoxData(proposition, vin, year, model, color);
+    	}
+
+    	public String getVin() {
+        	return vin;
+    	}
+
+    	public int getYear() {
+        	return year;
+    	}
+
+    	public String getModel() {
+        	return model;
+    	}
+
+    	public String getColor() {
+        	return color;
+    	}
+
+    	@Override
+    	public String toString() {
+        	return "CarBoxData{" +
+                "vin=" + vin +
+                ", proposition=" + proposition() +
+                ", model=" + model +
+                ", color=" + color +
+                ", year=" + year +
+                '}';
+    	}
+	}
+
+
+Let's look in detail at the code above, starting from the beginning:
+
+
+
+  ::
+
+    @JsonView(Views.Default.class)
+    public final class CarBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
+    
+ 
+
+Also this time, we have a basic class we can extend: AbstractNoncedBoxData.
+
+
+
+  ::
+
+    public CarBoxData(PublicKey25519Proposition proposition, String vin,
+                     int year, String model, String color) {
+       super(proposition, 0);
+       this.vin = vin;
+       this.year = year;
+       this.model = model;
+       this.color = color;
+	}
+ 
+
+The constructor receives all the box properties, and the proposition that locks it. The proposition is passed up to the superclass constructor, which also receives a long number representing the ZEN value of the box. For boxes that don't handle coins (like this one) we can just pass a 0 constant value.
+
+ 
+  ::
+
+    @Override
+    public CarBox getBox(long nonce) {
+       return new CarBox(this, nonce);
+	}
+
+  The *getBox(long nonce)* is a helper method used to generate a new box from the content of this boxdata.
+
+
+
+  ::
+
+    @Override
+    public byte[] customFieldsHash() {
+       return Blake2b256.hash(
+               Bytes.concat(
+                       vin.getBytes(),
+                       Ints.toByteArray(year),
+                       model.getBytes(),
+                       color.getBytes()));
+	}
+ 
+The method *customFieldsHash()* is used by the sidechain to generate a unique hash for each box instance: it needs to be defined in a way such that different property values of a boxdata always produce a different hash value. To achieve this, the code uses a scorex helper class (*scorex.crypto.hash.Blake2b256*) that generates a hash from a bytearray; the bytearray is the concatenation of all the properties values.
+
+Boxdata, as Box, has some methods to define its serializer, and a unique type id:
+
+
+  ::
+
+    @Override
+    public NoncedBoxDataSerializer serializer() {
+       return CarBoxDataSerializer.getSerializer();
+    }
+
+    @Override
+    public byte boxDataTypeId() {
+       return CarBoxDataId.id();
+    }
+ 
+
+ Two very important methods are *bytes()* and *parseBytes()*: they contain the logic to serialize and deserialize properties and proposition. The code is quite verbose but simple: *bytes()* returns a byte array that is the concatenation of all the properties values, while *parseBytes()* reads it and writes the values back. Note that for variable-length fields like strings, the field length needs to be first known and serialized, and made part of the bytearray, so that *parseBytes()* can then read the correct length of bytes of that field. You can see it in the code that serializes the car model string:
+
+  ::
+
+    return Bytes.concat(
+                ....
+                Ints.toByteArray(model.getBytes().length),
+                model.getBytes(),
+                ....
+        );
+
+
+ and this is the code in *parseBytes()* that reads the bytearray and writes back the car model:
+
+  ::
+
+    	size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
+        offset += Ints.BYTES;
+        String model = new String(Arrays.copyOfRange(bytes, offset, offset + size));
+
+
+ As expected, the class includes all the getters of every custom property (*getModel()*, *getColor()* etc..). Also, the *toString()* method is redefined to print out the content of boxdata in a more user-friendly format:
+
+
+
+  ::
+
+    @Override
+    public String toString() {
+        return "CarBoxData{" +
+                "vin=" + vin +
+                ", proposition=" + proposition() +
+                ", model=" + model +
+                ", color=" + color +
+                ", year=" + year +
+                '}';
+    }
+ 
+  
+
+BoxSerializer and BoxDataSerializer
+***********
+
+ Serializers are companion classes that are invoked by the SDK every time a Scorex reader and writer needs to deserialize or serialize a Box. We define one serializer/deserializer both for box and for boxdata.
+ As you can see in the code below, since the "heavy" byte handling happens inside boxdata, their logic is very simple: they just call the right methods already defined in the associated (Box or BoxData) objects.
+
+
+
+  ::
+
+    public final class CarBoxSerializer implements BoxSerializer<CarBox> {
+
+    	private static final CarBoxSerializer serializer = new CarBoxSerializer();
+
+    	private CarBoxSerializer() {
+        	super();
+    	}
+
+    	public static CarBoxSerializer getSerializer() {
+        	return serializer;
+    	}
+
+    	@Override
+    	public void serialize(CarBox box, Writer writer) {
+        	writer.putBytes(box.bytes());
+    	}
+
+    	@Override
+    	public CarBox parse(Reader reader) {
+        	return CarBox.parseBytes(reader.getBytes(reader.remaining()));
+    	}
+	}
+ 
+
+ 
+
+
+
+  ::
+
+    
+    public final class CarBoxDataSerializer implements NoncedBoxDataSerializer<CarBoxData> {
+
+        private static final CarBoxDataSerializer serializer = new CarBoxDataSerializer();
+
+        private CarBoxDataSerializer() {
+            super();
+        }
+
+        public static CarBoxDataSerializer getSerializer() {
+            return serializer;
+        }
+
+        @Override
+        public void serialize(CarBoxData boxData, Writer writer) {
+            writer.putBytes(boxData.bytes());
+        }
+
+        @Override
+        public CarBoxData parse(Reader reader) {
+            return CarBoxData.parseBytes(reader.getBytes(reader.remaining()));
+        }
+    }
+ 
+
+
+Transactions
+#############
+
+
+If Boxes are the objects that describe the state of our application, transactions are the actions that can describe the application state. They typically do that by opening (and therefore removing) some boxes ("input"), and creating new ones ("output").
+
+Our Car Registry application defines the following custom transactions:
+
+- **CarDeclarationTransaction** - a transaction that declares a new car (by creating a new CarBox).
+- **SellCarTransaction** - it creates a sell order for a car: a CarBox is "spent", and a CarSellOrderBox containing all the data of the car to be sold is created.
+- **BuyCarTransaction** - this transaction is used either by the buyer to accept the sell order, or by the seller to cancel it. It opens a CarSellOrderBox, and creates a CarBox (if it's a sell order cancellation, the new CarBox will be assigned to the original owner).
+
+Let's look at the code of the last one, BuyCarTransaction, that is slightly more complicated than the other two:
+
+
+
+
+
+  ::
+
+    public final class BuyCarTransaction extends AbstractRegularTransaction {
+
+
+    	private final CarBuyOrderInfo carBuyOrderInfo;
+    	private List<NoncedBox<Proposition>> newBoxes;
+
+    	public BuyCarTransaction(List<byte[]> inputRegularBoxIds,
+                             List<Signature25519> inputRegularBoxProofs,
+                             List<RegularBoxData> outputRegularBoxesData,
+                             CarBuyOrderInfo carBuyOrderInfo,
+                             long fee,
+                             long timestamp) {
+        	super(inputRegularBoxIds, 
+        	      inputRegularBoxProofs, 
+        	      outputRegularBoxesData, 
+        	      fee, timestamp);
+        	this.carBuyOrderInfo = carBuyOrderInfo;
+    	}
+
+    	@Override
+    	public List<BoxUnlocker<Proposition>> unlockers() {
+        	// Get Regular unlockers from base class.
+        	List<BoxUnlocker<Proposition>> unlockers = super.unlockers();
+
+        	BoxUnlocker<Proposition> unlocker = new BoxUnlocker<Proposition>() {
+            	@Override
+            	public byte[] closedBoxId() {
+                	return carBuyOrderInfo.getCarSellOrderBoxToOpen().id();
+            	}
+
+            	@Override
+            	public Proof boxKey() {
+                	return carBuyOrderInfo.getCarSellOrderSpendingProof();
+            	}
+        	};
+        	unlockers.add(unlocker);
+        	return unlockers;
+    	}
+
+
+    	@Override
+    	public List<NoncedBox<Proposition>> newBoxes() {
+        	if(newBoxes == null) {
+        	    // Get new boxes from base class.
+        	    newBoxes = new ArrayList<>(super.newBoxes());
+
+        	    // Set CarBox with specific owner depends on proof. See CarBuyOrderInfo.getNewOwnerCarBoxData() definition.
+          	  long nonce = getNewBoxNonce(carBuyOrderInfo.getNewOwnerCarBoxData().proposition(), newBoxes.size());
+            	newBoxes.add((NoncedBox) new CarBox(carBuyOrderInfo.getNewOwnerCarBoxData(), nonce));
+
+            	// If Sell Order was opened by the buyer -> add payment box for Car previous owner.
+            	if (!carBuyOrderInfo.isSpentByOwner()) {
+                	RegularBoxData paymentBoxData = carBuyOrderInfo.getPaymentBoxData();
+                	nonce = getNewBoxNonce(paymentBoxData.proposition(), newBoxes.size());
+                	newBoxes.add((NoncedBox) new RegularBox(paymentBoxData, nonce));
+            	}
+        	}
+        	return Collections.unmodifiableList(newBoxes);
+    	}
+
+    	// Specify the unique custom transaction id.
+    	@Override
+    	public byte transactionTypeId() {
+        	return BuyCarTransactionId.id();
+    	}
+
+    	// Define object serialization, that should serialize both parent class entries and CarBuyOrderInfo as well
+    	@Override
+    	public byte[] bytes() {
+        	ByteArrayOutputStream inputsIdsStream = new ByteArrayOutputStream();
+        	for(byte[] id: inputRegularBoxIds)
+            	inputsIdsStream.write(id, 0, id.length);
+
+        	byte[] inputRegularBoxIdsBytes = inputsIdsStream.toByteArray();
+        	byte[] inputRegularBoxProofsBytes = regularBoxProofsSerializer.toBytes(inputRegularBoxProofs);
+        	byte[] outputRegularBoxesDataBytes = regularBoxDataListSerializer.toBytes(outputRegularBoxesData);
+        	byte[] carBuyOrderInfoBytes = carBuyOrderInfo.bytes();
+
+        	return Bytes.concat(
+                Longs.toByteArray(fee()),                               // 8 bytes
+                Longs.toByteArray(timestamp()),                         // 8 bytes
+                Ints.toByteArray(inputRegularBoxIdsBytes.length),       // 4 bytes
+                inputRegularBoxIdsBytes,                                // depends on previous value (>=4 bytes)
+                Ints.toByteArray(inputRegularBoxProofsBytes.length),    // 4 bytes
+                inputRegularBoxProofsBytes,                             // depends on previous value (>=4 bytes)
+                Ints.toByteArray(outputRegularBoxesDataBytes.length),   // 4 bytes
+                outputRegularBoxesDataBytes,                            // depends on previous value (>=4 bytes)
+                Ints.toByteArray(carBuyOrderInfoBytes.length),          // 4 bytes
+                carBuyOrderInfoBytes                                    // depends on previous value (>=4 bytes)
+        	);
+    	}
+
+    	// Define object deserialization similar to 'toBytes()' representation.
+    	public static BuyCarTransaction parseBytes(byte[] bytes) {
+        	int offset = 0;
+
+        	long fee = BytesUtils.getLong(bytes, offset);
+        	offset += 8;
+
+        	long timestamp = BytesUtils.getLong(bytes, offset);
+        	offset += 8;
+
+        	int batchSize = BytesUtils.getInt(bytes, offset);
+        	offset += 4;
+
+        	ArrayList<byte[]> inputRegularBoxIds = new ArrayList<>();
+        	int idLength = NodeViewModifier$.MODULE$.ModifierIdSize();
+        	while(batchSize > 0) {
+            	inputRegularBoxIds.add(Arrays.copyOfRange(bytes, offset, offset + idLength));
+            	offset += idLength;
+            	batchSize -= idLength;
+        	}
+
+        	batchSize = BytesUtils.getInt(bytes, offset);
+        	offset += 4;
+
+        	List<Signature25519> inputRegularBoxProofs = regularBoxProofsSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
+        	offset += batchSize;
+
+        	batchSize = BytesUtils.getInt(bytes, offset);
+        	offset += 4;
+
+        	List<RegularBoxData> outputRegularBoxesData = regularBoxDataListSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
+        	offset += batchSize;
+
+        	batchSize = BytesUtils.getInt(bytes, offset);
+        	offset += 4;
+
+        	CarBuyOrderInfo carBuyOrderInfo = CarBuyOrderInfo.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
+        	return new BuyCarTransaction(inputRegularBoxIds, inputRegularBoxProofs, outputRegularBoxesData, carBuyOrderInfo, fee, timestamp);
+    	}
+
+    	// Set specific Serializer for BuyCarTransaction class.
+    	@Override
+    	public TransactionSerializer serializer() {
+        	return BuyCarTransactionSerializer.getSerializer();
+    	}
+	}
+
+
+
+Let's start from the top declaration: 
+
+
+  ::
+
+    public final class BuyCarTransaction extends AbstractRegularTransaction {
+    
+
+ Our class extends the *AbstractRegularTransaction* default class, an abstract class designed to handle regular coin boxes. Since blockchain transactions usually require the payment of a fee (including the three custom transactions of our Car Registry application), and to pay a fee you need to handle coin boxes, usually custom transactions will extend this abstract class.
+
+
+
+
+  ::
+
+    public BuyCarTransaction(List<byte[]> inputRegularBoxIds,
+                             List<Signature25519> inputRegularBoxProofs,
+                             List<RegularBoxData> outputRegularBoxesData,
+                             CarBuyOrderInfo carBuyOrderInfo,
+                             long fee,
+                             long timestamp) {
+        super(inputRegularBoxIds, 
+              inputRegularBoxProofs, 
+              outputRegularBoxesData, 
+              fee, timestamp);
+        this.carBuyOrderInfo = carBuyOrderInfo;
+    }
+
+   
+The constructor receives all the parameters related to regular boxes handling (box ids to be opened, proofs to open them, regular boxes to be created, fee to be paid and timestamp), and pass them up to the superclass. Moreover, it receives all other parameters specifically related to the custom boxes; in our example, the transaction needs info about the sell order that it needs to open, and it finds in the CarBuyOrderInfo object.
+
+
+
+  ::
+
+    @Override
+    public List<BoxUnlocker<Proposition>> unlockers() {
+        // Get Regular unlockers from base class.
+        List<BoxUnlocker<Proposition>> unlockers = super.unlockers();
+
+        BoxUnlocker<Proposition> unlocker = new BoxUnlocker<Proposition>() {
+            @Override
+            public byte[] closedBoxId() {
+                return carBuyOrderInfo.getCarSellOrderBoxToOpen().id();
+            }
+
+            @Override
+            public Proof boxKey() {
+                return carBuyOrderInfo.getCarSellOrderSpendingProof();
+            }
+        };
+        unlockers.add(unlocker);
+        return unlockers;
+    }
+
+
+The *unlockers()* method must return a list of BoxUnlocker's, that contains the boxes which will be opened by this transaction, and the proofs to open them. The list returned from the superclass (in the first line of the method) contains the unlockers for the coin boxes, and it is combined with the unlocker for the CarSellOrderBox. As you can see we have used an inline declaration for the new unlocker, since it is a very simple object that has only two methods, one returning the box id to open and the other one the proof to open it.
+
+
+
+  ::
+
+    @Override
+    public byte transactionTypeId() {
+        return BuyCarTransactionId.id();
+    }
+ 
+
+Just like with boxes, also each transaction type must have a unique id, returned by the method *transactionTypeId()*.
+
+The last three methods of the class are related to the serialization handling.
+The approach is very similar to what we saw for boxes: the methods *bytes()* and *parseBytes(byte[] bytes)* perform a "two-way conversion" into and from an array of bytes, while the *serializer()* method returns the serializer helper to operate with Scorex reader's and writer's.
+
+As we did with the CarBox, also here we have chosen to code the low level "byte handling" logic inside the two methods *bytes()* and *ParseBytes(byte[] bytes)*, keeping a very simple implementation for the serializer:
+
+
+
+
+  ::
+
+    public final class BuyCarTransactionSerializer implements TransactionSerializer<BuyCarTransaction> {
+
+    	private static final BuyCarTransactionSerializer serializer = new BuyCarTransactionSerializer();
+
+    	private BuyCarTransactionSerializer() {
+        	super();
+    	}
+
+    	public static BuyCarTransactionSerializer getSerializer() {
+        	return serializer;
+    	}
+
+    	@Override
+    	public void serialize(BuyCarTransaction transaction, Writer writer) {
+        	writer.putBytes(transaction.bytes());
+    	}
+
+    	@Override
+    	public BuyCarTransaction parse(Reader reader) {
+        	return BuyCarTransaction.parseBytes(reader.getBytes(reader.remaining()));
+    	}
+	}
+
+
+One of the parameters of the class constructor is CarBuyOrderInfo, an object that contains the needed info about the sell order we are handling. Let's take a look at its implementation:
+
+
+
+
+  ::
+
+    public final class CarBuyOrderInfo {
+    	private final CarSellOrderBox carSellOrderBoxToOpen;  // Sell order box to be spent in BuyCarTransaction
+    	private final SellOrderSpendingProof proof;           // Proof to unlock the box above
+
+    	public CarBuyOrderInfo(CarSellOrderBox carSellOrderBoxToOpen, 	SellOrderSpendingProof proof) {
+        	this.carSellOrderBoxToOpen = carSellOrderBoxToOpen;
+        	this.proof = proof;
+    	}
+
+    	public CarSellOrderBox getCarSellOrderBoxToOpen() {
+        	return carSellOrderBoxToOpen;
+    	}
+
+    	public SellOrderSpendingProof getCarSellOrderSpendingProof() {
+        	return proof;
+    	}
+
+    	// Recreates output CarBoxData with the same attributes specified in CarSellOrder.
+    	// Specifies the new owner depends on proof provided:
+    	// 1) if the proof is from the seller then the owner remain the same
+    	// 2) if the proof is from the buyer then it will become the new owner
+    	public CarBoxData getNewOwnerCarBoxData() {
+        	PublicKey25519Proposition proposition;
+        	if(proof.isSeller()) {
+            	proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes());
+        	} else {
+            	proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getBuyerPublicKeyBytes());
+        	}
+
+        	return new CarBoxData(
+                proposition,
+                carSellOrderBoxToOpen.getVin(),
+                carSellOrderBoxToOpen.getYear(),
+                carSellOrderBoxToOpen.getModel(),
+                carSellOrderBoxToOpen.getColor()
+        	);
+    	}
+
+    	// Check if proof is provided by Sell order owner.
+    	public boolean isSpentByOwner() {
+        	return proof.isSeller();
+    	}
+
+    	// Coins to be paid to the owner of Sell order in case if Buyer spent the Sell order.
+    	public RegularBoxData getPaymentBoxData() {
+        	return new RegularBoxData(
+                new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes()),
+                carSellOrderBoxToOpen.getPrice()
+        	);
+    	}
+
+    	// CarBuyOrderInfo minimal bytes representation.
+    	public byte[] bytes() {
+        	byte[] carSellOrderBoxToOpenBytes = CarSellOrderBoxSerializer.getSerializer().toBytes(carSellOrderBoxToOpen);
+        	byte[] proofBytes = SellOrderSpendingProofSerializer.getSerializer().toBytes(proof);
+
+        	return Bytes.concat(
+                Ints.toByteArray(carSellOrderBoxToOpenBytes.length),
+                carSellOrderBoxToOpenBytes,
+                Ints.toByteArray(proofBytes.length),
+                proofBytes
+        	);
+    	}
+
+    	// Define object deserialization similar to 'toBytes()' representation.
+    	public static CarBuyOrderInfo parseBytes(byte[] bytes) {
+        	int offset = 0;
+
+        	int batchSize = BytesUtils.getInt(bytes, offset);
+        	offset += 4;
+
+        	CarSellOrderBox carSellOrderBoxToOpen = CarSellOrderBoxSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
+        	offset += batchSize;
+
+        	batchSize = BytesUtils.getInt(bytes, offset);
+        	offset += 4;
+
+        	SellOrderSpendingProof proof = SellOrderSpendingProofSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
+
+        	return new CarBuyOrderInfo(carSellOrderBoxToOpen, proof);
+    	}
+	}
+ 
+
+ If you look at the code above, you can see that this object is not much more than a container of the information that needs to be processed: the CarSellOrderBox that should be opened, and the proof to open it. It then includes their getters, and a couple of "utility" methods: *getNewOwnerCarBoxData()* and *getPaymentBoxData()*. The first one, *getNewOwnerCarBoxData()*, creates a new CarBox with the same properties of the sold car, and "assigns" it (by locking it with the right proposition) to either the buyer or the seller, depending on who opened the order.
+
+
+
+
+  ::
+
+    public CarBoxData getNewOwnerCarBoxData() {
+        PublicKey25519Proposition proposition;
+        if(proof.isSeller()) {
+            proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes());
+        } else {
+            proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getBuyerPublicKeyBytes());
+        }
+        return new CarBoxData(
+                proposition,
+                carSellOrderBoxToOpen.getVin(),
+                carSellOrderBoxToOpen.getYear(),
+                carSellOrderBoxToOpen.getModel(),
+                carSellOrderBoxToOpen.getColor()
+        );
+    }
+
+
+The second one, *getPaymentBoxData()*, creates a coin box with the payment of the order price to the seller (it will be used only if the buyer accepts the order):
+
+
+
+
+  ::
+
+    public RegularBoxData getPaymentBoxData() {
+        return new RegularBoxData(
+                new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes()),
+                carSellOrderBoxToOpen.getPrice()
+        );
+    }
+
+
+Also this time we have the methods to serialize and deserialize the object: since the CarBuyOrderInfo is a property of our transaction and the transaction can be serialized, we need to be able to serialize and deserialize it as well.
+
+Now that we have seen how a transaction is built, you may wonder how it can be created and submitted to the sidechain. This could be achieved in several ways, depending on the needs of our application, e.g. by using an RPC command, a code defined trigger, an offline wallet that creates the byte-array of the transaction and sends it through the default API method '*transaction/sendTransaction*', ... 
+One of the most common ways to support the creation of a custom transaction is by extending the default API endpoints, and add a new custom local wallet endpoint to let the user create it via HTTP. We will look into that at the end of this chapter.
+
+
+Custom proof and proposition
+#######################################
+
+A proposition is a box locker, and a proof is its unlocker.
+The SDK offers default Propositions and Proofs, and a developer can define custom ones.
+
+Inside the Lambo Registry application, you can find a custom proposition: SellOrderProposition. It requires two public keys, while the corresponding proof (SellOrderSpendingProof) is able to unlock it by supplying only one of those two keys.
+
+Let's look at them, starting with the SellOrderProposition:
+
+
+
+
+  ::
+
+    @JsonView(Views.Default.class)
+	public final class SellOrderProposition implements ProofOfKnowledgeProposition<PrivateKey25519> {
+    	private static final int KEY_LENGTH = Ed25519.keyLength();
+
+    	// Specify json attribute name for the ownerPublicKeyBytes field.
+    	@JsonProperty("ownerPublicKey")
+    	private final byte[] ownerPublicKeyBytes;
+
+    	// Specify json attribute name for the buyerPublicKeyBytes field.
+    	@JsonProperty("buyerPublicKey")
+    	private final byte[] buyerPublicKeyBytes;
+
+    	public SellOrderProposition(byte[] ownerPublicKeyBytes, byte[] 	buyerPublicKeyBytes) {
+        	if(ownerPublicKeyBytes.length != KEY_LENGTH)
+        	    throw new IllegalArgumentException(String.format("Incorrect ownerPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, ownerPublicKeyBytes.length));
+
+        	if(buyerPublicKeyBytes.length != KEY_LENGTH)
+            	throw new IllegalArgumentException(String.format("Incorrect buyerPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, buyerPublicKeyBytes.length));
+
+        	this.ownerPublicKeyBytes = Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
+
+        	this.buyerPublicKeyBytes = Arrays.copyOf(buyerPublicKeyBytes, KEY_LENGTH);
+    	}
+
+
+    	@Override
+    	public byte[] pubKeyBytes() {
+        	return Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
+    	}
+
+    	public byte[] getOwnerPublicKeyBytes() {
+        	return pubKeyBytes();
+    	}
+
+    	public byte[] getBuyerPublicKeyBytes() {
+        	return Arrays.copyOf(buyerPublicKeyBytes, KEY_LENGTH);
+    	}
+
+    	@Override
+    	public byte[] bytes() {
+        	return Bytes.concat(
+                ownerPublicKeyBytes,
+                buyerPublicKeyBytes
+        	);
+    	}
+
+    	public static SellOrderProposition parseBytes(byte[] bytes) {
+        	int offset = 0;
+
+        	byte[] ownerPublicKeyBytes = Arrays.copyOfRange(bytes, offset, offset + KEY_LENGTH);
+        	offset += KEY_LENGTH;
+
+        	byte[] buyerPublicKeyBytes = Arrays.copyOfRange(bytes, offset, offset + KEY_LENGTH);
+
+        	return new SellOrderProposition(ownerPublicKeyBytes, buyerPublicKeyBytes);
+
+    	}
+
+    	@Override
+    	public PropositionSerializer serializer() {
+        	return SellOrderPropositionSerializer.getSerializer();
+    	}
+
+    	@Override
+    	public int hashCode() {
+        	int result = Arrays.hashCode(ownerPublicKeyBytes);
+        	result = 31 * result + Arrays.hashCode(buyerPublicKeyBytes);
+        	return result;
+    	}
+
+    	@Override
+    	public boolean equals(Object obj) {
+        	if (obj == null)
+        	    return false;
+        	if (!(obj instanceof SellOrderProposition))
+            	return false;
+        	if (obj == this)
+            	return true;
+        	SellOrderProposition that = (SellOrderProposition) obj;
+        	return Arrays.equals(ownerPublicKeyBytes, that.ownerPublicKeyBytes)
+                && Arrays.equals(buyerPublicKeyBytes, that.buyerPublicKeyBytes);
+    	}
+	}
+
+
+
+As you can see from the code above, a custom proposition can have a number of private fields; in our case the *ownerPublicKeyBytes* and *buyerPublicKeyBytes* properties, which also have *getOwnerPublicKeyBytes()* and *getBuyerPublicKeyBytes()* as getter methods. 
+
+A custom proposition must:
+
+- **implement the ProofOfKnowledgeProposition interface**, and define its "pubKeyBytes" method, that returns a byte representation of the public key of this proposition:
+
+  ::
+
+    @Override
+    public byte[] pubKeyBytes() {
+        return Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
+    }
+    
+- **provide the usual methods for serialization and deserialization**: 
+   -  byte[] bytes()
+   - parseBytes(byte[] bytes)
+   -  serializer()
+
+- **implement the hashCode() and equals() methods**, used to compare the proposition with other ones:
+
+ 
+
+
+  ::
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(ownerPublicKeyBytes);
+        result = 31 * result + Arrays.hashCode(buyerPublicKeyBytes);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (!(obj instanceof SellOrderProposition))
+            return false;
+        if (obj == this)
+            return true;
+        SellOrderProposition that = (SellOrderProposition) obj;
+        return Arrays.equals(ownerPublicKeyBytes, that.ownerPublicKeyBytes)
+                && Arrays.equals(buyerPublicKeyBytes, that.buyerPublicKeyBytes);
+    }
+ 
+   
+
+Now we can analyse the corresponding proof class, SellOrderSpendingProof:
+
+
+
+
+  ::
+
+    public final class SellOrderSpendingProof extends AbstractSignature25519<PrivateKey25519, SellOrderProposition> {
+
+    	private final boolean isSeller;
+
+    	public static final int SIGNATURE_LENGTH = Ed25519.signatureLength();
+
+    	public SellOrderSpendingProof(byte[] signatureBytes, boolean isSeller) {
+        	super(signatureBytes);
+        	if (signatureBytes.length != SIGNATURE_LENGTH)
+        	    throw new IllegalArgumentException(String.format("Incorrect signature length, %d expected, %d found", SIGNATURE_LENGTH,
+                    signatureBytes.length));
+        	this.isSeller = isSeller;
+    	}
+
+    	public boolean isSeller() {
+        	return isSeller;
+    	}
+
+    	@Override
+    	public boolean isValid(SellOrderProposition proposition, byte[] message) {
+        	if(isSeller) {
+        	    // Car seller wants to discard selling.
+            	return Ed25519.verify(signatureBytes, message, proposition.getOwnerPublicKeyBytes());
+        	} else {
+            	// Specific buyer wants to buy the car.
+            	return Ed25519.verify(signatureBytes, message, proposition.getBuyerPublicKeyBytes());
+        	}
+    	}
+
+    	@Override
+    	public byte proofTypeId() {
+        	return CarRegistryProofsIdsEnum.SellOrderSpendingProofId.id();
+    	}
+
+    	@Override
+    	public byte[] bytes() {
+        	return Bytes.concat(
+                new byte[] { (isSeller ? (byte)1 : (byte)0) },
+                signatureBytes
+        	);
+    	}
+
+    	public static SellOrderSpendingProof parseBytes(byte[] bytes) {
+        	int offset = 0;
+
+        	boolean isSeller = bytes[offset] != 0;
+        	offset += 1;
+
+        	byte[] signatureBytes = Arrays.copyOfRange(bytes, offset, offset + SIGNATURE_LENGTH);
+
+        	return new SellOrderSpendingProof(signatureBytes, isSeller);
+    	}
+
+    	@Override
+    	public ProofSerializer serializer() {
+        	return SellOrderSpendingProofSerializer.getSerializer();
+    	}
+
+    	@Override
+    	public boolean equals(Object o) {
+        	if (this == o) return true;
+        	if (o == null || getClass() != o.getClass()) return false;
+        	SellOrderSpendingProof that = (SellOrderSpendingProof) o;
+        	return Arrays.equals(signatureBytes, that.signatureBytes) && isSeller == that.isSeller;
+    	}
+
+    	@Override
+    	public int hashCode() {
+        	int result = Objects.hash(signatureBytes.length);
+        	result = 31 * result + Arrays.hashCode(signatureBytes);
+        	result = 31 * result + (isSeller ? 1 : 0);
+        	return result;
+    	}
+	}
+  
+
+ The most important method here is *isValid*: it receives a proposition and a byte[] message, and checks that the signature contained in this proof is valid against them. The signature was passed in the constructor. If this method returns true, any box locked with the proposition can be opened with this proof.
+
+
+
+
+  ::
+
+    @Override
+    public boolean isValid(SellOrderProposition proposition, byte[] message) {
+        if(isSeller) {
+            // Car seller wants to discard selling.
+            return Ed25519.verify(
+                signatureBytes, message, proposition.getOwnerPublicKeyBytes()
+            );
+        } else {
+            // Specific buyer wants to buy the car.
+            return Ed25519.verify(
+                signatureBytes, message, proposition.getBuyerPublicKeyBytes()
+            );
+        }
+    }    
+  
+
+ You should be familiar with all the other methods. *proofTypeId* returns a unique identifier of this proof type:
+
+
+
+
+  ::
+
+    @Override
+    public byte proofTypeId() {
+        return CarRegistryProofsIdsEnum.SellOrderSpendingProofId.id();
+    }
+   
+Then we have the methods that compare the proof with other ones:
+
+
+
+
+  ::
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SellOrderSpendingProof that = (SellOrderSpendingProof) o;
+        return Arrays.equals(signatureBytes, that.signatureBytes) && isSeller == that.isSeller;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(signatureBytes.length);
+        result = 31 * result + Arrays.hashCode(signatureBytes);
+        result = 31 * result + (isSeller ? 1 : 0);
+        return result;
+    }
+    
+
+
+ and the methods to serialize and deserialize it:
+
+ 
+
+
+  ::
+
+    @Override
+    public byte[] bytes() {
+        return Bytes.concat(
+                new byte[] { (isSeller ? (byte)1 : (byte)0) },
+                signatureBytes
+        );
+    }
+
+    public static SellOrderSpendingProof parseBytes(byte[] bytes) {
+        int offset = 0;
+
+        boolean isSeller = bytes[offset] != 0;
+        offset += 1;
+
+        byte[] signatureBytes = Arrays.copyOfRange(bytes, offset, offset + SIGNATURE_LENGTH);
+
+        return new SellOrderSpendingProof(signatureBytes, isSeller);
+    }
+
+    @Override
+    public ProofSerializer serializer() {
+        return SellOrderSpendingProofSerializer.getSerializer();
+    }
+   
+
+Please note: the relationship between proposition, proofs and boxes is already defined by the generics used when declaring them. For example, the SellOrderProposition (first row below) is also part of the declaration of the related proof and custom box (CarSellOrderBox) that gets locked by it:
+
+public final class **SellOrderProposition** implements ProofOfKnowledgeProposition<PrivateKey25519> 
+
+public final class SellOrderSpendingProof extends AbstractSignature25519<PrivateKey25519, **SellOrderProposition**> 
+
+public final class CarSellOrderBox extends AbstractNoncedBox<**SellOrderProposition**, CarSellOrderBoxData, CarSellOrderBox> 
+
+This way, some design errors can be identified already at compile time.
+
+
+Application state
+##########################
+
+
+By implementing the *com.horizen.state.ApplicationState* interface with a custom class, developers can:
+
+- define specific rules to validate transactions (before they are accepted in the mempool and later when included in a block)
+- define specific rules to validate blocks (before they are appended to the blockchain)
+- be notified when a new block is added to the blockchain ("*onApplyChanges*"), receiving all the boxes created and removed by its transactions, or when a block revert happens ("*onRollback*").
+
+The methods of the interface are the following ones:
+
+
+
+
+  ::
+
+    public interface ApplicationState {
+    
+    	Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
+
+    	Try<ApplicationState> onRollback(byte[] version); 
+
+    	boolean validate(SidechainStateReader stateReader, SidechainBlock block);
+
+    	boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction);
+
+	}
+
+
+Please note how the block revert notification is implemented: a byte[] representing a version id is passed every time *onApplyChanges* is called. If a rollback happens, the same version id is passed by the *onRollback* method: all versions after that one have to be discarded.
+
+All the methods have a *SidechainStateReader* parameter. It's a utility class you can use to access the closed boxes of the sidechain, i.e. all the boxes that haven't been spent yet. Here its interface definition:
+
+
+
+
+  ::
+
+    public interface SidechainStateReader {
+    	Optional<Box> getClosedBox(byte[] boxId);
+		}
+
+
+Now let's see how the application State is used in our Lambo Registry app, staring from the *onApplyChanges* method:
+
+
+
+
+  ::
+
+    @Override
+    public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader,
+                                                byte[] version,
+                                                List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove) {
+        //we update the Car info database. The data from it will be used during validation.
+
+        //collect the vin to be added: the ones declared in new boxes
+        Set<String> vinToAdd = carInfoDbService.extractVinFromBoxes(newBoxes);
+        //collect the vin to be removed: the ones contained in the removed boxes that are not present in the previous list
+        Set<String> vinToRemove = new HashSet<>();
+        for (byte[] boxId : boxIdsToRemove) {
+            stateReader.getClosedBox(boxId).ifPresent( box -> {
+                    if (box instanceof CarBox){
+                        String vin = ((CarBox)box).getVin();
+                        if (!vinToAdd.contains(vin)){
+                            vinToRemove.add(vin);
+                        }
+                    } else if (box instanceof CarSellOrderBox){
+                        String vin = ((CarSellOrderBox)box).getVin();
+                        if (!vinToAdd.contains(vin)){
+                            vinToRemove.add(vin);
+                        }
+                    }
+                }
+            );
+        }
+        carInfoDbService.updateVin(version, vinToAdd, vinToRemove);
+        return new Success<>(this);
+    }
+
+
+As you can see this method is used to update a list containing all the VIN (vehicle identification numbers) that appear in our blockchain. To do that, it inspects the two types of boxes that contain a VIN (CarBox and CarSellOrderBox), and adds each VIN to the list if the box has been created, or remove it if the box has been spent.
+Since this method is called every time a new block is appended to the chain, we can be sure the list is always updated.
+
+The list is then used in the *validate* method. 
+To validate a single transaction, we check that the VIN is not already in the list:
+
+
+
+
+  ::
+
+    @Override
+    public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) {
+        // we go through all CarDeclarationTransactions and verify that each CarBox represents a unique Car.
+        if (CarDeclarationTransaction.class.isInstance(transaction)){
+            Set<String> vinList = carInfoDbService.extractVinFromBoxes(transaction.newBoxes());
+            for (String vin : vinList) {
+                if (! carInfoDbService.validateVin(vin, Optional.empty())){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+To validate an entire block, we need an additional check, to be sure that in the same block two different transactions don't declare the same VIN:
+
+
+
+
+  ::
+
+    @Override
+    public boolean validate(SidechainStateReader stateReader, SidechainBlock block) {
+        //We check that there are no multiple transactions declaring the same VIN inside the block
+        Set<String> vinList = new HashSet<>();
+        for (BoxTransaction<Proposition, Box<Proposition>> t :  JavaConverters.seqAsJavaList(block.transactions())){
+            if (CarDeclarationTransaction.class.isInstance(t)){
+                for (String currentVin :  carInfoDbService.extractVinFromBoxes(t.newBoxes())){
+                    if (vinList.contains(currentVin)){
+                        return false;
+                    }else{
+                        vinList.add(currentVin);
+                    }
+                }
+            }
+        }
+        return true;
+	}
+
+
+Finally, the *rollback* method, which is very simple and delegates all the logic to the service used to store our list:
+
+
+
+
+  ::
+
+    @Override
+    public Try<ApplicationState> onRollback(byte[] version) {
+        carInfoDbService.rollback(version);
+        return new Success<>(this);
+    }
+
+
+
+Application wallet
+##########################
+
+The interface *com.horizen.wallet.ApplicationWallet* is another extension point that allows an application to be notified each time a secret or box is added or removed from the sidechain node local wallet.
+
+
+
+
+  ::
+
+    public interface ApplicationWallet {
+
+    	void onAddSecret(Secret secret);
+    	void onRemoveSecret(Proposition proposition);
+    	void onChangeBoxes(byte[] version, List<Box<Proposition>> boxesToUpdate, List<byte[]> boxIdsToRemove);
+    	void onRollback(byte[] version);
+	}
+
+
+The Lambo registry example does not implement the interface *ApplicationWallet* because its wallet has basic requirements. You may need to use interface *com.horizen.wallet.ApplicationWallet* depending on your app requirements. For example, if the app needs to maintain a separate wallet balance or counter of a specific kind of custom boxes associated to locally stored keys, you could put the code that updates those records inside the *onChangeBoxes* method. 
+
+
+API extension
+##########################
+
+An application can extend the standard API endpoints and define custom ones.
+As an example, the Lambo Registry application adds four endpoints, one for each added transaction:
+
+- createCar
+- createCarSellOrder
+- acceptCarSellOrder
+- cancelCarSellOrder
+
+These new endpoints do not broadcast the transaction directly, but only produce a signed hex version of it; to execute the transaction, the user will later have to post it to the standard endpoint  */transaction/sendTransaction*. This approach is just a design choice, so it's not a mandatory requirement.
+Before looking at the code, please note that all these endpoints need to interact with the local wallet to unlock boxes and sign the transactions.
+
+So, the first step to add endpoints is to extend the *com.horizen.api.http.ApplicationApiGroup* class, and implement its two methods:
+
+
+  ::
+
+    @Override
+    public String basePath() {
+        return "carApi";
+    	}
+
+    @Override
+    public List<Route> getRoutes() {
+        List<Route> routes = new ArrayList<>();
+        routes.add(bindPostRequest("createCar", this::createCar, CreateCarBoxRequest.class));
+        routes.add(bindPostRequest("createCarSellOrder", this::createCarSellOrder, CreateCarSellOrderRequest.class));
+        routes.add(bindPostRequest("acceptCarSellOrder", this::acceptCarSellOrder, SpendCarSellOrderRequest.class));
+        routes.add(bindPostRequest("cancelCarSellOrder", this::cancelCarSellOrder, SpendCarSellOrderRequest.class));
+        return routes;
+    }
+
+
+The first method defines the first part of our endpoint urls.
+
+The second method returns the list of the new routes.
+The SDK uses the `Akka Http Routing library <https://doc.akka.io/docs/akka-http/current/routing-dsl/routes.html>`_, and the type of each array element returned by this method must be an Akka Route. In most cases (including the Lambo registry example) you don't have to know much more about Akka routes, as you can just use the provided *bindPostRequest* method to build a route element.
+The *bindPostRequest* method returns an Akka route that responds to an HTTP POST request, and receives three parameters:
+
+- a String, representing the request path
+- the method implementing the logic
+- a class representing the request class
+
+We can see all this in the first endpoint defined in the Lambo registry: "createCar".
+
+This is the class associated to its request (CreateCarBoxRequest - the third parameter):
+
+  ::
+
+    public class CreateCarBoxRequest {
+    	public String vin;
+    	public int year;
+    	public String model;
+    	public String color;
+    	public String proposition; 
+    	public long fee;
+
+    	public void setVin(String vin) {
+        	this.vin = vin;
+    	}
+
+    	public void setYear(int year) {
+        	this.year = year;
+    	}
+
+    	public void setModel(String model) {
+        	this.model = model;
+    	}
+
+    	public void setColor(String color) {
+        	this.color = color;
+    	}
+
+    	public void setProposition(String proposition) {
+        	this.proposition = proposition;
+    	}
+
+    	public void setFee(long fee) {
+        	this.fee = fee;
+    	}
+	}
+
+
+As you can see the class is just a javabean that will map the fields of the input json into the request body. You have to provide the setter of each property, to allow the SDK engine to populate the fields with the request data.
+
+Now let's check out the method implementing the endpoint logic (i.e. the second parameter of the *bindPostRequest* method):
+
+
+  ::
+
+    private ApiResponse createCar(SidechainNodeView view, CreateCarBoxRequest ent) {
+        try {
+            // Parse the proposition of the Car owner.
+            PublicKey25519Proposition carOwnershipProposition = PublicKey25519PropositionSerializer.getSerializer()
+                    .parseBytes(BytesUtils.fromHexString(ent.proposition));
+
+            //check that the vin is unique (both in local veichle store and in mempool)
+            if (! carInfoDBService.validateVin(ent.vin, Optional.of(view.getNodeMemoryPool()))){
+                throw new IllegalStateException("Vehicle identification number already present in blockchain");
+            }
+
+            CarBoxData carBoxData = new CarBoxData(carOwnershipProposition, ent.vin, ent.year, ent.model, ent.color);
+
+            // Try to collect regular boxes to pay fee
+            List<Box<Proposition>> paymentBoxes = new ArrayList<>();
+            long amountToPay = ent.fee;
+
+            // Avoid to add boxes that are already spent in some Transaction that is present in node Mempool.
+            List<byte[]> boxIdsToExclude = boxesFromMempool(view.getNodeMemoryPool());
+            List<Box<Proposition>> regularBoxes = view.getNodeWallet().boxesOfType(RegularBox.class, boxIdsToExclude);
+            int index = 0;
+            while (amountToPay > 0 && index < regularBoxes.size()) {
+                paymentBoxes.add(regularBoxes.get(index));
+                amountToPay -= regularBoxes.get(index).value();
+                index++;
+            }
+
+            if (amountToPay > 0) {
+                throw new IllegalStateException("Not enough coins to pay the fee.");
+            }
+
+            // Set change if exists
+            long change = Math.abs(amountToPay);
+            List<RegularBoxData> regularOutputs = new ArrayList<>();
+            if (change > 0) {
+                regularOutputs.add(new RegularBoxData((PublicKey25519Proposition) paymentBoxes.get(0).proposition(), change));
+            }
+
+            // Create fake proofs to be able to create transaction to be signed.
+            List<byte[]> inputIds = new ArrayList<>();
+            for (Box b : paymentBoxes) {
+                inputIds.add(b.id());
+            }
+
+            List fakeProofs = Collections.nCopies(inputIds.size(), null);
+            Long timestamp = System.currentTimeMillis();
+
+            CarDeclarationTransaction unsignedTransaction = new CarDeclarationTransaction(
+                    inputIds,
+                    fakeProofs,
+                    regularOutputs,
+                    carBoxData,
+                    ent.fee,
+                    timestamp);
+
+            // Get the Tx message to be signed.
+            byte[] messageToSign = unsignedTransaction.messageToSign();
+
+            // Create real signatures.
+            List<Signature25519> proofs = new ArrayList<>();
+            for (Box<Proposition> box : paymentBoxes) {
+                proofs.add((Signature25519) view.getNodeWallet().secretByPublicKey(box.proposition()).get().sign(messageToSign));
+            }
+
+            // Create the transaction with real proofs.
+            CarDeclarationTransaction signedTransaction = new CarDeclarationTransaction(
+                    inputIds,
+                    proofs,
+                    regularOutputs,
+                    carBoxData,
+                    ent.fee,
+                    timestamp);
+
+            return new TxResponse(ByteUtils.toHexString(sidechainTransactionsCompanion.toBytes((BoxTransaction) signedTransaction)));
+        }
+        catch (Exception e) {
+            return new CarResponseError("0102", "Error during Car declaration.", Some.apply(e));
+        }
+    }
+
+
+Please note that:
+
+- the method receives two parameters: the first one is *SidechainNodeView*, an utility class that gives access to a snapshot of the current blockchain state and the current wallet. It can be used, for example, to find a closed box owned by the user, that is a box that can be spent in the transaction. The second parameter is the "request class" previously introduced. 
+- the method must return a class implementing the *ApiResponse* interface, or its sub-interface *SuccessResponse* if the method executes without errors. It can be any javabean, but it must include the *@JsonView* annotation, to instruct the SDK engine to serialize it to json, and must expose the data to be returned in public fields. The response class in the Lambo registry example has only one field (*transactionBytes*), which is a String containing the HEX representation of the created transaction:
+
+  ::
+
+    @JsonView(Views.Default.class)
+    static class TxResponse implements SuccessResponse {
+        public String transactionBytes;
+
         public TxResponse(String transactionBytes) {
             this.transactionBytes = transactionBytes;
         }
     }
 
-* Define Car creation transaction itself
+
+If we now look into the method logic, we can see that, at first, it parses the input data and constructs the objects from it (carOwnershipProposition and carBoxData).
+It also performs a security check that returns an error if the user tries to declare a car with a Vehicle Identification Number which already exists: 
+
   ::
-   private ApiResponse createCar(SidechainNodeView view, CreateCarBoxRequest ent)
 
-As a first parameter we pass reference to SidechainNodeView, second reference is previously defined class on step 1 for representation of JSON request. 
+	// Parse the proposition of the Car owner.
+	PublicKey25519Proposition carOwnershipProposition = PublicKey25519PropositionSerializer.getSerializer()
+    	.parseBytes(BytesUtils.fromHexString(ent.proposition));
 
-* Define the request for the CarSellOrder transaction with a CreateCarSellOrderRequest as we did for the car creation transaction request.
+	//check that the vin is unique (both in local veichle store and in mempool)
+	if (! carInfoDBService.validateVin(ent.vin, Optional.of(view.getNodeMemoryPool()))){
+            throw new IllegalStateException("Vehicle identification number already present in blockchain");
+	}
 
-    * Define request class for Car sell order transaction CreateCarSellOrderRequest as it was done for Car creation transaction request:
-      ::
-       public class CreateCarSellOrderRequest {
-        public String carBoxId; // hex representation of box id
-        public String buyerProposition; // hex representation of public key proposition
-        public long sellPrice;
-        public long fee;
+	CarBoxData carBoxData = new CarBoxData(carOwnershipProposition, ent.vin, ent.year, ent.model, ent.color);
 
-        // Setters to let Akka Jackson JSON library to automatically deserialize the request body.
+One more note about the Vehicle Identification Number check: a similar check is also performed in the applicationState as part of the consensus validation, to discard invalid transactions. As a general design rule, all checks on data correctness must be performed in both points. This way, transactions are verified by the endpoint. The endpoint will only allow valid transactions on the network. If a user tries to bypass the creation endpoint by broadcasting the binary transaction hex directly, the consensus check will not accept invalid transactions.
 
-        public void setCarBoxId(String carBoxId) {
-            this.carBoxId = carBoxId;
-        }
+After this check, the code builds two lists: *paymentBoxes*, a list of coins used to pay the fee, and *regularOutputs*, the output boxes. We start this second list with the change (if any) of the fee payment.
 
-        public void setBuyerProposition(String buyerProposition) {
-            this.buyerProposition = buyerProposition;
-        }
 
-        public void setSellPrice(long sellPrice) {
-            this.sellPrice = sellPrice;
-        }
+  ::
 
-        public void setFee(int fee) {
-            this.fee = fee;
-        }
-       }
+	// Try to collect regular boxes to pay fee
+    List<Box<Proposition>> paymentBoxes = new ArrayList<>();
+    long amountToPay = ent.fee;
 
-* Define Car Sell order transaction itself -- ``private ApiResponse createCarSellOrder(SidechainNodeView view, CreateCarSellOrderRequest ent)`` Required actions are similar as it was done to Create Car transaction. The main idea is a moving Car Box into CarSellOrderBox.
+    // Avoid to add boxes that are already spent by transactions in the node Mempool.
+    List<byte[]> boxIdsToExclude = boxesFromMempool(view.getNodeMemoryPool());
+    List<Box<Proposition>> regularBoxes = view.getNodeWallet().boxesOfType(RegularBox.class, boxIdsToExclude);
+    int index = 0;
+    while (amountToPay > 0 && index < regularBoxes.size()) {
+        paymentBoxes.add(regularBoxes.get(index));
+        amountToPay -= regularBoxes.get(index).value();
+        index++;
+    }
 
-* Define Car sell order response --  As a result of Car sell order we could still use TxResponse
+    if (amountToPay > 0) {
+        throw new IllegalStateException("Not enough coins to pay the fee.");
+    }
+
+    // Set change if exists
+    long change = Math.abs(amountToPay);
+    List<RegularBoxData> regularOutputs = new ArrayList<>();
+    if (change > 0) {
+        regularOutputs.add(new RegularBoxData((PublicKey25519Proposition) 
+           paymentBoxes.get(0).proposition(), change));
+    }
+
+
+Now everything is ready to build and sign the transaction.
+To generate signature proofs, we need the transaction bytes. 
+But to obtain the transaction bytes, we need to create it with the needed proofs.
+To cut this dependency loop, transactions are built in the following way:
+
+1. Create fake/empty proofs,
+2. Create transaction by using those dummy proofs
+3. Receive Tx message to be signed from transaction at step 2 (we can do it because proofs are not part of the message that needs to be signed)
+4. Create real proof by using Tx message to be signed
+5. Create the real transaction with real proofs
+
+In the code:
+
+
+  ::
+
+	// Create fake proofs to be able to create transaction to be signed.
+    List<byte[]> inputIds = new ArrayList<>();
+    for (Box b : paymentBoxes) {
+        inputIds.add(b.id());
+    }
+
+    List fakeProofs = Collections.nCopies(inputIds.size(), null);
+    Long timestamp = System.currentTimeMillis();
+
+    CarDeclarationTransaction unsignedTransaction = new CarDeclarationTransaction(
+            inputIds,
+            fakeProofs,
+            regularOutputs,
+            carBoxData,
+            ent.fee,
+            timestamp);
+
+    // Get the Tx message to be signed.
+    byte[] messageToSign = unsignedTransaction.messageToSign();
+
+    // Create real signatures.
+    List<Signature25519> proofs = new ArrayList<>();
+    for (Box<Proposition> box : paymentBoxes) {
+        proofs.add((Signature25519) view.getNodeWallet()
+            .secretByPublicKey(box.proposition())
+            .get()
+            .sign(messageToSign));
+    }
+
+    // Create the transaction with real proofs.
+    CarDeclarationTransaction signedTransaction = new CarDeclarationTransaction(
+            inputIds,
+            proofs,
+            regularOutputs,
+            carBoxData,
+            ent.fee,
+            timestamp);
+
+          
+
+ Finally, the response construction:
+
  
-* Create AcceptCarSellorder transaction
-    * Specify request as  
-      ::
-       public class SpendCarSellOrderRequest {
-        public String carSellOrderId; // hex representation of box id
-        public long fee;
-        // Setters to let the Akka Jackson JSON library automatically deserialize the request body.
-        public void setCarSellOrderId(String carSellOrderId) {
-        this.carSellOrderId = carSellOrderId;
-        }
+  ::
 
-        public void setFee(long fee) {
-        this.fee = fee;
-        }
-       }
-            
-    * Specify acceptCarSellOrder transaction itself
-    * As a result we still could use TxResponse class
-    * Important part is creation proof for BuyCarTransaction, because we accept car buying then we shall form proof with defining that we buy car:
-        ::
-            
-            SellOrderSpendingProof buyerProof = new SellOrderSpendingProof(
-            buyerSecretOption.get().sign(messageToSign).bytes(),
-            isSeller
-            );
-            
-    Where *isSeller* is false.
+	return new TxResponse(
+        ByteUtils.toHexString(sidechainTransactionsCompanion.toBytes((BoxTransaction) signedTransaction))
+    );
+     
 
-* Create cancelCarSellOrder transaction
-    * Specify cancel request as 
-      ::
-        public class SpendCarSellOrderRequest {
-            public String carSellOrderId; // hex representation of box id
-            public long fee;
 
-            // Setters to let Akka Jackson JSON library to automatically deserialize the request body.
+As a result, this endpoint will be exposed by this url: */carApi/createCar*
+and will be invoked with a post http request.
+Input and output data will be represented in json format.
 
-            public void setCarSellOrderId(String carSellOrderId) {
-                this.carSellOrderId = carSellOrderId;
-            }
+The structure of the others endpoints is similar, it's a good exercise to check them out and see how they were implemented.
 
-            public void setFee(long fee) {
-                this.fee = fee;
-            }
-        }
-    * Specify the transaction itself. Because we recalled our sell order, the isSeller parameter during transaction creation is set to false.
+
+
+
+
+
+
+
 
 
 
