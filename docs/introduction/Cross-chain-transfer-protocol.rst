@@ -15,9 +15,20 @@ We can declare a new sidechain by using the following RPC command:
 
 .. code:: Bash
 
-   sc_create withdrawalEpochLength "address" amount "verification key" "vrfPublickKey" "genSysConstant"
+   sc_create {"withdrawalEpochLength": withdrawalEpochLength, "toaddress": address, "amount": creation_amount, "wCertVk": vk, "constant": constant, 'customData': custom_data, 'wCeasedVk': cswVk, 'vFieldElementCertificateFieldConfig': feCfg,
+              'vBitVectorCertificateFieldConfig': bvCfg, 'forwardTransferScFee': ftScFee, 'mainchainBackwardTransferScFee': mbtrScFee, 'mainchainBackwardTransferRequestDataLength': mbtrRequestDataLength}
 
-The command specifies where the first forward transfer coins are sent, as well as the epoch length. It is the epoch length that defines the frequency, in blocks, of the backward transfers' submissions (see the “backward transfers” paragraph below). The sc_create command also includes the cryptographic key to receive coins back from the sidechain. The verification key guarantees that the received coins were processed according to a matching proving system.
+Parameters to the command must passed in json format. The command must specify where the first forward transfer coins are sent("toaddress"), it's amount("amount"), as well as the epoch length("withdrawalEpochLength"). It is the epoch length that defines the frequency, in blocks, of the backward transfers' submissions (see the “backward transfers” paragraph below). The sc_create command also includes the cryptographic key to receive coins back from the sidechain("wCertVk"). The verification key guarantees that the received coins were processed according to a matching proving system. Beside these parameters sc_create have some optional ones:
+  "customData"                                 - It is an arbitrary byte string of even length expressed in hexadecimal format."
+  "constant"                                   - A public input for WCert proof verification.
+  "wCeasedVk"                                  - Used to verify a Ceased sidechain withdrawal proofs for given SC. 
+  "vFieldElementCertificateFieldConfig"        - Specifies how many custom FieldElementCertificateField any certificate should have and the corresponding size."
+  "vBitVectorCertificateFieldConfig"           - Specifies how many bitvector fields any certificate should have and the corresponding size."
+  "forwardTransferScFee"                       -  The amount of fee due to sidechain actors when creating a FT"
+  "mainchainBackwardTransferScFee"             - The amount of fee due to sidechain actors when creating a MBTR"
+  "mainchainBackwardTransferRequestDataLength" - The expected size of the request data vector (made of field elements) in a MBTR"
+
+
 As a consequence of the sidechain declaration command, a unique sidechain id will be assigned to that sidechain, and from that moment on that id can be used for every operation related to that specific sidechain:
 
 .. code:: json
@@ -31,7 +42,16 @@ As a consequence of the sidechain declaration command, a unique sidechain id wil
 Forward Transfer
 ================
 
-A forward transfer sends coins from the mainchain to a sidechain. The Horizen Mainchain supports a “Forward Transfer” transaction type that specifies the sidechain destination (*sidechain id* and *receiver address*) and the amount of ZEN to be sent. From a mainchain's perspective, the transferred coins are destroyed;  they are only represented in the total balance of that particular sidechain.
+A forward transfer sends coins from the mainchain to a sidechain. The Horizen Mainchain supports a “Forward Transfer” transaction type that specifies the sidechain destination (*sidechain id* and *receiver address*) and the amount of ZEN to be sent.
+Forward Transfer can be done by using following RPC command:
+
+.. code:: Bash
+
+   sc_send {"address": sc_address, "amount": sc_ft_amount, "scid": scid, "mcReturnAddress": mc_return_address}
+
+The specifies where the forward transfer coins are sent("address"), it's amount("amount"), sidechain destination and address for change("mcReturnAddress").
+
+From a mainchain's perspective, the transferred coins are destroyed;  they are only represented in the total balance of that particular sidechain.
 On the sidechain side, the SDK provides all the functionalities that support Forward Transfers, so that a transferred amount is “converted” into a new Sidechain Box.
 
 Backward Transfer
@@ -40,6 +60,41 @@ Backward Transfer
 A backward transfer moves coins back from a sidechain to the mainchain destination.
 A Backward Transfer is initiated by a **Withdrawal Request** which is a sidechain transaction issued by the coin's owner. The request specifies the mainchain destination address and the amount. More precisely, the withdrawal request owner will create a WithdrawalRequestBox that destroys the specified amount of coins in the sidechain. This is not enough to move those coins back to the mainchain though: we need to wait until the end of the withdrawal epoch, when all the coins specified in that epoch’s Withdrawal Requests are listed in a single certificate, that is then propagated to the mainchain.
 The certificate includes a succinct cryptographic proof that the rules associated with the declared verifying key have been respected. Certificates are processed by the mainchain consensus, which recreates the coins as specified by the certificate, only checking that the proof verifies, and that the coins received by a sidechain match the amount that was sent to it.
+
+Can be performed by following RPC command on the Mainchain side:
+
+.. code:: Bash
+
+    sc_request_transfer(outputs, params)
+
+Where outputs is array of json objects representing the amounts to send. Each array element must contain following elements
+   scid           - sidechain ID in uint256 format
+   vScRequestData - sidechain Utxo ID for which a backward transafer is being requested
+   pubkeyhash     - mainchain address where to send the backward transferred amount
+   scFee          - value spent by the sender that will be gained by a SC forger
+
+Params is a json object with the following command parameters
+   fromaddress   - The address to send the funds from. If omitted funds are taken from all available UTXO.
+   changeaddress - The address to send the change to, if any. If not set, fromaddress is used. If the latter is not set too, a new generated address will be used.
+   minconf       - Minimum times of confirmation the funds should have.
+   fee           - The fee amount to attach to this transaction.
+
+Ceased Sidechain Withdrawal
+===========================
+
+When sidechain is ceased funds from sidechain can be retained to the mainchain with Ceased Sidechain Withdrawal request. This request can be performed after 2 withdrawal epochs after sidechain ceasing.
+This request can be performed by raw transaction with following structure
+       sc_csws = [{
+            "amount": sc_csw_amount,
+            "senderAddress": csw_mc_address,
+            "scId": scid,
+            "epoch": 0,
+            "nullifier": null1,
+            "activeCertData": actCertData,
+            "ceasingCumScTxCommTree": ceasingCumScTxCommTree,
+            "scProof": sc_proof1
+        }]
+
 
 Summary
 =======

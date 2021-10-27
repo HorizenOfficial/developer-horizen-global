@@ -44,3 +44,5 @@ timeout -- Timeout in seconds on API requests
  * `Node <../reference/01-scnode-api-spec.html#sidechain-node-operations>`_ --Sidechain node operations like connect to the node, see all connections, etc.
   
  * `Mainchain <../reference/01-scnode-api-spec.html#sidechain-mainchain-operations>`_-- Sidechain mainchain operations like get the best mainchain header included in sidechain.
+
+ * `Ssubmitter`_ -- Certificate submitter operation like current status of certificate generation, managing operation of submitting and signing of certificate.

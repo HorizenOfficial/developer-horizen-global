@@ -65,7 +65,7 @@ A Coin Box is a Box that has a value in ZEN. The creation process is the same ju
 Transaction extension
 #####################
 
-A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. To define a new custom transaction, you have to extend the `com.horizen.transaction.BoxTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/BoxTransaction.java>`_ class.
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>` 
 The most relevant methods of this class are detailed below:
 
 - ``public List<BoxUnlocker<Proposition>> unlockers()``
@@ -99,10 +99,6 @@ The most relevant methods of this class are detailed below:
 
 - ``public long fee()``
   Returns the fee to be paid to execute this transaction.
-
-- ``public long timestamp()``
-  Returns the timestamp of the transaction creation.
-  As a good practice, timestamp should be created outside transaction, passed in the transaction's constructor, and returned here.
 
 - ``public byte transactionTypeId()``
   Returns the type of this transaction. Each custom transaction must have its own unique type.
@@ -212,9 +208,9 @@ ApplicationState:
 
   boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction);
 
-  Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
+  Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] blockId, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
 
-  Try<ApplicationState> onRollback(byte[] version);
+  Try<ApplicationState> onRollback(byte[] blockId);
   }
 
 An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can represent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
@@ -356,6 +352,57 @@ To add custom API you have to create a class which extends the com.horizen.api.h
             this.number = number;
           }
         }
+
+Submitting transaction can be operated with TransactionSubmitProvider
+::
+    trait TransactionSubmitProvider {
+       @throws(classOf[IllegalArgumentException])
+       def submitTransaction(tx: BoxTransaction[Proposition, Box[Proposition]]): Unit
+
+       def asyncSubmitTransaction(tx: BoxTransaction[Proposition, Box[Proposition]],
+                                  callback:(Boolean, Option[Throwable]) => Unit): Unit
+    }
+
+For example
+
+::
+    val transactionSubmitProvider: TransactionSubmitProviderImpl = new TransactionSubmitProviderImpl(sidechainTransactionActorRef)
+
+    val tryRes: Try[Unit] = Try {
+      transactionSubmitProvider.submitTransaction(transaction)
+    }
+    tryRes match {
+      case Success(_) => // expected behavior
+      case Failure(exception) => fail("Transaction expected to be submitted successfully.", exception)
+    }
+
+asyncSubmitTransaction allows after submitting transaction apply callback function.
+
+::
+
+    val transactionSubmitProvider: TransactionSubmitProviderImpl = new TransactionSubmitProviderImpl(sidechainTransactionActorRef)
+
+
+    def callback(res: Boolean, errorOpt: Option[Throwable]): Unit = synchronized {
+        // Some operations executed after submitting transaction
+    }
+
+    // Start submission operation ...
+    transactionSubmitProvider.asyncSubmitTransaction(transaction, callback)
+
+
+Also there ara availible providers for retrieving NodeView and Secret submission
+
+::
+    trait NodeViewProvider {
+        def getNodeView(view: SidechainNodeView => Unit)
+
+    }
+
+::
+    public interface SecretSubmitHelper {
+        void submitSecret(Secret secret) throws IllegalArgumentException;
+    }
 
 API response classes
 

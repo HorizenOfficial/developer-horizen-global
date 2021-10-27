@@ -17,6 +17,8 @@ Forgers are also entitled and incentivized to include sidechain transactions and
 A limited amount of mainchain block data is added to sidechain blocks, in such a way that all the mainchain transactions that refer to a particular sidechain are included in that sidechain, that a reference to each mainchain block is present in all sidechains, and that information is stored in a sidechain so that any sidechain node is able to validate the mainchain block references without the need for a direct connection to the mainchain itself. Please note, the forger will need its own direct connection to mainchain nodes, to have a source of mainchain blocks data.
 The connection between the mainchain and sidechain nodes is established via a websocket interface provided by the mainchain node. 
 
+At the end of the epoch all rees redistributed between all forgers.
+
 The Latus consensus, including mainchain block synchronization, forging logic and functionality, is implemented out-of-the-box by the core SDK, and developers do not need to make any changes to this. The forging process can be fully managed through the API interface provided by the SDK, see 
 (`“the api reference” <../reference/01-scnode-api-spec.html#sidechain-block-operations>`_) .
 
@@ -25,4 +27,4 @@ Default Latus consensus parameters
 
   * Seconds in one slot - 120, i.e. one block could be generated in two minutes
   * Number of slots in one consensus Epoch - 720, i.e. new nonce is generated (and thus forging stake holder could check slot leader possability) every 720 * 120 =  86400 seconds, i.e. 24 hours.
-  * BlockSize Limit 2MB
+  * BlockSize Limit 5MB

@@ -39,7 +39,7 @@ Boxes
 Data in a sidechain is meant to be represented as a Box. That data is kept “closed” by a Proposition, and can be opened (i.e. "spent") only with the Proposition’s Secret(s).
 The Sidechain SDK offers two different Box types: Coin Box and non-Coin Box.
 
-A Coin Box contains ZEN. A Non-Coin box does not contain ZEN, and represents a unique entity that can be transferred between different owners. Examples of a Coin box are RegularBox and ForgingBox. A Coin Box can add custom data to an object that represents coins, i.e. an object that holds an intrinsic, defined value. For example, a developer would extend a Coin Box to manage a time lock on a UTXO, e.g. to implement smart contract logic.
+A Coin Box contains ZEN. A Non-Coin box does not contain ZEN, and represents a unique entity that can be transferred between different owners. Examples of a Coin box are ZenBox and ForgingBox. A Coin Box can add custom data to an object that represents coins, i.e. an object that holds an intrinsic, defined value. For example, a developer would extend a Coin Box to manage a time lock on a UTXO, e.g. to implement smart contract logic.
 
 A Box represents an entity in the blockchain,  and all operations, such as create/open, are performed on it. Any Box contains a BoxData, which holds all the properties of that specific entity, such as value, proposition address, and any custom data.
 
@@ -79,7 +79,10 @@ There are two basic transactions: `MC2SCAggregatedTransaction
 
 An MC2SCAggregatedTransaction is the implementation in a sidechain of Forward Transfers to that specific sidechain, i.e. mainchain transactions that send coins to addresses of that specific sidechain. When a Forger is going to produce a sidechain block, and a new mainchain block appears, the forger will mention that mainchain block as a reference that contains that sidechain related data. If a Forward Transfer exists in the mainchain block, it will be included into the MC2SCAggregatedTransaction and added as a part of the reference.
 
-The SidechainCoreTransaction is the transaction which can send coins inside a sidechain, create forging stakes, or perform withdrawal requests (i.e. send coins back to the mainchain). The SidechainCoreTransaction can be extended to support custom logic operations. For example, if we think about a real-estate sidechain, we can tokenize some private property as a specific Box using SidechainCoreTransaction. Please refer to the SDK extensions for more details.
+The SidechainCoreTransaction is the transaction which can send coins inside a sidechain, create forging stakes, or perform withdrawal requests (i.e. send coins back to the mainchain). 
+
+The AbstractRegularTransaction can be extended to support custom logic operations. For example, if we think about a real-estate sidechain, we can tokenize some private property as a specific Box using AbstractRegularTransaction. Please refer to the SDK extensions for more details.
+
 
 Serialization
 *************
@@ -246,16 +249,6 @@ Use ``new HashMap<>();`` if no custom serializers are required.
    		.annotatedWith(Names.named("CustomBoxSerializers"))
    		.toInstance(..); 
 
-- Custom box data serializers
-Serializers to be used for custom data boxes, in the form ``HashMap<CustomBoxDataId, NoncedBoxDataSerializer>``. 
-Use ``new HashMap<>();`` if no custom serializers are required.         
-
-::
-
-	bind(new TypeLiteral<HashMap<Byte,NoncedBoxDataSerializer<NoncedBoxData<Proposition, NoncedBox<Proposition>>>>>(){}) 
-    	.annotatedWith(Names.named("CustomBoxDataSerializers"))   
-    	.toInstance(..);       
-
 - Custom secrets serializers
 Serializers to be used for custom secrets, in the form ``HashMap<SecretId, SecretSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.          
@@ -265,16 +258,6 @@ Use ``new HashMap<>();`` if no custom serializers are required.
 	bind(new TypeLiteral<HashMap<Byte, SecretSerializer<Secret>>>() {})                
 		.annotatedWith(Names.named("CustomSecretSerializers"))    
 		.toInstance(..);       
-
-- Custom proposition serializers
-Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>``. 
-Use ``new HashMap<>();`` if no custom serializers are required          
-
-::
-
-	bind(new TypeLiteral<HashMap<Byte, ProofSerializer<Proof<Proposition>>>>() {})  
-    	.annotatedWith(Names.named("CustomProofSerializers"))      
-    	.toInstance(..);        
 
 - Custom transaction serializers
 Serializers to be used for custom transaction, in the form ``HashMap<CustomTransactionId, TransactionSerializer>``. 
@@ -355,6 +338,15 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 	bind(Storage.class)                                                                                        
     	.annotatedWith(Names.named("StateStorage"))
+    	.toInstance(..);   
+
+- StateForgerBoxStorage
+Internal storage used to save the Forger boxes.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+	bind(Storage.class)                                                                                        
+    	.annotatedWith(Names.named("StateForgerBoxStorage"))
     	.toInstance(..);   
 
 -  HistoryStorage

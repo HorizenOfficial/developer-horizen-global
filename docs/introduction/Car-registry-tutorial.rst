@@ -522,15 +522,15 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
     	private final CarBuyOrderInfo carBuyOrderInfo;
     	private List<NoncedBox<Proposition>> newBoxes;
 
-    	public BuyCarTransaction(List<byte[]> inputRegularBoxIds,
-                             List<Signature25519> inputRegularBoxProofs,
-                             List<RegularBoxData> outputRegularBoxesData,
+    	public BuyCarTransaction(List<byte[]> inputZenBoxIds,
+                             List<Signature25519> inputZenBoxProofs,
+                             List<ZenBoxData> outputZenBoxesData,
                              CarBuyOrderInfo carBuyOrderInfo,
                              long fee,
                              long timestamp) {
-        	super(inputRegularBoxIds, 
-        	      inputRegularBoxProofs, 
-        	      outputRegularBoxesData, 
+        	super(inputZenBoxIds, 
+        	      inputZenBoxProofs, 
+        	      outputZenBoxesData, 
         	      fee, timestamp);
         	this.carBuyOrderInfo = carBuyOrderInfo;
     	}
@@ -568,9 +568,9 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
 
             	// If Sell Order was opened by the buyer -> add payment box for Car previous owner.
             	if (!carBuyOrderInfo.isSpentByOwner()) {
-                	RegularBoxData paymentBoxData = carBuyOrderInfo.getPaymentBoxData();
+                	ZenBoxData paymentBoxData = carBuyOrderInfo.getPaymentBoxData();
                 	nonce = getNewBoxNonce(paymentBoxData.proposition(), newBoxes.size());
-                	newBoxes.add((NoncedBox) new RegularBox(paymentBoxData, nonce));
+                	newBoxes.add((NoncedBox) new ZenBox(paymentBoxData, nonce));
             	}
         	}
         	return Collections.unmodifiableList(newBoxes);
@@ -586,23 +586,23 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
     	@Override
     	public byte[] bytes() {
         	ByteArrayOutputStream inputsIdsStream = new ByteArrayOutputStream();
-        	for(byte[] id: inputRegularBoxIds)
+        	for(byte[] id: inputZenBoxIds)
             	inputsIdsStream.write(id, 0, id.length);
 
-        	byte[] inputRegularBoxIdsBytes = inputsIdsStream.toByteArray();
-        	byte[] inputRegularBoxProofsBytes = regularBoxProofsSerializer.toBytes(inputRegularBoxProofs);
-        	byte[] outputRegularBoxesDataBytes = regularBoxDataListSerializer.toBytes(outputRegularBoxesData);
+        	byte[] inputZenBoxIdsBytes = inputsIdsStream.toByteArray();
+        	byte[] inputZenBoxProofsBytes = ZenBoxProofsSerializer.toBytes(inputZenBoxProofs);
+        	byte[] outputZenBoxesDataBytes = ZenBoxDataListSerializer.toBytes(outputZenBoxesData);
         	byte[] carBuyOrderInfoBytes = carBuyOrderInfo.bytes();
 
         	return Bytes.concat(
                 Longs.toByteArray(fee()),                               // 8 bytes
                 Longs.toByteArray(timestamp()),                         // 8 bytes
-                Ints.toByteArray(inputRegularBoxIdsBytes.length),       // 4 bytes
-                inputRegularBoxIdsBytes,                                // depends on previous value (>=4 bytes)
-                Ints.toByteArray(inputRegularBoxProofsBytes.length),    // 4 bytes
-                inputRegularBoxProofsBytes,                             // depends on previous value (>=4 bytes)
-                Ints.toByteArray(outputRegularBoxesDataBytes.length),   // 4 bytes
-                outputRegularBoxesDataBytes,                            // depends on previous value (>=4 bytes)
+                Ints.toByteArray(inputZenBoxIdsBytes.length),       // 4 bytes
+                inputZenBoxIdsBytes,                                // depends on previous value (>=4 bytes)
+                Ints.toByteArray(inputZenBoxProofsBytes.length),    // 4 bytes
+                inputZenBoxProofsBytes,                             // depends on previous value (>=4 bytes)
+                Ints.toByteArray(outputZenBoxesDataBytes.length),   // 4 bytes
+                outputZenBoxesDataBytes,                            // depends on previous value (>=4 bytes)
                 Ints.toByteArray(carBuyOrderInfoBytes.length),          // 4 bytes
                 carBuyOrderInfoBytes                                    // depends on previous value (>=4 bytes)
         	);
@@ -621,10 +621,10 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
         	int batchSize = BytesUtils.getInt(bytes, offset);
         	offset += 4;
 
-        	ArrayList<byte[]> inputRegularBoxIds = new ArrayList<>();
+        	ArrayList<byte[]> inputZenBoxIds = new ArrayList<>();
         	int idLength = NodeViewModifier$.MODULE$.ModifierIdSize();
         	while(batchSize > 0) {
-            	inputRegularBoxIds.add(Arrays.copyOfRange(bytes, offset, offset + idLength));
+            	inputZenBoxIds.add(Arrays.copyOfRange(bytes, offset, offset + idLength));
             	offset += idLength;
             	batchSize -= idLength;
         	}
@@ -632,20 +632,20 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
         	batchSize = BytesUtils.getInt(bytes, offset);
         	offset += 4;
 
-        	List<Signature25519> inputRegularBoxProofs = regularBoxProofsSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
+        	List<Signature25519> inputZenBoxProofs = ZenBoxProofsSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
         	offset += batchSize;
 
         	batchSize = BytesUtils.getInt(bytes, offset);
         	offset += 4;
 
-        	List<RegularBoxData> outputRegularBoxesData = regularBoxDataListSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
+        	List<ZenBoxData> outputZenBoxesData = ZenBoxDataListSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
         	offset += batchSize;
 
         	batchSize = BytesUtils.getInt(bytes, offset);
         	offset += 4;
 
         	CarBuyOrderInfo carBuyOrderInfo = CarBuyOrderInfo.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
-        	return new BuyCarTransaction(inputRegularBoxIds, inputRegularBoxProofs, outputRegularBoxesData, carBuyOrderInfo, fee, timestamp);
+        	return new BuyCarTransaction(inputZenBoxIds, inputZenBoxProofs, outputZenBoxesData, carBuyOrderInfo, fee, timestamp);
     	}
 
     	// Set specific Serializer for BuyCarTransaction class.
@@ -672,15 +672,15 @@ Let's start from the top declaration:
 
   ::
 
-    public BuyCarTransaction(List<byte[]> inputRegularBoxIds,
-                             List<Signature25519> inputRegularBoxProofs,
-                             List<RegularBoxData> outputRegularBoxesData,
+    public BuyCarTransaction(List<byte[]> inputZenBoxIds,
+                             List<Signature25519> inputZenBoxProofs,
+                             List<ZenBoxData> outputZenBoxesData,
                              CarBuyOrderInfo carBuyOrderInfo,
                              long fee,
                              long timestamp) {
-        super(inputRegularBoxIds, 
-              inputRegularBoxProofs, 
-              outputRegularBoxesData, 
+        super(inputZenBoxIds, 
+              inputZenBoxProofs, 
+              outputZenBoxesData, 
               fee, timestamp);
         this.carBuyOrderInfo = carBuyOrderInfo;
     }
@@ -812,8 +812,8 @@ One of the parameters of the class constructor is CarBuyOrderInfo, an object tha
     	}
 
     	// Coins to be paid to the owner of Sell order in case if Buyer spent the Sell order.
-    	public RegularBoxData getPaymentBoxData() {
-        	return new RegularBoxData(
+    	public ZenBoxData getPaymentBoxData() {
+        	return new ZenBoxData(
                 new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes()),
                 carSellOrderBoxToOpen.getPrice()
         	);
@@ -883,8 +883,8 @@ The second one, *getPaymentBoxData()*, creates a coin box with the payment of th
 
   ::
 
-    public RegularBoxData getPaymentBoxData() {
-        return new RegularBoxData(
+    public ZenBoxData getPaymentBoxData() {
+        return new ZenBoxData(
                 new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes()),
                 carSellOrderBoxToOpen.getPrice()
         );
@@ -1513,11 +1513,11 @@ Now let's check out the method implementing the endpoint logic (i.e. the second 
 
             // Avoid to add boxes that are already spent in some Transaction that is present in node Mempool.
             List<byte[]> boxIdsToExclude = boxesFromMempool(view.getNodeMemoryPool());
-            List<Box<Proposition>> regularBoxes = view.getNodeWallet().boxesOfType(RegularBox.class, boxIdsToExclude);
+            List<Box<Proposition>> ZenBoxes = view.getNodeWallet().boxesOfType(ZenBox.class, boxIdsToExclude);
             int index = 0;
-            while (amountToPay > 0 && index < regularBoxes.size()) {
-                paymentBoxes.add(regularBoxes.get(index));
-                amountToPay -= regularBoxes.get(index).value();
+            while (amountToPay > 0 && index < ZenBoxes.size()) {
+                paymentBoxes.add(ZenBoxes.get(index));
+                amountToPay -= ZenBoxes.get(index).value();
                 index++;
             }
 
@@ -1527,9 +1527,9 @@ Now let's check out the method implementing the endpoint logic (i.e. the second 
 
             // Set change if exists
             long change = Math.abs(amountToPay);
-            List<RegularBoxData> regularOutputs = new ArrayList<>();
+            List<ZenBoxData> regularOutputs = new ArrayList<>();
             if (change > 0) {
-                regularOutputs.add(new RegularBoxData((PublicKey25519Proposition) paymentBoxes.get(0).proposition(), change));
+                regularOutputs.add(new ZenBoxData((PublicKey25519Proposition) paymentBoxes.get(0).proposition(), change));
             }
 
             // Create fake proofs to be able to create transaction to be signed.
@@ -1621,11 +1621,11 @@ After this check, the code builds two lists: *paymentBoxes*, a list of coins use
 
     // Avoid to add boxes that are already spent by transactions in the node Mempool.
     List<byte[]> boxIdsToExclude = boxesFromMempool(view.getNodeMemoryPool());
-    List<Box<Proposition>> regularBoxes = view.getNodeWallet().boxesOfType(RegularBox.class, boxIdsToExclude);
+    List<Box<Proposition>> ZenBoxes = view.getNodeWallet().boxesOfType(ZenBox.class, boxIdsToExclude);
     int index = 0;
-    while (amountToPay > 0 && index < regularBoxes.size()) {
-        paymentBoxes.add(regularBoxes.get(index));
-        amountToPay -= regularBoxes.get(index).value();
+    while (amountToPay > 0 && index < ZenBoxes.size()) {
+        paymentBoxes.add(ZenBoxes.get(index));
+        amountToPay -= ZenBoxes.get(index).value();
         index++;
     }
 
@@ -1635,9 +1635,9 @@ After this check, the code builds two lists: *paymentBoxes*, a list of coins use
 
     // Set change if exists
     long change = Math.abs(amountToPay);
-    List<RegularBoxData> regularOutputs = new ArrayList<>();
+    List<ZenBoxData> regularOutputs = new ArrayList<>();
     if (change > 0) {
-        regularOutputs.add(new RegularBoxData((PublicKey25519Proposition) 
+        regularOutputs.add(new ZenBoxData((PublicKey25519Proposition) 
            paymentBoxes.get(0).proposition(), change));
     }
 
