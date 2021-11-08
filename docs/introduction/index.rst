@@ -24,7 +24,7 @@ creation of a brand new project, and build on each other, so it's recommended to
 in the order presented here.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :numbered:
 
     overview.rst
