@@ -5,7 +5,7 @@ Reference
 #########
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :numbered:
 
     01-scnode-api-spec

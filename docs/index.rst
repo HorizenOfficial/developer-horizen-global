@@ -70,6 +70,15 @@ Technical reference material, for classes, methods, APIs, commands.
 
 
 
+.. rst-class:: column column2
+
+:ref:`Guides`
+================
+
+General documentation and guides
+
+
+
 .. rst-class:: clearfix row
 
 **************
@@ -131,9 +140,10 @@ deployment of a complete blockchain much easier and faster.
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :hidden:
 
     introduction/index
     reference/index
+    Guides/index
 
