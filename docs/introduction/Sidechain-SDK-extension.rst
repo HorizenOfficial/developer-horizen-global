@@ -65,7 +65,7 @@ A Coin Box is a Box that has a value in ZEN. The creation process is the same ju
 Transaction extension
 #####################
 
-A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>` 
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transaction inherited from SidechainTransaction. SidechainNoncedTransaction - class that help to deal with output boxes nonces. AbstractRegularTransaction is class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>`
 The most relevant methods of this class are detailed below:
 
 - ``public List<BoxUnlocker<Proposition>> unlockers()``
@@ -106,6 +106,9 @@ The most relevant methods of this class are detailed below:
 - ``public boolean transactionSemanticValidity()``
   Confirms if a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
   This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
+
+SidechainNoncedTransaction has already implementation of newBoxes function. But it requires an implementation of abstract function getOutputData that provides list of output data of the transaction.
+AbstractRegularTransaction requires an implementation of getCustomOutputData for retrieving output custom data of the transaction. Output of other data in AbstractRegularTransaction is already collected in getOutputData function, which also uses getCustomOutputData.
 
 Apart from the semantic check, the Sidechain will need to make also sure that all transactions are compliant with the application logic and syntax. Such checks need to be implemented in the ``validate()`` method of the ``custom ApplicationState`` class.
 
@@ -204,9 +207,9 @@ A customized blockchain will likely include custom data and transactions. The Ap
 ApplicationState:
 ::
   interface ApplicationState {
-  boolean validate(SidechainStateReader stateReader, SidechainBlock block);
+  void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException;
 
-  boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction);
+  void validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) throws IllegalArgumentException;
 
   Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] blockId, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
 
@@ -220,13 +223,13 @@ Then, the developer could implement the needed custom state checks in the follow
 
       public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) 
 
-  * Custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid. This method is called either before including a transaction inside the memory pool or before accepting a new block from the network.
+  * Custom checks on transactions should be performed here. If the function throws exception, then the transaction is considered invalid. This method is called either before including a transaction inside the memory pool or before accepting a new block from the network.
     ::
 
-      public boolean validate(SidechainStateReader stateReader, SidechainBlock block)  
+      void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException
     
   
-  * Custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node. Note that each transaction contained in the block had been already validated by the previous method, so here you should include only block-related checks (e.g. check that two different transactions in the same block don't declare the same VIN car)
+  * Custom block validation should happen here. If the function throws exception, then the block will not be accepted by the sidechain node. Note that each transaction contained in the block had been already validated by the previous method, so here you should include only block-related checks (e.g. check that two different transactions in the same block don't declare the same VIN car)
     ::
 
       public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)

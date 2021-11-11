@@ -62,7 +62,7 @@ Box Unique ID & Transactions
 Each Box should have a unique id, which is deterministically assigned using the box data as input. Since we may have several boxes locked by the same proposition, and representing the same data inside, we can avoid conflicts by using NoncedBox(which inherits Box and contains some Nonce data)and custom field hash. Nonce data is a value that is deterministically assigned to the box depending on the Transaction that includes it, and the index of the Box inside the Transaction outputs list. Box id is the hash of value, proposition, nonce and custom field hash. This way we can guarantee that two boxes with the same data (proposition, amount and other custom fields) will have different nonces, so will have different unique box ids. 
 
 A Transaction is a sequence of inputs and outputs. Each input consists of a reference to the Box being opened, and a Proof that satisfies the condition of its Proposition.
-Each output is a new Box instance. Transactions also have unique id based on hash of concatenation of message, proof and custom data. Custom data can be ovveride in custom transaction class.
+Each output is a new Box instance. Transactions also have unique id based on hash of concatenation of message, proof and custom data. Custom data can be override in custom transaction class.
 The same way with customDataMessageToSign. This methon can supply base transaction class with meesage be signed by transaction.
 
    

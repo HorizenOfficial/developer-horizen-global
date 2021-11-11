@@ -81,7 +81,8 @@ An MC2SCAggregatedTransaction is the implementation in a sidechain of Forward Tr
 
 The SidechainCoreTransaction is the transaction which can send coins inside a sidechain, create forging stakes, or perform withdrawal requests (i.e. send coins back to the mainchain). 
 
-The AbstractRegularTransaction can be extended to support custom logic operations. For example, if we think about a real-estate sidechain, we can tokenize some private property as a specific Box using AbstractRegularTransaction. Please refer to the SDK extensions for more details.
+All custom transaction inherited from SidechainTransaction. SidechainNoncedTransaction - class that help to deal with output boxes nonces. AbstractRegularTransaction is class helps to deal with ZenBoxes.
+These classes can be extended to support custom logic operations. For example, if we think about a real-estate sidechain, we can tokenize some private property as a specific Box using AbstractRegularTransaction. Please refer to the SDK extensions for more details.
 
 
 Serialization
