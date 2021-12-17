@@ -70,7 +70,7 @@ Can be performed by following the RPC command on the Mainchain side:
 Where outputs are an array of JSON objects representing the amounts to send. Each array element must contain the following elements
    scid           - sidechain ID in uint256 format
    vScRequestData - sidechain UTXO ID for the backward transfer that is being requested
-   pubkeyhash     - mainchain address where to send the backward transferred amount
+   pubkeyhash     - mainchain address that will receive the backward transferred amount
    scFee          - value spent by the sender that will be gained by an SC forger
 
 Params is a JSON object with the following command parameters
