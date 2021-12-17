@@ -35,7 +35,7 @@ Default Latus consensus parameters
 Fee redistribution
 ==================
 
-At the end of the Withdrawal epoch all fees redistributed between forgers. Each forger receive defined percentage of fee of each block it generated. All others fees of all blocks of the Withdrawal epoch must be spreaded equally between block forgers of the epoch. The remaining coins(after fee spreading) will be sent to first forgers of the epoch(the number of forgers is equal to the remained Satoshi), one Satoshi for each forger.
+At the end of the epoch, all fees are redistributed between all forgers. Each forger receive defined percentage of fee of each block it generated. All others fees of all blocks of the Withdrawal epoch must be spreaded equally between block forgers of the epoch. The remaining coins(after fee spreading) will be sent to first forgers of the epoch(the number of forgers is equal to the remained Satoshi), one Satoshi for each forger.
 
 
 PGD

@@ -68,7 +68,7 @@ Let's have a closer look at the code that defines a CarBox:
 
     @JsonView(Views.Default.class)
     @JsonIgnoreProperties({"carId", "value"})
-    public final class CarBox extends AbstractNoncedBox<PublicKey25519Proposition, CarBoxData, CarBox> {
+    public final class CarBox extends AbstractBox<PublicKey25519Proposition, CarBoxData, CarBox> {
 
         public CarBox(CarBoxData boxData, long nonce) {
             super(boxData, nonce);
@@ -132,15 +132,15 @@ Let's start from the top declaration:
     
     @JsonView(Views.Default.class)
     @JsonIgnoreProperties({"carId", "value"})
-    public final class CarBox extends AbstractNoncedBox<PublicKey25519Proposition, CarBoxData, CarBox> {
+    public final class CarBox extends AbstractBox<PublicKey25519Proposition, CarBoxData, CarBox> {
    
 
- Our class extends the *AbstractNoncedBox* default class, is locked by a standard *PublicKey25519Proposition* and keeps all its properties into an object of type CarBoxData.
+ Our class extends the *AbstractBox* default class, is locked by a standard *PublicKey25519Proposition* and keeps all its properties into an object of type CarBoxData.
  The annotation *@JsonView* instructs the SDK to use a default viewer to convert an instance of this class into JSON format when a CarBox is included in the result of an http API endpoint. With that, there is no need to write the conversion code: all the properties associated to getter methods of the class are automatically converted to json attributes. 
  For example, since our class has a getter method "*getModel()*", the json will contain the attribute "model" with its value. 
  We can specify some properties that must be excluded from the json output with the *@JsonIgnoreProperties* annotation.
 
- The constructor of boxes extending AbstractNoncedBox is very simple, it just calls the superclass with two parameters: the BoxData and the nonce.
+ The constructor of boxes extending AbstractBox is very simple, it just calls the superclass with two parameters: the BoxData and the nonce.
 
  
   ::
@@ -197,14 +197,14 @@ The next three methods are used for serialization and deserialization of our Box
 BoxData
 ***********
 
- BoxData allows us to group all the box properties and their serialization and deserialization logic in a single container object. Although its use is not mandatory (you can define field properties directly inside the Box), it is required if you choose to extend the base class AbstractNoncedBox, as we did for the CarBox, and it is in any case a good practice.
+ BoxData allows us to group all the box properties and their serialization and deserialization logic in a single container object. Although its use is not mandatory (you can define field properties directly inside the Box), it is required if you choose to extend the base class AbstractBox, as we did for the CarBox, and it is in any case a good practice.
 
 
 
   ::
 
     @JsonView(Views.Default.class)
-	public final class CarBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
+	public final class CarBoxData extends AbstractBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
 
     	private final String vin;   // Vehicle Identification Number
     	private final int year;     // Car manufacture year
@@ -234,10 +234,10 @@ BoxData
         	                Ints.toByteArray(year),
         	                model.getBytes(),
         	                color.getBytes()));
-    	}
+        }
 
     	@Override
-    	public NoncedBoxDataSerializer serializer() {
+        public BoxDataSerializer serializer() {
         	return CarBoxDataSerializer.getSerializer();
     	}
 
@@ -326,11 +326,11 @@ Let's look in detail at the code above, starting from the beginning:
   ::
 
     @JsonView(Views.Default.class)
-    public final class CarBoxData extends AbstractNoncedBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
+    public final class CarBoxData extends AbstractBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
     
  
 
-Also this time, we have a basic class we can extend: AbstractNoncedBoxData.
+Also this time, we have a basic class we can extend: AbstractBoxData.
 
 
 
@@ -380,7 +380,7 @@ Boxdata, as Box, has some methods to define its serializer, and a unique type id
   ::
 
     @Override
-    public NoncedBoxDataSerializer serializer() {
+    public BoxDataSerializer serializer() {
        return CarBoxDataSerializer.getSerializer();
     }
 
@@ -471,7 +471,7 @@ BoxSerializer and BoxDataSerializer
   ::
 
     
-    public final class CarBoxDataSerializer implements NoncedBoxDataSerializer<CarBoxData> {
+    public final class CarBoxDataSerializer implements BoxDataSerializer<CarBoxData> {
 
         private static final CarBoxDataSerializer serializer = new CarBoxDataSerializer();
 
@@ -520,7 +520,7 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
 
 
     	private final CarBuyOrderInfo carBuyOrderInfo;
-    	private List<NoncedBox<Proposition>> newBoxes;
+        private List<Box<Proposition>> newBoxes;
 
     	public BuyCarTransaction(List<byte[]> inputZenBoxIds,
                              List<Signature25519> inputZenBoxProofs,
@@ -557,20 +557,20 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
 
 
     	@Override
-    	public List<NoncedBox<Proposition>> newBoxes() {
+        public List<Box<Proposition>> newBoxes() {
         	if(newBoxes == null) {
         	    // Get new boxes from base class.
         	    newBoxes = new ArrayList<>(super.newBoxes());
 
         	    // Set CarBox with specific owner depends on proof. See CarBuyOrderInfo.getNewOwnerCarBoxData() definition.
-          	  long nonce = getNewBoxNonce(carBuyOrderInfo.getNewOwnerCarBoxData().proposition(), newBoxes.size());
-            	newBoxes.add((NoncedBox) new CarBox(carBuyOrderInfo.getNewOwnerCarBoxData(), nonce));
+                long nonce = getNewBoxNonce(carBuyOrderInfo.getNewOwnerCarBoxData().proposition(), newBoxes.size());
+                newBoxes.add((Box) new CarBox(carBuyOrderInfo.getNewOwnerCarBoxData(), nonce));
 
             	// If Sell Order was opened by the buyer -> add payment box for Car previous owner.
             	if (!carBuyOrderInfo.isSpentByOwner()) {
                 	ZenBoxData paymentBoxData = carBuyOrderInfo.getPaymentBoxData();
                 	nonce = getNewBoxNonce(paymentBoxData.proposition(), newBoxes.size());
-                	newBoxes.add((NoncedBox) new ZenBox(paymentBoxData, nonce));
+                    newBoxes.add((Box) new ZenBox(paymentBoxData, nonce));
             	}
         	}
         	return Collections.unmodifiableList(newBoxes);
@@ -1226,7 +1226,7 @@ public final class **SellOrderProposition** implements ProofOfKnowledgePropositi
 
 public final class SellOrderSpendingProof extends AbstractSignature25519<PrivateKey25519, **SellOrderProposition**> 
 
-public final class CarSellOrderBox extends AbstractNoncedBox<**SellOrderProposition**, CarSellOrderBoxData, CarSellOrderBox> 
+public final class CarSellOrderBox extends AbstractBox<**SellOrderProposition**, CarSellOrderBoxData, CarSellOrderBox> 
 
 This way, some design errors can be identified already at compile time.
 

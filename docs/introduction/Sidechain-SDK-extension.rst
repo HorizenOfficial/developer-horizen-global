@@ -9,7 +9,7 @@ Custom box creation
 
 The first step of the development process of a distributed app implemented as a sidechain, is the representation of the needed data. In the SDK, application data are modeled as "Boxes". 
 
-Every custom box should at least implement the ``com.horizen.box.NoncedBox`` interface. 
+Every custom box should at least implement the ``com.horizen.box.Box`` interface. 
 The methods defined in the interface are the following:
 
 - ``long nonce()``
@@ -29,20 +29,20 @@ The methods defined in the interface are the following:
 - ``byte boxTypeId()``
   should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
 
-As a common design rule, you usually do not implement the NoncedBox interface directly, but extend instead the abstract class `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, which already provides default implementations of 
+As a common design rule, you usually do not implement the Box interface directly, but extend instead the abstract class `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, which already provides default implementations of 
 some useful methods like ``id()``, ``equals()`` and ``hashCode()``.
-This class requires the definition of another object: a class extending `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractNoncedBoxData as an inner container of all the fields of your box.
-This data object must be passed in the constructor of AbstractNoncedBox, along with the nonce.
-The important methods of AbstractNoncedBoxData that need to be implemented are:
+This class requires the definition of another object: a class extending `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
+This data object must be passed in the constructor of AbstractBox, along with the nonce.
+The important methods of AbstractBoxData that need to be implemented are:
 
 - ``byte[] customFieldsHash()``
   Must return a hash of all custom data values, otherwise those data will not be "protected," i.e., some malicious actor can change custom data during transaction creation. 
 - ``Box getBox(long nonce)`` 
   creates a new Box containing this BoxData for a given nonce.
-- ``NoncedBoxDataSerializer serializer()``
+- ``BoxDataSerializer serializer()``
   should return the serializer of this box data (see below)
 
-BoxSerializer and NoncedBoxDataSerializer
+BoxSerializer and BoxDataSerializer
 #########################################
 
 Each box must define its own serializer and return it from the ``serializer()`` method.
@@ -53,7 +53,7 @@ The serializer is responsible to convert the box into bytes, and parse it back l
 - Box ``parse(scorex.util.serialization.Reader reader)``
   perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-Also any instance of AbstractNoncedBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.NoncedBoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/NoncedBoxDataSerializer.java>`_
+Also any instance of AbstractBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/BoxDataSerializer.java>`_
 
       
 Specific actions for extension of Coin-box
@@ -83,7 +83,7 @@ The most relevant methods of this class are detailed below:
 
   The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the the process requires to spend the box and create a new one with the updated values.
 
-- ``public List<NoncedBox<Proposition>> newBoxes()``
+- ``public List<Box<Proposition>> newBoxes()``
 
   This function returns the list of new boxes which will be created by the current transaction. 
   As a good practice, you should use the ``Collections.unmodifiableList()`` method to wrap the returned list into a not updatable Collection:
@@ -91,8 +91,8 @@ The most relevant methods of this class are detailed below:
   ::
 
     @Override
-    public List<NoncedBox<Proposition>> newBoxes() {
-      List<NoncedBox<Proposition>> newBoxes =  .....  //new boxes are created here  
+    public List<Box<Proposition>> newBoxes() {
+      List<Box<Proposition>> newBoxes =  .....  //new boxes are created here
       //....
       return Collections.unmodifiableList(newBoxes);
     }   
