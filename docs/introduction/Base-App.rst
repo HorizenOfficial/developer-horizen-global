@@ -22,7 +22,7 @@ The SDK ships with the following implementations for Secret / Proof / Propositio
 	- PublicKey25519Proposition
 	- Signature25519
   
-  * Verifiable Random Function based on `ginger-lib <https://github.com/HorizenOfficial/ginger-lib>`_, used to assign and prove eligibility of block forgers.
+  * Verifiable Random Function based on `ginger-lib <https://github.com/HorizenOfficial/ginger-lib>`_, used to assign and prove eligibility of block forgers and CSW proof.
   	- VrfSecretKey
 	- VrfPublicKey 
 	- VrfProof
@@ -96,6 +96,14 @@ This interface defines two methods:
 - ``Serializer serializer()`` - returns the class responsible to parse and write the object through Scorex Reader and Writer, which are wrappers on byte streams
 
 The SDK provides basic serializer interfaces for its objects (for example `BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ for BoxData, `TransactionSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/TransactionSerializer.java>`_ for Transactions), ready to be extended when writing specific custom serializers.
+All other serializers must implement the ScorexSerializer interface.
+
+This interface  two methods:
+- ``serialize(T object, Writer writer)`` - writes object to the Writer
+- ``T parse(Reader reader)`` - parse bytes from Readr and returns an object
+
+All serialization and parsing logic must be placed to this methods.
+
 
 We also need to instruct the dependency injection system on what appropriate serializer must be used for each object: this must be performed inside the AppModule configure() method, by adding key-value maps: the key is the specific type-id of each object (each object type must declare a unique type id), and the value is the serializer instance to be used for that object.
 There are separate maps for each class of object (one for Boxes, one for BoxData, one for Transactions and so on). Please refer to the SDK extension section for more information.
@@ -186,6 +194,9 @@ The starting point of the SDK for each sidechain is the `SidechainApp class <htt
 			Storage historyStorage,
 			Storage walletForgingBoxesInfoStorage,
 			Storage consensusStorage,
+			Storage walletCswDataStorage,
+			Storage stateUtxoMerkleTreeStore,
+			Storage stateForgerBoxStore
 
 			// Custom API calls and Core API endpoints to disable:
 			List<ApplicationApiGroup> customApiGroups,
@@ -240,7 +251,7 @@ Must be an instance of com.horizen.SidechainSettings, defining the sidechain con
    		.annotatedWith(Names.named("SidechainSettings"))
    		.toInstance(..);  
 
-- Custom box serializers
+-  Custom box serializers
 Serializers to be used for custom boxes, in the form ``HashMap<CustomboxId, BoxSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.         
 
@@ -250,7 +261,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
    		.annotatedWith(Names.named("CustomBoxSerializers"))
    		.toInstance(..); 
 
-- Custom secrets serializers
+-  Custom secrets serializers
 Serializers to be used for custom secrets, in the form ``HashMap<SecretId, SecretSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.          
 
@@ -260,7 +271,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
 		.annotatedWith(Names.named("CustomSecretSerializers"))    
 		.toInstance(..);       
 
-- Custom transaction serializers
+-  Custom transaction serializers
 Serializers to be used for custom transaction, in the form ``HashMap<CustomTransactionId, TransactionSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.
 
@@ -270,7 +281,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
     	.annotatedWith(Names.named("CustomTransactionSerializers"))
     	.toInstance(..);
 
-- Application Wallet
+-  Application Wallet
 Class defining custom application wallet logic.
 Must be an instance of a class implementing the com.horizen.wallet.ApplicationWallet interface.
 
@@ -280,7 +291,7 @@ Must be an instance of a class implementing the com.horizen.wallet.ApplicationWa
     	.annotatedWith(Names.named("ApplicationWallet")
     	.toInstance(..);    
 
-- Application state
+-  Application state
 Class defining custom application state logic.
 Must be an instance of a class implementing the com.horizen.state.ApplicationState interface.
 
@@ -290,7 +301,7 @@ Must be an instance of a class implementing the com.horizen.state.ApplicationSta
     	.annotatedWith(Names.named("ApplicationState"))
     	.toInstance(..);
 
-- Secret storage
+-  Secret storage
 Class for defining Secret storage, i.e. a place where secret keys are stored.   
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -341,7 +352,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("StateStorage"))
     	.toInstance(..);   
 
-- StateForgerBoxStorage
+-  StateForgerBoxStorage
 Internal storage used to save the Forger boxes.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -368,7 +379,27 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 	bind(Storage.class)                                                                                        
     	.annotatedWith(Names.named("ConsensusStorage"))
-    	.toInstance(..);   
+    	.toInstance(..);
+
+-  CswDataStorage
+Internal storage to save data for recovering coins from the ceased Sidechain.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+
+	bind(Storage.class)
+    	.annotatedWith(Names.named("WalletCswDataStorage"))
+    	.toInstance(..);
+
+-  UtxoMerkleTreeStorage
+Internal storage to save UTXO Merkle Tree data.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+
+	bind(Storage.class)
+    	.annotatedWith(Names.named("StateUtxoMerkleTreeStorage"))
+    	.toInstance(..);
 
 - Custom API extensions   
 Used to add new custom endpoints to the http API.
