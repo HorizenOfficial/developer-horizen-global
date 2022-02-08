@@ -22,7 +22,7 @@ The SDK ships with the following implementations for Secret / Proof / Propositio
 	- PublicKey25519Proposition
 	- Signature25519
   
-  * Verifiable Random Function based on `ginger-lib <https://github.com/HorizenOfficial/ginger-lib>`_, used to assign and prove eligibility of block forgers and CSW proof.
+  * Verifiable Random Function based on `ginger-lib <https://github.com/HorizenOfficial/ginger-lib>`_, used to assign and prove eligibility of block forgers.
   	- VrfSecretKey
 	- VrfPublicKey 
 	- VrfProof
@@ -102,7 +102,7 @@ This interface  two methods:
 - ``serialize(T object, Writer writer)`` - writes object to the Writer
 - ``T parse(Reader reader)`` - parse bytes from Readr and returns an object
 
-All serialization and parsing logic must be placed to this methods.
+All serialization and parsing logic must be placed to these methods.
 
 
 We also need to instruct the dependency injection system on what appropriate serializer must be used for each object: this must be performed inside the AppModule configure() method, by adding key-value maps: the key is the specific type-id of each object (each object type must declare a unique type id), and the value is the serializer instance to be used for that object.
@@ -195,8 +195,8 @@ The starting point of the SDK for each sidechain is the `SidechainApp class <htt
 			Storage walletForgingBoxesInfoStorage,
 			Storage consensusStorage,
 			Storage walletCswDataStorage,
-			Storage stateUtxoMerkleTreeStore,
-			Storage stateForgerBoxStore
+			Storage stateUtxoMerkleTreeStorage,
+			Storage stateForgerBoxStorage
 
 			// Custom API calls and Core API endpoints to disable:
 			List<ApplicationApiGroup> customApiGroups,

@@ -45,6 +45,6 @@ timeout -- Timeout in seconds on API requests
   
  * `Mainchain <../reference/01-scnode-api-spec.html#sidechain-mainchain-operations>`_-- Sidechain mainchain operations like get the best mainchain header included in sidechain.
 
- * `Submitter`_ -- Certificate submitter operations like current status of certificate generation, managing operation of submitting, and signing of a certificate.
+ * `Submitter <../reference/01-scnode-api-spec.html#certificate-submitter-operations>`_ -- Certificate submitter operations like current status of certificate generation, managing operation of submitting, and signing of a certificate.
 
-* `Csw`_ -- Ceased Sidechain Withdrawal operations like CSW proof generation or managing nullifiers.
+* `Csw <../reference/01-scnode-api-spec.html#ceased-sidechain-withdrawal-operations>`_ -- Ceased Sidechain Withdrawal operations like CSW proof generation or managing nullifiers.

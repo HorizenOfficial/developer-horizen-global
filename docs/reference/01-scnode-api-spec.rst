@@ -1698,7 +1698,13 @@ ________
 
 .. http:post:: /csw/generateCswProof
 
-*Try to generate csw proof and return current status of this operation*
+*Try to generate csw proof and return current status of this operation. Possible status are:*
+   * SidechainIsAlive - Sidechain is still alive;
+   * InvalidAddress - Receiver address has invalid value: MC taddress expected;
+   * NoProofData - Information for given box id is missed;
+   * ProofGenerationStarted - Started proof generation, was not started of present before;
+   * ProofGenerationInProcess - Proof generation was started before, still in process;
+   * ProofCreationFinished - Proof is ready.
 
 
 **Parameters**
