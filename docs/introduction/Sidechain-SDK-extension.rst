@@ -28,9 +28,13 @@ The methods defined in the interface are the following:
   should return the serializer of the box (see below).
 - ``byte boxTypeId()``
   should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
+- ``String typeName()``
+  should return name of class
+- ``boolean isCustom()``
+should return true for all custom boxes
 
 As a common design rule, you usually do not implement the Box interface directly, but extend instead the abstract class `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, which already provides default implementations of 
-some useful methods like ``id()``, ``equals()`` and ``hashCode()``.
+some useful methods like ``id()``, ``equals()``, ``hashCode()``, ``typeName()`` and ``isCustom()``.
 This class requires the definition of another object: a class extending `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
 This data object must be passed in the constructor of AbstractBox, along with the nonce.
 The important methods of AbstractBoxData that need to be implemented are:
