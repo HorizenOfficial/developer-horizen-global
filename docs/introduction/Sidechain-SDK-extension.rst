@@ -29,7 +29,7 @@ The methods defined in the interface are the following:
 - ``byte boxTypeId()``
   should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
 - ``String typeName()``
-  should return name of class
+  should return the name of class
 - ``boolean isCustom()``
 should return true for all custom boxes
 
@@ -112,7 +112,7 @@ The most relevant methods of this class are detailed below:
   This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
 
 SidechainNoncedTransaction has already implementation of newBoxes function. But it requires an implementation of abstract function getOutputData that provides list of output data of the transaction.
-AbstractRegularTransaction requires an implementation of getCustomOutputData for retrieving output custom data of the transaction. Output of other data in AbstractRegularTransaction is already collected in getOutputData function, which also uses getCustomOutputData.
+AbstractRegularTransaction requires the implementation of getCustomOutputData for retrieving output custom data of the transaction. The output of other data in AbstractRegularTransaction is already collected in the getOutputData function, which also uses getCustomOutputData.
 
 Apart from the semantic check, the Sidechain will need to make also sure that all transactions are compliant with the application logic and syntax. Such checks need to be implemented in the ``validate()`` method of the ``custom ApplicationState`` class.
 

@@ -39,7 +39,8 @@ Boxes
 Data in a sidechain is meant to be represented as a Box. That data is kept “closed” by a Proposition, and can be opened (i.e. "spent") only with the Proposition’s Secret(s).
 The Sidechain SDK offers two different Box types: Coin Box and non-Coin Box.
 
-A Coin Box contains ZEN. A Non-Coin box does not contain ZEN, and represents a unique entity that can be transferred between different owners. Examples of a Coin box are ZenBox and ForgingBox. A Coin Box can add custom data to an object that represents coins, i.e. an object that holds an intrinsic, defined value. For example, a developer would extend a Coin Box to manage a time lock on a UTXO, e.g. to implement smart contract logic.
+
+A Coin Box contains ZEN. A Non-Coin Box does not contain ZEN and represents a unique entity that can be transferred between different owners. Examples of a Coin box are ZenBox and ForgingBox. A Coin Box can add custom data to an object that represents coins, i.e. an object that holds an intrinsic, defined value. For example, a developer would extend a Coin Box to manage a time lock on a UTXO, e.g. to implement smart contract logic.
 
 A Box represents an entity in the blockchain,  and all operations, such as create/open, are performed on it. Any Box contains a BoxData, which holds all the properties of that specific entity, such as value, proposition address, and any custom data.
 
@@ -81,8 +82,8 @@ An MC2SCAggregatedTransaction is the implementation in a sidechain of Forward Tr
 
 The SidechainCoreTransaction is the transaction which can send coins inside a sidechain, create forging stakes, or perform withdrawal requests (i.e. send coins back to the mainchain). 
 
-All custom transaction inherited from SidechainTransaction. SidechainNoncedTransaction - class that help to deal with output boxes nonces. AbstractRegularTransaction is class helps to deal with ZenBoxes.
-These classes can be extended to support custom logic operations. For example, if we think about a real-estate sidechain, we can tokenize some private property as a specific Box using AbstractRegularTransaction. Please refer to the SDK extensions for more details.
+All custom transactions inherited from SidechainTransaction. SidechainNoncedTransaction - a class that helps to deal with output Boxes nonces. AbstractRegularTransaction is a class that helps to deal with ZenBoxes.
+These classes can be extended to support custom logic operations. For example, if we think about a real estate sidechain, we can tokenize private property as a specific Box using AbstractRegularTransaction. Please refer to the SDK extensions for more details.
 
 
 Serialization
@@ -98,9 +99,9 @@ This interface defines two methods:
 The SDK provides basic serializer interfaces for its objects (for example `BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ for BoxData, `TransactionSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/TransactionSerializer.java>`_ for Transactions), ready to be extended when writing specific custom serializers.
 All other serializers must implement the ScorexSerializer interface.
 
-This interface  two methods:
+This interface defines two abstract methods:
 - ``serialize(T object, Writer writer)`` - writes object to the Writer
-- ``T parse(Reader reader)`` - parse bytes from Readr and returns an object
+- ``T parse(Reader reader)`` - parse bytes from the Reader and returns an object
 
 All serialization and parsing logic must be placed to these methods.
 
