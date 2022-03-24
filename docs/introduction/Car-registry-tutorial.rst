@@ -75,29 +75,20 @@ Let's have a closer look at the code that defines a CarBox:
         }
 
         @Override
-        public byte boxTypeId() {
-            return CarBoxId.id();
-        }
-
-        @Override
         public BoxSerializer serializer() {
             return CarBoxSerializer.getSerializer();
         }
 
         @Override
-        public byte[] bytes() {
-            return Bytes.concat(
-                    Longs.toByteArray(nonce),
-                    CarBoxDataSerializer.getSerializer().toBytes(boxData)
-            );
+        public byte boxTypeId() {
+            return CarBoxId.id();
         }
 
-        public static CarBox parseBytes(byte[] bytes) {
-            long nonce = Longs.fromByteArray(Arrays.copyOf(bytes, Longs.BYTES));
-            CarBoxData boxData = CarBoxDataSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, Longs.BYTES, bytes.length));
-            return new CarBox(boxData, nonce);
+        CarBoxData getBoxData() {
+            return boxData;
         }
 
+        // Set car attributes getters, that is used to automatically construct JSON view:
         public String getVin() {
             return boxData.getVin();
         }
@@ -164,7 +155,7 @@ The nonce is a random number that allows the generation of different hash values
 
 The method *boxTypeId()* returns the id of this box type: every custom box needs to have a unique type id inside the application. Note that the ids of custom boxes can overlap with the ids of the standard boxes (e.g. you can re-use the id type 1 that is already used for standard coin boxes).
 
-The next three methods are used for serialization and deserialization of our Box: they define the serializer to be used, and the methods used to generate a byte array from the box and to obtain the box back from the byte array (note that they delegate the byte handling logic to the CarBoxData):
+The next method is used for serialization and deserialization of our Box: it defines the serializer to be used to generate a byte array from the box and to obtain the box back from the byte array:
 
 
 
@@ -175,20 +166,7 @@ The next three methods are used for serialization and deserialization of our Box
         return CarBoxSerializer.getSerializer();
     }
 
-    @Override
-    public byte[] bytes() {
-        return Bytes.concat(
-                Longs.toByteArray(nonce),
-                CarBoxDataSerializer.getSerializer().toBytes(boxData)
-        );
-    }
 
-    public static CarBox parseBytes(byte[] bytes) {
-        long nonce = Longs.fromByteArray(Arrays.copyOf(bytes, Longs.BYTES));
-        CarBoxData boxData = CarBoxDataSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, Longs.BYTES, bytes.length));
-        return new CarBox(boxData, nonce);
-    }
- 
 
  The last methods of the class are just the getters of the box properties. In particular *getCarId()* is an example of a property that is the result of operations performed on other stored properties.
 
@@ -204,119 +182,70 @@ BoxData
   ::
 
     @JsonView(Views.Default.class)
-	public final class CarBoxData extends AbstractBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
+    public final class CarBoxData extends AbstractBoxData<PublicKey25519Proposition, CarBox, CarBoxData> {
 
-    	private final String vin;   // Vehicle Identification Number
-    	private final int year;     // Car manufacture year
-    	private final String model; // Car Model
-    	private final String color; // Car color
+        // In CarRegistry example we defined 4 main car attributes:
+        private final String vin;   // Vehicle Identification Number
+        private final int year;     // Car manufacture year
+        private final String model; // Car Model
+        private final String color; // Car color
 
-    	public CarBoxData(PublicKey25519Proposition proposition, String vin,
-                      int year, String model, String color) {
-        	super(proposition, 0);
-        	this.vin = vin;
-        	this.year = year;
-        	this.model = model;
-        	this.color = color;
-    	}
-
-
-    	@Override
-    	public CarBox getBox(long nonce) {
-        	return new CarBox(this, nonce);
-    	}
-
-    	@Override
-    	public byte[] customFieldsHash() {
-        	return Blake2b256.hash(
-        	        Bytes.concat(
-        	                vin.getBytes(),
-        	                Ints.toByteArray(year),
-        	                model.getBytes(),
-        	                color.getBytes()));
+        public CarBoxData(PublicKey25519Proposition proposition, String vin,
+                          int year, String model, String color) {
+            super(proposition, 1);
+            this.vin = vin;
+            this.year = year;
+            this.model = model;
+            this.color = color;
         }
 
-    	@Override
+        public String getVin() {
+            return vin;
+        }
+
+        public int getYear() {
+            return year;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public String getColor() {
+            return color;
+        }
+
+        @Override
+        public CarBox getBox(long nonce) {
+            return new CarBox(this, nonce);
+        }
+
+        @Override
+        public byte[] customFieldsHash() {
+            return Blake2b256.hash(
+                    Bytes.concat(
+                            vin.getBytes(),
+                            Ints.toByteArray(year),
+                            model.getBytes(),
+                            color.getBytes()));
+        }
+
+        @Override
         public BoxDataSerializer serializer() {
-        	return CarBoxDataSerializer.getSerializer();
-    	}
+            return CarBoxDataSerializer.getSerializer();
+        }
 
-    	@Override
-    	public byte boxDataTypeId() {
-        	return CarBoxDataId.id();
-    	}
-
-    	@Override
-    	public byte[] bytes() {
-        	return Bytes.concat(
-        	        proposition().bytes(),
-        	        Ints.toByteArray(vin.getBytes().length),
-        	        vin.getBytes(),
-        	        Ints.toByteArray(year),
-        	        Ints.toByteArray(model.getBytes().length),
-        	        model.getBytes(),
-        	        Ints.toByteArray(color.getBytes().length),
-        	        color.getBytes()
-        	);
-    	}
-
-    	public static CarBoxData parseBytes(byte[] bytes) {
-        	int offset = 0;
-
-        	PublicKey25519Proposition proposition = PublicKey25519PropositionSerializer.getSerializer()
-                .parseBytes(Arrays.copyOf(bytes, PublicKey25519Proposition.getLength()));
-        	offset += PublicKey25519Proposition.getLength();
-
-        	int size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
-        	offset += Ints.BYTES;
-
-        	String vin = new String(Arrays.copyOfRange(bytes, offset, offset + size));
-        	offset += size;
-
-        	int year = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
-        	offset += Ints.BYTES;
-
-        	size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
-        	offset += Ints.BYTES;
-
-        	String model = new String(Arrays.copyOfRange(bytes, offset, offset + size));
-        	offset += size;
-
-        	size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
-        	offset += Ints.BYTES;
-
-        	String color = new String(Arrays.copyOfRange(bytes, offset, offset + size));
-
-        	return new CarBoxData(proposition, vin, year, model, color);
-    	}
-
-    	public String getVin() {
-        	return vin;
-    	}
-
-    	public int getYear() {
-        	return year;
-    	}
-
-    	public String getModel() {
-        	return model;
-    	}
-
-    	public String getColor() {
-        	return color;
-    	}
-
-    	@Override
-    	public String toString() {
-        	return "CarBoxData{" +
-                "vin=" + vin +
-                ", proposition=" + proposition() +
-                ", model=" + model +
-                ", color=" + color +
-                ", year=" + year +
-                '}';
-    	}
-	}
+        @Override
+        public String toString() {
+            return "CarBoxData{" +
+                    "vin=" + vin +
+                    ", proposition=" + proposition() +
+                    ", model=" + model +
+                    ", color=" + color +
+                    ", year=" + year +
+                    '}';
+        }
+    }
 
 
 Let's look in detail at the code above, starting from the beginning:
@@ -338,7 +267,7 @@ Also this time, we have a basic class we can extend: AbstractBoxData.
 
     public CarBoxData(PublicKey25519Proposition proposition, String vin,
                      int year, String model, String color) {
-       super(proposition, 0);
+       super(proposition, 1);
        this.vin = vin;
        this.year = year;
        this.model = model;
@@ -346,7 +275,7 @@ Also this time, we have a basic class we can extend: AbstractBoxData.
 	}
  
 
-The constructor receives all the box properties, and the proposition that locks it. The proposition is passed up to the superclass constructor, which also receives a long number representing the ZEN value of the box. For boxes that don't handle coins (like this one) we can just pass a 0 constant value.
+The constructor receives all the box properties, and the proposition that locks it. The proposition is passed up to the superclass constructor, which also receives a long number representing the ZEN value of the box. For boxes that don't handle coins (like this one) we can just pass a constant value 1.
 
  
   ::
@@ -390,26 +319,6 @@ Boxdata, as Box, has some methods to define its serializer, and a unique type id
     }
  
 
- Two very important methods are *bytes()* and *parseBytes()*: they contain the logic to serialize and deserialize properties and proposition. The code is quite verbose but simple: *bytes()* returns a byte array that is the concatenation of all the properties values, while *parseBytes()* reads it and writes the values back. Note that for variable-length fields like strings, the field length needs to be first known and serialized, and made part of the bytearray, so that *parseBytes()* can then read the correct length of bytes of that field. You can see it in the code that serializes the car model string:
-
-  ::
-
-    return Bytes.concat(
-                ....
-                Ints.toByteArray(model.getBytes().length),
-                model.getBytes(),
-                ....
-        );
-
-
- and this is the code in *parseBytes()* that reads the bytearray and writes back the car model:
-
-  ::
-
-    	size = Ints.fromByteArray(Arrays.copyOfRange(bytes, offset, offset + Ints.BYTES));
-        offset += Ints.BYTES;
-        String model = new String(Arrays.copyOfRange(bytes, offset, offset + size));
-
 
  As expected, the class includes all the getters of every custom property (*getModel()*, *getColor()* etc..). Also, the *toString()* method is redefined to print out the content of boxdata in a more user-friendly format:
 
@@ -433,8 +342,8 @@ Boxdata, as Box, has some methods to define its serializer, and a unique type id
 BoxSerializer and BoxDataSerializer
 ***********
 
- Serializers are companion classes that are invoked by the SDK every time a Scorex reader and writer needs to deserialize or serialize a Box. We define one serializer/deserializer both for box and for boxdata.
- As you can see in the code below, since the "heavy" byte handling happens inside boxdata, their logic is very simple: they just call the right methods already defined in the associated (Box or BoxData) objects.
+Serializers are companion classes that are invoked by the SDK every time a Scorex reader and writer needs to deserialize or serialize a Box. We define one serializer/deserializer both for box and for boxdata.
+As you can see in the code below, since the "heavy" byte handling happens inside boxdata, their logic is very simple: they just call the right methods already defined in the associated (Box or BoxData) objects.
 
 
 
@@ -442,35 +351,36 @@ BoxSerializer and BoxDataSerializer
 
     public final class CarBoxSerializer implements BoxSerializer<CarBox> {
 
-    	private static final CarBoxSerializer serializer = new CarBoxSerializer();
+        private static final CarBoxSerializer serializer = new CarBoxSerializer();
 
-    	private CarBoxSerializer() {
-        	super();
-    	}
+        private CarBoxSerializer() {
+            super();
+        }
 
-    	public static CarBoxSerializer getSerializer() {
-        	return serializer;
-    	}
+        public static CarBoxSerializer getSerializer() {
+            return serializer;
+        }
 
-    	@Override
-    	public void serialize(CarBox box, Writer writer) {
-        	writer.putBytes(box.bytes());
-    	}
+        @Override
+        public void serialize(CarBox box, Writer writer) {
+            writer.putLong(box.nonce());
+            CarBoxDataSerializer.getSerializer().serialize(box.getBoxData(), writer);
+        }
 
-    	@Override
-    	public CarBox parse(Reader reader) {
-        	return CarBox.parseBytes(reader.getBytes(reader.remaining()));
-    	}
-	}
- 
+        @Override
+        public CarBox parse(Reader reader) {
+            long nonce = reader.getLong();
+            CarBoxData boxData = CarBoxDataSerializer.getSerializer().parse(reader);
 
- 
+            return new CarBox(boxData, nonce);
+        }
+    }
 
 
 
   ::
 
-    
+
     public final class CarBoxDataSerializer implements BoxDataSerializer<CarBoxData> {
 
         private static final CarBoxDataSerializer serializer = new CarBoxDataSerializer();
@@ -485,15 +395,33 @@ BoxSerializer and BoxDataSerializer
 
         @Override
         public void serialize(CarBoxData boxData, Writer writer) {
-            writer.putBytes(boxData.bytes());
+            PublicKey25519PropositionSerializer.getSerializer().serialize(boxData.proposition(), writer);
+            byte[] vinBytes = boxData.getVin().getBytes(StandardCharsets.UTF_8);
+            writer.putInt(vinBytes.length);
+            writer.putBytes(vinBytes);
+            writer.putInt(boxData.getYear());
+            byte[] modelBytes = boxData.getModel().getBytes(StandardCharsets.UTF_8);
+            writer.putInt(modelBytes.length);
+            writer.putBytes(modelBytes);
+            byte[] colorBytes = boxData.getColor().getBytes(StandardCharsets.UTF_8);
+            writer.putInt(colorBytes.length);
+            writer.putBytes(colorBytes);
         }
 
         @Override
         public CarBoxData parse(Reader reader) {
-            return CarBoxData.parseBytes(reader.getBytes(reader.remaining()));
+            PublicKey25519Proposition proposition = PublicKey25519PropositionSerializer.getSerializer().parse(reader);
+            int vinBytesLength = reader.getInt();
+            String vin = new String(reader.getBytes(vinBytesLength), StandardCharsets.UTF_8);
+            int year = reader.getInt();
+            int modelBytesLength = reader.getInt();
+            String model = new String(reader.getBytes(modelBytesLength), StandardCharsets.UTF_8);
+            int colorBytesLength = reader.getInt();
+            String color = new String(reader.getBytes(colorBytesLength), StandardCharsets.UTF_8);
+            return new CarBoxData(proposition, vin, year, model, color);
         }
     }
- 
+
 
 
 Transactions
@@ -518,142 +446,115 @@ Let's look at the code of the last one, BuyCarTransaction, that is slightly more
 
     public final class BuyCarTransaction extends AbstractRegularTransaction {
 
+        private final CarBuyOrderInfo carBuyOrderInfo;
 
-    	private final CarBuyOrderInfo carBuyOrderInfo;
-        private List<Box<Proposition>> newBoxes;
+        public final static byte BUY_CAR_TRANSACTION_VERSION = 1;
 
-    	public BuyCarTransaction(List<byte[]> inputZenBoxIds,
-                             List<Signature25519> inputZenBoxProofs,
-                             List<ZenBoxData> outputZenBoxesData,
-                             CarBuyOrderInfo carBuyOrderInfo,
-                             long fee,
-                             long timestamp) {
-        	super(inputZenBoxIds, 
-        	      inputZenBoxProofs, 
-        	      outputZenBoxesData, 
-        	      fee, timestamp);
-        	this.carBuyOrderInfo = carBuyOrderInfo;
-    	}
+        private byte version;
 
-    	@Override
-    	public List<BoxUnlocker<Proposition>> unlockers() {
-        	// Get Regular unlockers from base class.
-        	List<BoxUnlocker<Proposition>> unlockers = super.unlockers();
+        public BuyCarTransaction(List<byte[]> inputZenBoxIds,
+                                 List<Signature25519> inputZenBoxProofs,
+                                 List<ZenBoxData> outputZenBoxesData,
+                                 CarBuyOrderInfo carBuyOrderInfo,
+                                 long fee,
+                                 byte version) {
+            super(inputZenBoxIds, inputZenBoxProofs, outputZenBoxesData, fee);
+            this.carBuyOrderInfo = carBuyOrderInfo;
+            this.version = version;
+        }
 
-        	BoxUnlocker<Proposition> unlocker = new BoxUnlocker<Proposition>() {
-            	@Override
-            	public byte[] closedBoxId() {
-                	return carBuyOrderInfo.getCarSellOrderBoxToOpen().id();
-            	}
+        // Specify the unique custom transaction id.
+        @Override
+        public byte transactionTypeId() {
+            return BuyCarTransactionId.id();
+        }
 
-            	@Override
-            	public Proof boxKey() {
-                	return carBuyOrderInfo.getCarSellOrderSpendingProof();
-            	}
-        	};
-        	unlockers.add(unlocker);
-        	return unlockers;
-    	}
+        @Override
+        protected List<BoxData<Proposition, Box<Proposition>>> getCustomOutputData() {
+            ArrayList<BoxData<Proposition, Box<Proposition>>> customOutputData = new ArrayList<>();
+            customOutputData.add((BoxData)carBuyOrderInfo.getNewOwnerCarBoxData());
+            if(!carBuyOrderInfo.isSpentByOwner())
+                customOutputData.add((BoxData)carBuyOrderInfo.getPaymentBoxData());
 
+            return customOutputData;
+        }
 
-    	@Override
-        public List<Box<Proposition>> newBoxes() {
-        	if(newBoxes == null) {
-        	    // Get new boxes from base class.
-        	    newBoxes = new ArrayList<>(super.newBoxes());
+        @Override
+        public byte[] customDataMessageToSign() {
+            return new byte[0];
+        }
 
-        	    // Set CarBox with specific owner depends on proof. See CarBuyOrderInfo.getNewOwnerCarBoxData() definition.
-                long nonce = getNewBoxNonce(carBuyOrderInfo.getNewOwnerCarBoxData().proposition(), newBoxes.size());
-                newBoxes.add((Box) new CarBox(carBuyOrderInfo.getNewOwnerCarBoxData(), nonce));
+        @Override
+        public byte[] customFieldsData() {
+            return carBuyOrderInfo.getNewOwnerCarBoxData().bytes();
+        }
 
-            	// If Sell Order was opened by the buyer -> add payment box for Car previous owner.
-            	if (!carBuyOrderInfo.isSpentByOwner()) {
-                	ZenBoxData paymentBoxData = carBuyOrderInfo.getPaymentBoxData();
-                	nonce = getNewBoxNonce(paymentBoxData.proposition(), newBoxes.size());
-                    newBoxes.add((Box) new ZenBox(paymentBoxData, nonce));
-            	}
-        	}
-        	return Collections.unmodifiableList(newBoxes);
-    	}
+        @Override
+        public byte version() {
+            return version;
+        }
 
-    	// Specify the unique custom transaction id.
-    	@Override
-    	public byte transactionTypeId() {
-        	return BuyCarTransactionId.id();
-    	}
+        // Override unlockers to contains ZenBoxes from the parent class appended with CarSellOrderBox entry.
+        @Override
+        public List<BoxUnlocker<Proposition>> unlockers() {
+            // Get Regular unlockers from base class.
+            List<BoxUnlocker<Proposition>> unlockers = super.unlockers();
 
-    	// Define object serialization, that should serialize both parent class entries and CarBuyOrderInfo as well
-    	@Override
-    	public byte[] bytes() {
-        	ByteArrayOutputStream inputsIdsStream = new ByteArrayOutputStream();
-        	for(byte[] id: inputZenBoxIds)
-            	inputsIdsStream.write(id, 0, id.length);
+            BoxUnlocker<Proposition> unlocker = new BoxUnlocker<Proposition>() {
+                @Override
+                public byte[] closedBoxId() {
+                    return carBuyOrderInfo.getCarSellOrderBoxToOpen().id();
+                }
 
-        	byte[] inputZenBoxIdsBytes = inputsIdsStream.toByteArray();
-        	byte[] inputZenBoxProofsBytes = ZenBoxProofsSerializer.toBytes(inputZenBoxProofs);
-        	byte[] outputZenBoxesDataBytes = ZenBoxDataListSerializer.toBytes(outputZenBoxesData);
-        	byte[] carBuyOrderInfoBytes = carBuyOrderInfo.bytes();
+                @Override
+                public Proof boxKey() {
+                    return carBuyOrderInfo.getCarSellOrderSpendingProof();
+                }
+            };
+            // Append with the CarSellOrderBox unlocker entry.
+            unlockers.add(unlocker);
 
-        	return Bytes.concat(
-                Longs.toByteArray(fee()),                               // 8 bytes
-                Longs.toByteArray(timestamp()),                         // 8 bytes
-                Ints.toByteArray(inputZenBoxIdsBytes.length),       // 4 bytes
-                inputZenBoxIdsBytes,                                // depends on previous value (>=4 bytes)
-                Ints.toByteArray(inputZenBoxProofsBytes.length),    // 4 bytes
-                inputZenBoxProofsBytes,                             // depends on previous value (>=4 bytes)
-                Ints.toByteArray(outputZenBoxesDataBytes.length),   // 4 bytes
-                outputZenBoxesDataBytes,                            // depends on previous value (>=4 bytes)
-                Ints.toByteArray(carBuyOrderInfoBytes.length),          // 4 bytes
-                carBuyOrderInfoBytes                                    // depends on previous value (>=4 bytes)
-        	);
-    	}
+            return unlockers;
+        }
 
-    	// Define object deserialization similar to 'toBytes()' representation.
-    	public static BuyCarTransaction parseBytes(byte[] bytes) {
-        	int offset = 0;
+        // Define object serialization, that should serialize both parent class entries and CarBuyOrderInfo as well
+        void serialize(Writer writer) {
+            writer.put(version());
+            writer.putLong(fee());
 
-        	long fee = BytesUtils.getLong(bytes, offset);
-        	offset += 8;
+            writer.putInt(inputZenBoxIds.size());
+            for(byte[] id: inputZenBoxIds)
+                writer.putBytes(id);
 
-        	long timestamp = BytesUtils.getLong(bytes, offset);
-        	offset += 8;
+            zenBoxProofsSerializer.serialize(inputZenBoxProofs, writer);
+            zenBoxDataListSerializer.serialize(outputZenBoxesData, writer);
+            CarBuyOrderInfoSerializer.getSerializer().serialize(carBuyOrderInfo, writer);
+        }
 
-        	int batchSize = BytesUtils.getInt(bytes, offset);
-        	offset += 4;
+        static BuyCarTransaction parse(Reader reader) {
+            byte version = reader.getByte();
+            long fee = reader.getLong();
 
-        	ArrayList<byte[]> inputZenBoxIds = new ArrayList<>();
-        	int idLength = NodeViewModifier$.MODULE$.ModifierIdSize();
-        	while(batchSize > 0) {
-            	inputZenBoxIds.add(Arrays.copyOfRange(bytes, offset, offset + idLength));
-            	offset += idLength;
-            	batchSize -= idLength;
-        	}
+            int inputBytesIdsLength = reader.getInt();
+            int idLength = NodeViewModifier$.MODULE$.ModifierIdSize();
+            List<byte[]> inputZenBoxIds = new ArrayList<>();
+            while(inputBytesIdsLength-- > 0)
+                inputZenBoxIds.add(reader.getBytes(idLength));
 
-        	batchSize = BytesUtils.getInt(bytes, offset);
-        	offset += 4;
+            List<Signature25519> inputZenBoxProofs = zenBoxProofsSerializer.parse(reader);
+            List<ZenBoxData> outputZenBoxesData = zenBoxDataListSerializer.parse(reader);
+            CarBuyOrderInfo carBuyOrderInfo = CarBuyOrderInfoSerializer.getSerializer().parse(reader);
 
-        	List<Signature25519> inputZenBoxProofs = ZenBoxProofsSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
-        	offset += batchSize;
+            return new BuyCarTransaction(inputZenBoxIds, inputZenBoxProofs, outputZenBoxesData,
+                    carBuyOrderInfo, fee, version);
+        }
 
-        	batchSize = BytesUtils.getInt(bytes, offset);
-        	offset += 4;
-
-        	List<ZenBoxData> outputZenBoxesData = ZenBoxDataListSerializer.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
-        	offset += batchSize;
-
-        	batchSize = BytesUtils.getInt(bytes, offset);
-        	offset += 4;
-
-        	CarBuyOrderInfo carBuyOrderInfo = CarBuyOrderInfo.parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
-        	return new BuyCarTransaction(inputZenBoxIds, inputZenBoxProofs, outputZenBoxesData, carBuyOrderInfo, fee, timestamp);
-    	}
-
-    	// Set specific Serializer for BuyCarTransaction class.
-    	@Override
-    	public TransactionSerializer serializer() {
-        	return BuyCarTransactionSerializer.getSerializer();
-    	}
-	}
+        // Set specific Serializer for BuyCarTransaction class.
+        @Override
+        public TransactionSerializer serializer() {
+            return BuyCarTransactionSerializer.getSerializer();
+        }
+    }
 
 
 
@@ -677,16 +578,14 @@ Let's start from the top declaration:
                              List<ZenBoxData> outputZenBoxesData,
                              CarBuyOrderInfo carBuyOrderInfo,
                              long fee,
-                             long timestamp) {
-        super(inputZenBoxIds, 
-              inputZenBoxProofs, 
-              outputZenBoxesData, 
-              fee, timestamp);
+                             byte version) {
+        super(inputZenBoxIds, inputZenBoxProofs, outputZenBoxesData, fee);
         this.carBuyOrderInfo = carBuyOrderInfo;
+        this.version = version;
     }
 
    
-The constructor receives all the parameters related to regular boxes handling (box ids to be opened, proofs to open them, regular boxes to be created, fee to be paid and timestamp), and pass them up to the superclass. Moreover, it receives all other parameters specifically related to the custom boxes; in our example, the transaction needs info about the sell order that it needs to open, and it finds in the CarBuyOrderInfo object.
+The constructor receives all the parameters related to regular boxes handling (box ids to be opened, proofs to open them, regular boxes to be created, fee to be paid), and pass them up to the superclass. Moreover, it receives all other parameters specifically related to the custom boxes; in our example, the transaction needs info about the sell order that it needs to open, and it finds in the CarBuyOrderInfo object.
 
 
 
@@ -730,7 +629,7 @@ Just like with boxes, also each transaction type must have a unique id, returned
 The last three methods of the class are related to the serialization handling.
 The approach is very similar to what we saw for boxes: the methods *bytes()* and *parseBytes(byte[] bytes)* perform a "two-way conversion" into and from an array of bytes, while the *serializer()* method returns the serializer helper to operate with Scorex reader's and writer's.
 
-As we did with the CarBox, also here we have chosen to code the low level "byte handling" logic inside the two methods *bytes()* and *ParseBytes(byte[] bytes)*, keeping a very simple implementation for the serializer:
+As we did with the CarBox, also here we have chosen to code the low level "byte handling" logic inside the two methods *serialize()* and *parse(Reader reader)*, keeping a very simple implementation for the serializer:
 
 
 
@@ -739,26 +638,26 @@ As we did with the CarBox, also here we have chosen to code the low level "byte 
 
     public final class BuyCarTransactionSerializer implements TransactionSerializer<BuyCarTransaction> {
 
-    	private static final BuyCarTransactionSerializer serializer = new BuyCarTransactionSerializer();
+        private static final BuyCarTransactionSerializer serializer = new BuyCarTransactionSerializer();
 
-    	private BuyCarTransactionSerializer() {
-        	super();
-    	}
+        private BuyCarTransactionSerializer() {
+            super();
+        }
 
-    	public static BuyCarTransactionSerializer getSerializer() {
-        	return serializer;
-    	}
+        public static BuyCarTransactionSerializer getSerializer() {
+            return serializer;
+        }
 
-    	@Override
-    	public void serialize(BuyCarTransaction transaction, Writer writer) {
-        	writer.putBytes(transaction.bytes());
-    	}
+        @Override
+        public void serialize(BuyCarTransaction transaction, Writer writer) {
+            transaction.serialize(writer);
+        }
 
-    	@Override
-    	public BuyCarTransaction parse(Reader reader) {
-        	return BuyCarTransaction.parseBytes(reader.getBytes(reader.remaining()));
-    	}
-	}
+        @Override
+        public BuyCarTransaction parse(Reader reader) {
+            return BuyCarTransaction.parse(reader);
+        }
+    }
 
 
 One of the parameters of the class constructor is CarBuyOrderInfo, an object that contains the needed info about the sell order we are handling. Let's take a look at its implementation:
@@ -768,88 +667,68 @@ One of the parameters of the class constructor is CarBuyOrderInfo, an object tha
 
   ::
 
-    public final class CarBuyOrderInfo {
-    	private final CarSellOrderBox carSellOrderBoxToOpen;  // Sell order box to be spent in BuyCarTransaction
-    	private final SellOrderSpendingProof proof;           // Proof to unlock the box above
+    public final class CarBuyOrderInfo implements BytesSerializable {
+        final CarSellOrderBox carSellOrderBoxToOpen;  // Sell order box to be spent in BuyCarTransaction
+        final SellOrderSpendingProof proof;           // Proof to unlock the box above
 
-    	public CarBuyOrderInfo(CarSellOrderBox carSellOrderBoxToOpen, 	SellOrderSpendingProof proof) {
-        	this.carSellOrderBoxToOpen = carSellOrderBoxToOpen;
-        	this.proof = proof;
-    	}
+        public CarBuyOrderInfo(CarSellOrderBox carSellOrderBoxToOpen, SellOrderSpendingProof proof) {
+            this.carSellOrderBoxToOpen = carSellOrderBoxToOpen;
+            this.proof = proof;
+        }
 
-    	public CarSellOrderBox getCarSellOrderBoxToOpen() {
-        	return carSellOrderBoxToOpen;
-    	}
+        public CarSellOrderBox getCarSellOrderBoxToOpen() {
+            return carSellOrderBoxToOpen;
+        }
 
-    	public SellOrderSpendingProof getCarSellOrderSpendingProof() {
-        	return proof;
-    	}
+        public SellOrderSpendingProof getCarSellOrderSpendingProof() {
+            return proof;
+        }
 
-    	// Recreates output CarBoxData with the same attributes specified in CarSellOrder.
-    	// Specifies the new owner depends on proof provided:
-    	// 1) if the proof is from the seller then the owner remain the same
-    	// 2) if the proof is from the buyer then it will become the new owner
-    	public CarBoxData getNewOwnerCarBoxData() {
-        	PublicKey25519Proposition proposition;
-        	if(proof.isSeller()) {
-            	proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes());
-        	} else {
-            	proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getBuyerPublicKeyBytes());
-        	}
+        // Recreates output CarBoxData with the same attributes specified in CarSellOrder.
+        // Specifies the new owner depends on proof provided:
+        // 1) if the proof is from the seller then the owner remain the same
+        // 2) if the proof is from the buyer then it will become the new owner
+        public CarBoxData getNewOwnerCarBoxData() {
+            PublicKey25519Proposition proposition;
+            if(proof.isSeller()) {
+                proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes());
+            } else {
+                proposition = new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getBuyerPublicKeyBytes());
+            }
 
-        	return new CarBoxData(
-                proposition,
-                carSellOrderBoxToOpen.getVin(),
-                carSellOrderBoxToOpen.getYear(),
-                carSellOrderBoxToOpen.getModel(),
-                carSellOrderBoxToOpen.getColor()
-        	);
-    	}
+            return new CarBoxData(
+                    proposition,
+                    carSellOrderBoxToOpen.getVin(),
+                    carSellOrderBoxToOpen.getYear(),
+                    carSellOrderBoxToOpen.getModel(),
+                    carSellOrderBoxToOpen.getColor()
+            );
+        }
 
-    	// Check if proof is provided by Sell order owner.
-    	public boolean isSpentByOwner() {
-        	return proof.isSeller();
-    	}
+        // Check if proof is provided by Sell order owner.
+        public boolean isSpentByOwner() {
+            return proof.isSeller();
+        }
 
-    	// Coins to be paid to the owner of Sell order in case if Buyer spent the Sell order.
-    	public ZenBoxData getPaymentBoxData() {
-        	return new ZenBoxData(
-                new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes()),
-                carSellOrderBoxToOpen.getPrice()
-        	);
-    	}
+        // Coins to be paid to the owner of Sell order in case if Buyer spent the Sell order.
+        public ZenBoxData getPaymentBoxData() {
+            return new ZenBoxData(
+                    new PublicKey25519Proposition(carSellOrderBoxToOpen.proposition().getOwnerPublicKeyBytes()),
+                    carSellOrderBoxToOpen.getPrice()
+            );
+        }
 
-    	// CarBuyOrderInfo minimal bytes representation.
-    	public byte[] bytes() {
-        	byte[] carSellOrderBoxToOpenBytes = CarSellOrderBoxSerializer.getSerializer().toBytes(carSellOrderBoxToOpen);
-        	byte[] proofBytes = SellOrderSpendingProofSerializer.getSerializer().toBytes(proof);
+        @Override
+        public byte[] bytes() {
+            return serializer().toBytes(this);
+        }
 
-        	return Bytes.concat(
-                Ints.toByteArray(carSellOrderBoxToOpenBytes.length),
-                carSellOrderBoxToOpenBytes,
-                Ints.toByteArray(proofBytes.length),
-                proofBytes
-        	);
-    	}
+        @Override
+        public ScorexSerializer<BytesSerializable> serializer() {
+            return (ScorexSerializer) CarBuyOrderInfoSerializer.getSerializer();
+        }
+    }
 
-    	// Define object deserialization similar to 'toBytes()' representation.
-    	public static CarBuyOrderInfo parseBytes(byte[] bytes) {
-        	int offset = 0;
-
-        	int batchSize = BytesUtils.getInt(bytes, offset);
-        	offset += 4;
-
-        	CarSellOrderBox carSellOrderBoxToOpen = CarSellOrderBoxSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
-        	offset += batchSize;
-
-        	batchSize = BytesUtils.getInt(bytes, offset);
-        	offset += 4;
-
-        	SellOrderSpendingProof proof = SellOrderSpendingProofSerializer.getSerializer().parseBytes(Arrays.copyOfRange(bytes, offset, offset + batchSize));
-
-        	return new CarBuyOrderInfo(carSellOrderBoxToOpen, proof);
-    	}
-	}
  
 
  If you look at the code above, you can see that this object is not much more than a container of the information that needs to be processed: the CarSellOrderBox that should be opened, and the proof to open it. It then includes their getters, and a couple of "utility" methods: *getNewOwnerCarBoxData()* and *getPaymentBoxData()*. The first one, *getNewOwnerCarBoxData()*, creates a new CarBox with the same properties of the sold car, and "assigns" it (by locking it with the right proposition) to either the buyer or the seller, depending on who opened the order.
@@ -913,88 +792,68 @@ Let's look at them, starting with the SellOrderProposition:
   ::
 
     @JsonView(Views.Default.class)
-	public final class SellOrderProposition implements ProofOfKnowledgeProposition<PrivateKey25519> {
-    	private static final int KEY_LENGTH = Ed25519.keyLength();
+    public final class SellOrderProposition implements ProofOfKnowledgeProposition<PrivateKey25519> {
+        static final int KEY_LENGTH = Ed25519.publicKeyLength();
 
-    	// Specify json attribute name for the ownerPublicKeyBytes field.
-    	@JsonProperty("ownerPublicKey")
-    	private final byte[] ownerPublicKeyBytes;
+        // Specify json attribute name for the ownerPublicKeyBytes field.
+        @JsonProperty("ownerPublicKey")
+        private final byte[] ownerPublicKeyBytes;
 
-    	// Specify json attribute name for the buyerPublicKeyBytes field.
-    	@JsonProperty("buyerPublicKey")
-    	private final byte[] buyerPublicKeyBytes;
+        // Specify json attribute name for the buyerPublicKeyBytes field.
+        @JsonProperty("buyerPublicKey")
+        private final byte[] buyerPublicKeyBytes;
 
-    	public SellOrderProposition(byte[] ownerPublicKeyBytes, byte[] 	buyerPublicKeyBytes) {
-        	if(ownerPublicKeyBytes.length != KEY_LENGTH)
-        	    throw new IllegalArgumentException(String.format("Incorrect ownerPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, ownerPublicKeyBytes.length));
+        public SellOrderProposition(byte[] ownerPublicKeyBytes, byte[] buyerPublicKeyBytes) {
+            if(ownerPublicKeyBytes.length != KEY_LENGTH)
+                throw new IllegalArgumentException(String.format("Incorrect ownerPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, ownerPublicKeyBytes.length));
 
-        	if(buyerPublicKeyBytes.length != KEY_LENGTH)
-            	throw new IllegalArgumentException(String.format("Incorrect buyerPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, buyerPublicKeyBytes.length));
+            if(buyerPublicKeyBytes.length != KEY_LENGTH)
+                throw new IllegalArgumentException(String.format("Incorrect buyerPublicKeyBytes length, %d expected, %d found", KEY_LENGTH, buyerPublicKeyBytes.length));
 
-        	this.ownerPublicKeyBytes = Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
+            this.ownerPublicKeyBytes = Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
 
-        	this.buyerPublicKeyBytes = Arrays.copyOf(buyerPublicKeyBytes, KEY_LENGTH);
-    	}
+            this.buyerPublicKeyBytes = Arrays.copyOf(buyerPublicKeyBytes, KEY_LENGTH);
+        }
 
 
-    	@Override
-    	public byte[] pubKeyBytes() {
-        	return Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
-    	}
+        @Override
+        public byte[] pubKeyBytes() {
+            return Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
+        }
 
-    	public byte[] getOwnerPublicKeyBytes() {
-        	return pubKeyBytes();
-    	}
+        public byte[] getOwnerPublicKeyBytes() {
+            return pubKeyBytes();
+        }
 
-    	public byte[] getBuyerPublicKeyBytes() {
-        	return Arrays.copyOf(buyerPublicKeyBytes, KEY_LENGTH);
-    	}
+        public byte[] getBuyerPublicKeyBytes() {
+            return Arrays.copyOf(buyerPublicKeyBytes, KEY_LENGTH);
+        }
 
-    	@Override
-    	public byte[] bytes() {
-        	return Bytes.concat(
-                ownerPublicKeyBytes,
-                buyerPublicKeyBytes
-        	);
-    	}
+        @Override
+        public PropositionSerializer serializer() {
+            return SellOrderPropositionSerializer.getSerializer();
+        }
 
-    	public static SellOrderProposition parseBytes(byte[] bytes) {
-        	int offset = 0;
+        @Override
+        public int hashCode() {
+            int result = Arrays.hashCode(ownerPublicKeyBytes);
+            result = 31 * result + Arrays.hashCode(buyerPublicKeyBytes);
+            return result;
+        }
 
-        	byte[] ownerPublicKeyBytes = Arrays.copyOfRange(bytes, offset, offset + KEY_LENGTH);
-        	offset += KEY_LENGTH;
-
-        	byte[] buyerPublicKeyBytes = Arrays.copyOfRange(bytes, offset, offset + KEY_LENGTH);
-
-        	return new SellOrderProposition(ownerPublicKeyBytes, buyerPublicKeyBytes);
-
-    	}
-
-    	@Override
-    	public PropositionSerializer serializer() {
-        	return SellOrderPropositionSerializer.getSerializer();
-    	}
-
-    	@Override
-    	public int hashCode() {
-        	int result = Arrays.hashCode(ownerPublicKeyBytes);
-        	result = 31 * result + Arrays.hashCode(buyerPublicKeyBytes);
-        	return result;
-    	}
-
-    	@Override
-    	public boolean equals(Object obj) {
-        	if (obj == null)
-        	    return false;
-        	if (!(obj instanceof SellOrderProposition))
-            	return false;
-        	if (obj == this)
-            	return true;
-        	SellOrderProposition that = (SellOrderProposition) obj;
-        	return Arrays.equals(ownerPublicKeyBytes, that.ownerPublicKeyBytes)
-                && Arrays.equals(buyerPublicKeyBytes, that.buyerPublicKeyBytes);
-    	}
-	}
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+            if (!(obj instanceof SellOrderProposition))
+                return false;
+            if (obj == this)
+                return true;
+            SellOrderProposition that = (SellOrderProposition) obj;
+            return Arrays.equals(ownerPublicKeyBytes, that.ownerPublicKeyBytes)
+                    && Arrays.equals(buyerPublicKeyBytes, that.buyerPublicKeyBytes);
+        }
+    }
 
 
 
@@ -1011,10 +870,39 @@ A custom proposition must:
         return Arrays.copyOf(ownerPublicKeyBytes, KEY_LENGTH);
     }
     
-- **provide the usual methods for serialization and deserialization**: 
-   -  byte[] bytes()
-   - parseBytes(byte[] bytes)
+- **provide the usual method and class for serialization and deserialization**: 
    -  serializer()
+   - implement SellOrderPropositionSerializer:
+
+   ::
+
+    public final class SellOrderPropositionSerializer implements PropositionSerializer<SellOrderProposition> {
+
+        private static final SellOrderPropositionSerializer serializer = new SellOrderPropositionSerializer();
+
+        private SellOrderPropositionSerializer() {
+            super();
+        }
+
+        public static SellOrderPropositionSerializer getSerializer() {
+            return serializer;
+        }
+
+        @Override
+        public void serialize(SellOrderProposition proposition, Writer writer) {
+            writer.putBytes(proposition.getOwnerPublicKeyBytes());
+            writer.putBytes(proposition.getBuyerPublicKeyBytes());
+        }
+
+        @Override
+        public SellOrderProposition parse(Reader reader) {
+            byte[] ownerPublicKeyBytes = reader.getBytes(SellOrderProposition.KEY_LENGTH);
+            byte[] buyerPublicKeyBytes = reader.getBytes(SellOrderProposition.KEY_LENGTH);
+
+            return new SellOrderProposition(ownerPublicKeyBytes, buyerPublicKeyBytes);
+        }
+    }
+
 
 - **implement the hashCode() and equals() methods**, used to compare the proposition with other ones:
 
@@ -1053,79 +941,81 @@ Now we can analyse the corresponding proof class, SellOrderSpendingProof:
   ::
 
     public final class SellOrderSpendingProof extends AbstractSignature25519<PrivateKey25519, SellOrderProposition> {
+        // To distinguish who opened the CarSellOrderBox: seller or buyer
+        private final boolean isSeller;
+        private final byte[] signatureBytes;
 
-    	private final boolean isSeller;
+        public static final int SIGNATURE_LENGTH = Ed25519.signatureLength();
 
-    	public static final int SIGNATURE_LENGTH = Ed25519.signatureLength();
+        public SellOrderSpendingProof(byte[] signatureBytes, boolean isSeller) {
+            super(signatureBytes);
+            if (signatureBytes.length != SIGNATURE_LENGTH)
+                throw new IllegalArgumentException(String.format("Incorrect signature length, %d expected, %d found", SIGNATURE_LENGTH,
+                        signatureBytes.length));
+            this.isSeller = isSeller;
+            this.signatureBytes = signatureBytes;
+        }
 
-    	public SellOrderSpendingProof(byte[] signatureBytes, boolean isSeller) {
-        	super(signatureBytes);
-        	if (signatureBytes.length != SIGNATURE_LENGTH)
-        	    throw new IllegalArgumentException(String.format("Incorrect signature length, %d expected, %d found", SIGNATURE_LENGTH,
-                    signatureBytes.length));
-        	this.isSeller = isSeller;
-    	}
+        public boolean isSeller() {
+            return isSeller;
+        }
 
-    	public boolean isSeller() {
-        	return isSeller;
-    	}
+        public byte[] signatureBytes() {
+            return Arrays.copyOf(signatureBytes, SIGNATURE_LENGTH);
+        }
 
-    	@Override
-    	public boolean isValid(SellOrderProposition proposition, byte[] message) {
-        	if(isSeller) {
-        	    // Car seller wants to discard selling.
-            	return Ed25519.verify(signatureBytes, message, proposition.getOwnerPublicKeyBytes());
-        	} else {
-            	// Specific buyer wants to buy the car.
-            	return Ed25519.verify(signatureBytes, message, proposition.getBuyerPublicKeyBytes());
-        	}
-    	}
+        // Depends on isSeller flag value check the signature against seller or buyer public key specified in SellOrderProposition.
+        @Override
+        public boolean isValid(SellOrderProposition proposition, byte[] message) {
+            if(isSeller) {
+                // Car seller wants to discard selling.
+                return Ed25519.verify(signatureBytes, message, proposition.getOwnerPublicKeyBytes());
+            } else {
+                // Specific buyer wants to buy the car.
+                return Ed25519.verify(signatureBytes, message, proposition.getBuyerPublicKeyBytes());
+            }
+        }
 
-    	@Override
-    	public byte proofTypeId() {
-        	return CarRegistryProofsIdsEnum.SellOrderSpendingProofId.id();
-    	}
+        @Override
+        public byte[] bytes() {
+            return Bytes.concat(
+                    new byte[] { (isSeller ? (byte)1 : (byte)0) },
+                    signatureBytes
+            );
+        }
 
-    	@Override
-    	public byte[] bytes() {
-        	return Bytes.concat(
-                new byte[] { (isSeller ? (byte)1 : (byte)0) },
-                signatureBytes
-        	);
-    	}
+        public static SellOrderSpendingProof parseBytes(byte[] bytes) {
+            int offset = 0;
 
-    	public static SellOrderSpendingProof parseBytes(byte[] bytes) {
-        	int offset = 0;
+            boolean isSeller = bytes[offset] != 0;
+            offset += 1;
 
-        	boolean isSeller = bytes[offset] != 0;
-        	offset += 1;
+            byte[] signatureBytes = Arrays.copyOfRange(bytes, offset, offset + SIGNATURE_LENGTH);
 
-        	byte[] signatureBytes = Arrays.copyOfRange(bytes, offset, offset + SIGNATURE_LENGTH);
+            return new SellOrderSpendingProof(signatureBytes, isSeller);
+        }
 
-        	return new SellOrderSpendingProof(signatureBytes, isSeller);
-    	}
+        @Override
+        public ProofSerializer serializer() {
+            return SellOrderSpendingProofSerializer.getSerializer();
+        }
 
-    	@Override
-    	public ProofSerializer serializer() {
-        	return SellOrderSpendingProofSerializer.getSerializer();
-    	}
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SellOrderSpendingProof that = (SellOrderSpendingProof) o;
+            return Arrays.equals(signatureBytes, that.signatureBytes) && isSeller == that.isSeller;
+        }
 
-    	@Override
-    	public boolean equals(Object o) {
-        	if (this == o) return true;
-        	if (o == null || getClass() != o.getClass()) return false;
-        	SellOrderSpendingProof that = (SellOrderSpendingProof) o;
-        	return Arrays.equals(signatureBytes, that.signatureBytes) && isSeller == that.isSeller;
-    	}
-
-    	@Override
-    	public int hashCode() {
-        	int result = Objects.hash(signatureBytes.length);
-        	result = 31 * result + Arrays.hashCode(signatureBytes);
-        	result = 31 * result + (isSeller ? 1 : 0);
-        	return result;
-    	}
-	}
+        @Override
+        public int hashCode() {
+            int result = Objects.hash(signatureBytes.length);
+            result = 31 * result + Arrays.hashCode(signatureBytes);
+            result = 31 * result + (isSeller ? 1 : 0);
+            return result;
+        }
+    }
   
 
  The most important method here is *isValid*: it receives a proposition and a byte[] message, and checks that the signature contained in this proof is valid against them. The signature was passed in the constructor. If this method returns true, any box locked with the proposition can be opened with this proof.
@@ -1188,7 +1078,7 @@ Then we have the methods that compare the proof with other ones:
     
 
 
- and the methods to serialize and deserialize it:
+ and the methods to serialize and deserialize it;
 
  
 
@@ -1196,29 +1086,26 @@ Then we have the methods that compare the proof with other ones:
   ::
 
     @Override
-    public byte[] bytes() {
-        return Bytes.concat(
-                new byte[] { (isSeller ? (byte)1 : (byte)0) },
-                signatureBytes
-        );
-    }
-
-    public static SellOrderSpendingProof parseBytes(byte[] bytes) {
-        int offset = 0;
-
-        boolean isSeller = bytes[offset] != 0;
-        offset += 1;
-
-        byte[] signatureBytes = Arrays.copyOfRange(bytes, offset, offset + SIGNATURE_LENGTH);
-
-        return new SellOrderSpendingProof(signatureBytes, isSeller);
-    }
-
-    @Override
     public ProofSerializer serializer() {
         return SellOrderSpendingProofSerializer.getSerializer();
     }
    
+
+  ::
+
+    @Override
+    public void serialize(SellOrderSpendingProof boxData, Writer writer) {
+        writer.put(boxData.isSeller() ? (byte)1 : (byte)0);
+        writer.putBytes(boxData.signatureBytes());
+    }
+
+    @Override
+    public SellOrderSpendingProof parse(Reader reader) {
+        boolean isSeller = reader.getByte() != 0;
+        byte[] signatureBytes = reader.getBytes(SellOrderSpendingProof.SIGNATURE_LENGTH);
+
+        return new SellOrderSpendingProof(signatureBytes, isSeller);
+    }
 
 Please note: the relationship between proposition, proofs and boxes is already defined by the generics used when declaring them. For example, the SellOrderProposition (first row below) is also part of the declaration of the related proof and custom box (CarSellOrderBox) that gets locked by it:
 
@@ -1250,15 +1137,14 @@ The methods of the interface are the following ones:
 
     public interface ApplicationState {
     
-    	Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
+    	void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException;
 
-    	Try<ApplicationState> onRollback(byte[] version); 
+        void validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) throws IllegalArgumentException;
 
-    	boolean validate(SidechainStateReader stateReader, SidechainBlock block);
+    	Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] blockId, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
 
-    	boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction);
-
-	}
+    	Try<ApplicationState> onRollback(byte[] blockId);
+    }
 
 
 Please note how the block revert notification is implemented: a byte[] representing a version id is passed every time *onApplyChanges* is called. If a rollback happens, the same version id is passed by the *onRollback* method: all versions after that one have to be discarded.
@@ -1271,8 +1157,8 @@ All the methods have a *SidechainStateReader* parameter. It's a utility class yo
   ::
 
     public interface SidechainStateReader {
-    	Optional<Box> getClosedBox(byte[] boxId);
-		}
+        Optional<Box> getClosedBox(byte[] boxId);
+    }
 
 
 Now let's see how the application State is used in our Lambo Registry app, staring from the *onApplyChanges* method:
@@ -1284,7 +1170,7 @@ Now let's see how the application State is used in our Lambo Registry app, stari
 
     @Override
     public Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader,
-                                                byte[] version,
+                                                byte[] blockId,
                                                 List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove) {
         //we update the Car info database. The data from it will be used during validation.
 
@@ -1308,7 +1194,7 @@ Now let's see how the application State is used in our Lambo Registry app, stari
                 }
             );
         }
-        carInfoDbService.updateVin(version, vinToAdd, vinToRemove);
+        carInfoDbService.updateVin(blockId, vinToAdd, vinToRemove);
         return new Success<>(this);
     }
 
@@ -1325,17 +1211,16 @@ To validate a single transaction, we check that the VIN is not already in the li
   ::
 
     @Override
-    public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) {
+    void validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) throws IllegalArgumentException {
         // we go through all CarDeclarationTransactions and verify that each CarBox represents a unique Car.
         if (CarDeclarationTransaction.class.isInstance(transaction)){
             Set<String> vinList = carInfoDbService.extractVinFromBoxes(transaction.newBoxes());
             for (String vin : vinList) {
                 if (! carInfoDbService.validateVin(vin, Optional.empty())){
-                    return false;
+                    throw new IllegalArgumentException("Vin has been used before.");
                 }
             }
         }
-        return true;
     }
 
 
@@ -1347,21 +1232,20 @@ To validate an entire block, we need an additional check, to be sure that in the
   ::
 
     @Override
-    public boolean validate(SidechainStateReader stateReader, SidechainBlock block) {
+    void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException {
         //We check that there are no multiple transactions declaring the same VIN inside the block
         Set<String> vinList = new HashSet<>();
         for (BoxTransaction<Proposition, Box<Proposition>> t :  JavaConverters.seqAsJavaList(block.transactions())){
             if (CarDeclarationTransaction.class.isInstance(t)){
                 for (String currentVin :  carInfoDbService.extractVinFromBoxes(t.newBoxes())){
                     if (vinList.contains(currentVin)){
-                        return false;
+                        throw new IllegalArgumentException("Vin has been used in another transaction.");
                     }else{
                         vinList.add(currentVin);
                     }
                 }
             }
         }
-        return true;
 	}
 
 
@@ -1373,8 +1257,8 @@ Finally, the *rollback* method, which is very simple and delegates all the logic
   ::
 
     @Override
-    public Try<ApplicationState> onRollback(byte[] version) {
-        carInfoDbService.rollback(version);
+    public Try<ApplicationState> onRollback(byte[] blockId) {
+        carInfoDbService.rollback(blockId);
         return new Success<>(this);
     }
 
@@ -1394,8 +1278,8 @@ The interface *com.horizen.wallet.ApplicationWallet* is another extension point 
 
     	void onAddSecret(Secret secret);
     	void onRemoveSecret(Proposition proposition);
-    	void onChangeBoxes(byte[] version, List<Box<Proposition>> boxesToUpdate, List<byte[]> boxIdsToRemove);
-    	void onRollback(byte[] version);
+    	void onChangeBoxes(byte[] blockId, List<Box<Proposition>> boxesToUpdate, List<byte[]> boxIdsToRemove);
+    	void onRollback(byte[] blockId);
 	}
 
 
