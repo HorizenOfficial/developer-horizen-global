@@ -9,7 +9,7 @@ Custom box creation
 
 The first step of the development process of a distributed app implemented as a sidechain, is the representation of the needed data. In the SDK, application data are modeled as "Boxes". 
 
-Every custom box should at least implement the ``com.horizen.box.NoncedBox`` interface. 
+Every custom box should at least implement the ``com.horizen.box.Box`` interface. 
 The methods defined in the interface are the following:
 
 - ``long nonce()``
@@ -28,21 +28,25 @@ The methods defined in the interface are the following:
   should return the serializer of the box (see below).
 - ``byte boxTypeId()``
   should return the unique identifier of the box type: each box type must have a unique identifier inside the whole sidechain application.
+- ``String typeName()``
+  should return the name of class
+- ``boolean isCustom()``
+should return true for all custom boxes
 
-As a common design rule, you usually do not implement the NoncedBox interface directly, but extend instead the abstract class `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, which already provides default implementations of 
-some useful methods like ``id()``, ``equals()`` and ``hashCode()``.
-This class requires the definition of another object: a class extending `com.horizen.box.AbstractNoncedBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractNoncedBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractNoncedBoxData as an inner container of all the fields of your box.
-This data object must be passed in the constructor of AbstractNoncedBox, along with the nonce.
-The important methods of AbstractNoncedBoxData that need to be implemented are:
+As a common design rule, you usually do not implement the Box interface directly, but extend instead the abstract class `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, which already provides default implementations of 
+some useful methods like ``id()``, ``equals()``, ``hashCode()``, ``typeName()`` and ``isCustom()``.
+This class requires the definition of another object: a class extending `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
+This data object must be passed in the constructor of AbstractBox, along with the nonce.
+The important methods of AbstractBoxData that need to be implemented are:
 
 - ``byte[] customFieldsHash()``
   Must return a hash of all custom data values, otherwise those data will not be "protected," i.e., some malicious actor can change custom data during transaction creation. 
 - ``Box getBox(long nonce)`` 
   creates a new Box containing this BoxData for a given nonce.
-- ``NoncedBoxDataSerializer serializer()``
+- ``BoxDataSerializer serializer()``
   should return the serializer of this box data (see below)
 
-BoxSerializer and NoncedBoxDataSerializer
+BoxSerializer and BoxDataSerializer
 #########################################
 
 Each box must define its own serializer and return it from the ``serializer()`` method.
@@ -53,7 +57,7 @@ The serializer is responsible to convert the box into bytes, and parse it back l
 - Box ``parse(scorex.util.serialization.Reader reader)``
   perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-Also any instance of AbstractNoncedBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.NoncedBoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/NoncedBoxDataSerializer.java>`_
+Also any instance of AbstractBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/BoxDataSerializer.java>`_
 
       
 Specific actions for extension of Coin-box
@@ -65,7 +69,7 @@ A Coin Box is a Box that has a value in ZEN. The creation process is the same ju
 Transaction extension
 #####################
 
-A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. To define a new custom transaction, you have to extend the `com.horizen.transaction.BoxTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/BoxTransaction.java>`_ class.
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transaction inherited from SidechainTransaction. SidechainNoncedTransaction - class that help to deal with output boxes nonces. AbstractRegularTransaction class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>`
 The most relevant methods of this class are detailed below:
 
 - ``public List<BoxUnlocker<Proposition>> unlockers()``
@@ -83,7 +87,7 @@ The most relevant methods of this class are detailed below:
 
   The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the the process requires to spend the box and create a new one with the updated values.
 
-- ``public List<NoncedBox<Proposition>> newBoxes()``
+- ``public List<Box<Proposition>> newBoxes()``
 
   This function returns the list of new boxes which will be created by the current transaction. 
   As a good practice, you should use the ``Collections.unmodifiableList()`` method to wrap the returned list into a not updatable Collection:
@@ -91,8 +95,8 @@ The most relevant methods of this class are detailed below:
   ::
 
     @Override
-    public List<NoncedBox<Proposition>> newBoxes() {
-      List<NoncedBox<Proposition>> newBoxes =  .....  //new boxes are created here  
+    public List<Box<Proposition>> newBoxes() {
+      List<Box<Proposition>> newBoxes =  .....  //new boxes are created here
       //....
       return Collections.unmodifiableList(newBoxes);
     }   
@@ -100,16 +104,15 @@ The most relevant methods of this class are detailed below:
 - ``public long fee()``
   Returns the fee to be paid to execute this transaction.
 
-- ``public long timestamp()``
-  Returns the timestamp of the transaction creation.
-  As a good practice, timestamp should be created outside transaction, passed in the transaction's constructor, and returned here.
-
 - ``public byte transactionTypeId()``
   Returns the type of this transaction. Each custom transaction must have its own unique type.
 
 - ``public boolean transactionSemanticValidity()``
   Confirms if a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
   This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
+
+SidechainNoncedTransaction has already implementation of newBoxes function. But it requires an implementation of abstract function getOutputData that provides list of output data of the transaction.
+AbstractRegularTransaction requires the implementation of getCustomOutputData for retrieving output custom data of the transaction. The output of other data in AbstractRegularTransaction is already collected in the getOutputData function, which also uses getCustomOutputData.
 
 Apart from the semantic check, the Sidechain will need to make also sure that all transactions are compliant with the application logic and syntax. Such checks need to be implemented in the ``validate()`` method of the ``custom ApplicationState`` class.
 
@@ -208,13 +211,13 @@ A customized blockchain will likely include custom data and transactions. The Ap
 ApplicationState:
 ::
   interface ApplicationState {
-  boolean validate(SidechainStateReader stateReader, SidechainBlock block);
+  void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException;
 
-  boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction);
+  void validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) throws IllegalArgumentException;
 
-  Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] version, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
+  Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] blockId, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
 
-  Try<ApplicationState> onRollback(byte[] version);
+  Try<ApplicationState> onRollback(byte[] blockId);
   }
 
 An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can represent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
@@ -224,13 +227,13 @@ Then, the developer could implement the needed custom state checks in the follow
 
       public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) 
 
-  * Custom checks on transactions should be performed here. If the function returns false, then the transaction is considered invalid. This method is called either before including a transaction inside the memory pool or before accepting a new block from the network.
+  * Custom checks on transactions should be performed here. If the function throws exception, then the transaction is considered invalid. This method is called either before including a transaction inside the memory pool or before accepting a new block from the network.
     ::
 
-      public boolean validate(SidechainStateReader stateReader, SidechainBlock block)  
+      void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException
     
   
-  * Custom block validation should happen here. If the function returns false, then the block will not be accepted by the sidechain node. Note that each transaction contained in the block had been already validated by the previous method, so here you should include only block-related checks (e.g. check that two different transactions in the same block don't declare the same VIN car)
+  * Custom block validation should happen here. If the function throws exception, then the block will not be accepted by the sidechain node. Note that each transaction contained in the block had been already validated by the previous method, so here you should include only block-related checks (e.g. check that two different transactions in the same block don't declare the same VIN car)
     ::
 
       public boolean validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction)
@@ -356,6 +359,57 @@ To add custom API you have to create a class which extends the com.horizen.api.h
             this.number = number;
           }
         }
+
+Submitting transaction can be operated with TransactionSubmitProvider
+::
+    trait TransactionSubmitProvider {
+       @throws(classOf[IllegalArgumentException])
+       def submitTransaction(tx: BoxTransaction[Proposition, Box[Proposition]]): Unit
+
+       def asyncSubmitTransaction(tx: BoxTransaction[Proposition, Box[Proposition]],
+                                  callback:(Boolean, Option[Throwable]) => Unit): Unit
+    }
+
+For example
+
+::
+    val transactionSubmitProvider: TransactionSubmitProviderImpl = new TransactionSubmitProviderImpl(sidechainTransactionActorRef)
+
+    val tryRes: Try[Unit] = Try {
+      transactionSubmitProvider.submitTransaction(transaction)
+    }
+    tryRes match {
+      case Success(_) => // expected behavior
+      case Failure(exception) => fail("Transaction expected to be submitted successfully.", exception)
+    }
+
+asyncSubmitTransaction allows after submitting transaction apply callback function.
+
+::
+
+    val transactionSubmitProvider: TransactionSubmitProviderImpl = new TransactionSubmitProviderImpl(sidechainTransactionActorRef)
+
+
+    def callback(res: Boolean, errorOpt: Option[Throwable]): Unit = synchronized {
+        // Some operations executed after submitting transaction
+    }
+
+    // Start submission operation ...
+    transactionSubmitProvider.asyncSubmitTransaction(transaction, callback)
+
+
+Also there ara availible providers for retrieving NodeView and Secret submission
+
+::
+    trait NodeViewProvider {
+        def getNodeView(view: SidechainNodeView => Unit)
+
+    }
+
+::
+    public interface SecretSubmitHelper {
+        void submitSecret(Secret secret) throws IllegalArgumentException;
+    }
 
 API response classes
 
