@@ -39,7 +39,8 @@ Boxes
 Data in a sidechain is meant to be represented as a Box. That data is kept “closed” by a Proposition, and can be opened (i.e. "spent") only with the Proposition’s Secret(s).
 The Sidechain SDK offers two different Box types: Coin Box and non-Coin Box.
 
-A Coin Box contains ZEN. A Non-Coin box does not contain ZEN, and represents a unique entity that can be transferred between different owners. Examples of a Coin box are RegularBox and ForgingBox. A Coin Box can add custom data to an object that represents coins, i.e. an object that holds an intrinsic, defined value. For example, a developer would extend a Coin Box to manage a time lock on a UTXO, e.g. to implement smart contract logic.
+
+A Coin Box contains ZEN. A Non-Coin Box does not contain ZEN and represents a unique entity that can be transferred between different owners. Examples of a Coin box are ZenBox and ForgingBox. A Coin Box can add custom data to an object that represents coins, i.e. an object that holds an intrinsic, defined value. For example, a developer would extend a Coin Box to manage a time lock on a UTXO, e.g. to implement smart contract logic.
 
 A Box represents an entity in the blockchain,  and all operations, such as create/open, are performed on it. Any Box contains a BoxData, which holds all the properties of that specific entity, such as value, proposition address, and any custom data.
 
@@ -79,7 +80,11 @@ There are two basic transactions: `MC2SCAggregatedTransaction
 
 An MC2SCAggregatedTransaction is the implementation in a sidechain of Forward Transfers to that specific sidechain, i.e. mainchain transactions that send coins to addresses of that specific sidechain. When a Forger is going to produce a sidechain block, and a new mainchain block appears, the forger will mention that mainchain block as a reference that contains that sidechain related data. If a Forward Transfer exists in the mainchain block, it will be included into the MC2SCAggregatedTransaction and added as a part of the reference.
 
-The SidechainCoreTransaction is the transaction which can send coins inside a sidechain, create forging stakes, or perform withdrawal requests (i.e. send coins back to the mainchain). The SidechainCoreTransaction can be extended to support custom logic operations. For example, if we think about a real-estate sidechain, we can tokenize some private property as a specific Box using SidechainCoreTransaction. Please refer to the SDK extensions for more details.
+The SidechainCoreTransaction is the transaction which can send coins inside a sidechain, create forging stakes, or perform withdrawal requests (i.e. send coins back to the mainchain). 
+
+All custom transactions inherited from SidechainTransaction. SidechainNoncedTransaction - a class that helps to deal with output Boxes nonces. AbstractRegularTransaction is a class that helps to deal with ZenBoxes.
+These classes can be extended to support custom logic operations. For example, if we think about a real estate sidechain, we can tokenize private property as a specific Box using AbstractRegularTransaction. Please refer to the SDK extensions for more details.
+
 
 Serialization
 *************
@@ -92,6 +97,14 @@ This interface defines two methods:
 - ``Serializer serializer()`` - returns the class responsible to parse and write the object through Scorex Reader and Writer, which are wrappers on byte streams
 
 The SDK provides basic serializer interfaces for its objects (for example `BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ for BoxData, `TransactionSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/TransactionSerializer.java>`_ for Transactions), ready to be extended when writing specific custom serializers.
+All other serializers must implement the ScorexSerializer interface.
+
+This interface defines two abstract methods:
+- ``serialize(T object, Writer writer)`` - writes object to the Writer
+- ``T parse(Reader reader)`` - parse bytes from the Reader and returns an object
+
+All serialization and parsing logic must be placed to these methods.
+
 
 We also need to instruct the dependency injection system on what appropriate serializer must be used for each object: this must be performed inside the AppModule configure() method, by adding key-value maps: the key is the specific type-id of each object (each object type must declare a unique type id), and the value is the serializer instance to be used for that object.
 There are separate maps for each class of object (one for Boxes, one for BoxData, one for Transactions and so on). Please refer to the SDK extension section for more information.
@@ -182,6 +195,9 @@ The starting point of the SDK for each sidechain is the `SidechainApp class <htt
 			Storage historyStorage,
 			Storage walletForgingBoxesInfoStorage,
 			Storage consensusStorage,
+			Storage walletCswDataStorage,
+			Storage stateUtxoMerkleTreeStorage,
+			Storage stateForgerBoxStorage
 
 			// Custom API calls and Core API endpoints to disable:
 			List<ApplicationApiGroup> customApiGroups,
@@ -236,7 +252,7 @@ Must be an instance of com.horizen.SidechainSettings, defining the sidechain con
    		.annotatedWith(Names.named("SidechainSettings"))
    		.toInstance(..);  
 
-- Custom box serializers
+-  Custom box serializers
 Serializers to be used for custom boxes, in the form ``HashMap<CustomboxId, BoxSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.         
 
@@ -246,17 +262,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
    		.annotatedWith(Names.named("CustomBoxSerializers"))
    		.toInstance(..); 
 
-- Custom box data serializers
-Serializers to be used for custom data boxes, in the form ``HashMap<CustomBoxDataId, NoncedBoxDataSerializer>``. 
-Use ``new HashMap<>();`` if no custom serializers are required.         
-
-::
-
-	bind(new TypeLiteral<HashMap<Byte,NoncedBoxDataSerializer<NoncedBoxData<Proposition, NoncedBox<Proposition>>>>>(){}) 
-    	.annotatedWith(Names.named("CustomBoxDataSerializers"))   
-    	.toInstance(..);       
-
-- Custom secrets serializers
+-  Custom secrets serializers
 Serializers to be used for custom secrets, in the form ``HashMap<SecretId, SecretSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.          
 
@@ -266,17 +272,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
 		.annotatedWith(Names.named("CustomSecretSerializers"))    
 		.toInstance(..);       
 
-- Custom proposition serializers
-Serializers to be used for custom Proof, in the form ``HashMap<CustomProofId, ProofSerializer>``. 
-Use ``new HashMap<>();`` if no custom serializers are required          
-
-::
-
-	bind(new TypeLiteral<HashMap<Byte, ProofSerializer<Proof<Proposition>>>>() {})  
-    	.annotatedWith(Names.named("CustomProofSerializers"))      
-    	.toInstance(..);        
-
-- Custom transaction serializers
+-  Custom transaction serializers
 Serializers to be used for custom transaction, in the form ``HashMap<CustomTransactionId, TransactionSerializer>``. 
 Use ``new HashMap<>();`` if no custom serializers are required.
 
@@ -286,7 +282,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
     	.annotatedWith(Names.named("CustomTransactionSerializers"))
     	.toInstance(..);
 
-- Application Wallet
+-  Application Wallet
 Class defining custom application wallet logic.
 Must be an instance of a class implementing the com.horizen.wallet.ApplicationWallet interface.
 
@@ -296,7 +292,7 @@ Must be an instance of a class implementing the com.horizen.wallet.ApplicationWa
     	.annotatedWith(Names.named("ApplicationWallet")
     	.toInstance(..);    
 
-- Application state
+-  Application state
 Class defining custom application state logic.
 Must be an instance of a class implementing the com.horizen.state.ApplicationState interface.
 
@@ -306,7 +302,7 @@ Must be an instance of a class implementing the com.horizen.state.ApplicationSta
     	.annotatedWith(Names.named("ApplicationState"))
     	.toInstance(..);
 
-- Secret storage
+-  Secret storage
 Class for defining Secret storage, i.e. a place where secret keys are stored.   
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
@@ -357,6 +353,15 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("StateStorage"))
     	.toInstance(..);   
 
+-  StateForgerBoxStorage
+Internal storage used to save the Forger boxes.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+	bind(Storage.class)                                                                                        
+    	.annotatedWith(Names.named("StateForgerBoxStorage"))
+    	.toInstance(..);   
+
 -  HistoryStorage
 Internal storage used to store all the History data, including blocks of all forks.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
@@ -375,7 +380,27 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 	bind(Storage.class)                                                                                        
     	.annotatedWith(Names.named("ConsensusStorage"))
-    	.toInstance(..);   
+    	.toInstance(..);
+
+-  CswDataStorage
+Internal storage to save data for recovering coins from the ceased Sidechain.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+
+	bind(Storage.class)
+    	.annotatedWith(Names.named("WalletCswDataStorage"))
+    	.toInstance(..);
+
+-  UtxoMerkleTreeStorage
+Internal storage to save UTXO Merkle Tree data.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+
+	bind(Storage.class)
+    	.annotatedWith(Names.named("StateUtxoMerkleTreeStorage"))
+    	.toInstance(..);
 
 - Custom API extensions   
 Used to add new custom endpoints to the http API.

@@ -17,7 +17,7 @@ The Sidechain SDK is available and tested on 64-bit versions of Linux and Window
 Requirements
 ************
 
-The Sidechain SDK requires Java 8  or newer (Java 11 recommended), Scala 2.12.10+ or newer, and the latest version of `zend_oo <https://github.com/ZencashOfficial/zend_oo>`_.
+The Sidechain SDK requires Java 11 or newer, Scala 2.12.10+ or newer, and the latest version of `zen <https://github.com/ZencashOfficial/zen>`_.
 
 
 **********************

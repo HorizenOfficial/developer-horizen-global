@@ -1263,6 +1263,7 @@ _______
           "detail": "string"
         }
       }
+_______
 
 
 =====
@@ -1469,5 +1470,376 @@ ____________
           "detail": "string"
         }
       }
+_______
 
 
+=====
+**Certificate Submitter operations**
+=====
+
+
+.. http:post:: /submitter/isCertGenerationActive
+
+*Returns if certificate generation is in progress*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/submitter/isCertGenerationActive" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "state":boolean
+         }
+      }
+
+________
+
+
+.. http:post:: /submitter/isCertificateSubmitterEnabled
+
+*Returns if certificate submitter is enabled*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/submitter/isCertificateSubmitterEnabled" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "enabled":boolean
+         }
+      }
+
+________
+
+
+.. http:post:: /submitter/enableCertificateSubmitter
+
+*Enables automatic certificate submission*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/submitter/enableCertificateSubmitter" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":
+      }
+
+________
+
+.. http:post:: /submitter/disableCertificateSubmitter
+
+*Disables automatic certificate submission*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/submitter/disableCertificateSubmitter" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":
+      }
+
+________
+
+.. http:post:: /submitter/isCertificateSignerEnabled
+
+*Returns if certificate signing option is enabled*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/submitter/isCertificateSignerEnabled" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "enabled":boolean
+         }
+      }
+
+________
+
+
+.. http:post:: /submitter/enableCertificateSigner
+
+*Enables automatic certificate signing*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/submitter/enableCertificateSigner" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":
+      }
+
+________
+
+
+.. http:post:: /submitter/disableCertificateSigner
+
+*Disables automatic certificate signing*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/submitter/disableCertificateSigner" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":
+      }
+_______
+
+
+=====
+**Ceased Sidechain Withdrawal operations**
+=====
+
+
+.. http:post:: /csw/hasCeased
+
+*Returns current status of the Sidechain*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/csw/hasCeased" -H "accept: application/json"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "state":true
+         }
+      }
+
+________
+
+
+.. http:post:: /csw/generateCswProof
+
+*Try to generate csw proof and return current status of this operation. Possible status are:*
+   * SidechainIsAlive - Sidechain is still alive;
+   * InvalidAddress - Receiver address has invalid value: MC taddress expected;
+   * NoProofData - Information for given box id is missed;
+   * ProofGenerationStarted - Started proof generation, was not started of present before;
+   * ProofGenerationInProcess - Proof generation was started before, still in process;
+   * ProofCreationFinished - Proof is ready.
+
+
+**Parameters**
+
++-----------------+---------+---------------------+
+| Name            | Type    | Description         |
++=================+=========+=====================+
+| boxId           | String  | Coin box id in hex  |
++-----------------+---------+---------------------+
+| receiverAddress | String  | Horizen address     |
++-----------------+---------+---------------------+
+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/csw/generateCswProof" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"boxId\":\"string\",\"receiverAddress\":\"string\"}"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+        "result": {
+          "state": "string",
+          "description": "string"
+          }
+      }
+
+________
+
+
+.. http:post:: /csw/cswInfo
+
+*Retrieves information about csw proof for given box id*
+
+
+**Parameters**
+
++-----------------+---------+---------------------+
+| Name            | Type    | Description         |
++=================+=========+=====================+
+| boxId           | String  | Coin box id in hex  |
++-----------------+---------+---------------------+
+
+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/csw/generateCswProof" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"boxId\":\"string\"}"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+        "result": {
+          "cswInfo": "CswInfo"
+          }
+      }
+
+________
+
+
+.. http:post:: /csw/cswBoxIds
+
+*Return list of available box ids for csw*
+
+
+**No Parameters**
+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/csw/cswBoxIds" -H "accept: application/json"
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+        "result": {
+          "cswBoxIds": [
+             "string"
+          ]
+          }
+      }
+
+________
+
+
+.. http:post:: /csw/nullifier
+
+*Retrieves nullifier for given box id*
+
+
+**Parameters**
+
++-----------------+---------+---------------------+
+| Name            | Type    | Description         |
++=================+=========+=====================+
+| boxId           | String  | Coin box id in hex  |
++-----------------+---------+---------------------+
+
+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9085/csw/nullifier" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"boxId\":\"string\"}"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+        "result": {
+          "nullifier": "string"
+          }
+      }
+_______
