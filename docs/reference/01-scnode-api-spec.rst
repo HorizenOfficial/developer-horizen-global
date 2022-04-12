@@ -1266,6 +1266,38 @@ _______
 _______
 
 
+.. http:post:: /node/stop
+   
+*Initiates a graceful stop procedure for the sidechain node. Returns an empty object*
+
+   
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST "http://127.0.0.1:9086/node/stop" -H "accept: application/json"
+      
+      
+**Example response**:
+   
+   .. sourcecode:: http
+      
+      {
+        "result": {
+        },
+        "error": {
+          "code": "string",
+          "description": "string",
+          "detail": "string"
+        }
+      }
+_______
+
+
 =====
 **Sidechain Mainchain Operations**
 =====
