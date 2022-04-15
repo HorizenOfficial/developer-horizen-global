@@ -1549,9 +1549,9 @@ _______
    
 *Returns the best MC block header which has already been included in a SC block. Returns:*
 
-   * Mainchain block reference hash with the most height;
-   * Its height in mainchain;
-   * Sidechain block ID which contains this MC block reference.
+   * *Mainchain block reference hash with the most height;*
+   * *Its height in mainchain;*
+   * *Sidechain block ID which contains this MC block reference.*
 
    
 **No Parameters**
@@ -1965,17 +1965,43 @@ _______
 
 ________
 
+.. http:post:: /csw/isCSWEnabled
+
+*Returns if the Ceased Sidechain Withdrawal is enabled in the Sidechain*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/csw/isCSWEnabled\" -H \"accept: application/json\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+	    "cswEnabled" : true
+	  }
+	}
+
+________
 
 .. http:post:: /csw/generateCswProof
 
 *Tries to generate csw proof and returns current status of this operation.*
 *Possible statuses are:*
-   * SidechainIsAlive - Sidechain is still alive;
-   * InvalidAddress - Receiver address has invalid value: MC toaddress expected;
-   * NoProofData - Information for given box id is missed;
-   * ProofGenerationStarted - Started proof generation, was not started of present before;
-   * ProofGenerationInProcess - Proof generation was started before, still in process;
-   * ProofCreationFinished - Proof is ready.
+   * *SidechainIsAlive - Sidechain is still alive;*
+   * *InvalidAddress - Receiver address has invalid value: MC toaddress expected;*
+   * *NoProofData - Information for given box id is missed;*
+   * *ProofGenerationStarted - Started proof generation, was not started of present before;*
+   * *ProofGenerationInProcess - Proof generation was started before, still in process;*
+   * *ProofCreationFinished - Proof is ready.*
 
 
 **Parameters**
