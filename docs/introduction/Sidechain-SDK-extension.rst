@@ -35,7 +35,7 @@ should return true for all custom boxes
 
 As a common design rule, you usually do not implement the Box interface directly, but extend instead the abstract class `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, which already provides default implementations of 
 some useful methods like ``id()``, ``equals()``, ``hashCode()``, ``typeName()`` and ``isCustom()``.
-This class requires the definition of another object: a class extending `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
+This class requires the definition of another object: a class extending `com.horizen.box.AbstractBoxData <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBoxData.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
 This data object must be passed in the constructor of AbstractBox, along with the nonce.
 The important methods of AbstractBoxData that need to be implemented are:
 
@@ -57,7 +57,7 @@ The serializer is responsible to convert the box into bytes, and parse it back l
 - Box ``parse(scorex.util.serialization.Reader reader)``
   perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-Also any instance of AbstractBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/BoxDataSerializer.java>`_
+Also any instance of AbstractBoxData needs to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/BoxDataSerializer.java>`_
 
       
 Specific actions for extension of Coin-box
@@ -69,7 +69,7 @@ A Coin Box is a Box that has a value in ZEN. The creation process is the same ju
 Transaction extension
 #####################
 
-A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transaction inherited from SidechainTransaction. SidechainNoncedTransaction - class that help to deal with output boxes nonces. AbstractRegularTransaction class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>`
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transactions inherited from SidechainTransaction. SidechainNoncedTransaction - class that helps to deal with output boxes nonces. AbstractRegularTransaction class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>`_.
 The most relevant methods of this class are detailed below:
 
 - ``public List<BoxUnlocker<Proposition>> unlockers()``
@@ -85,7 +85,7 @@ The most relevant methods of this class are detailed below:
       Proof<P> boxKey();
     }
 
-  The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the the process requires to spend the box and create a new one with the updated values.
+  The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the process requires to spend the box and create a new one with the updated values.
 
 - ``public List<Box<Proposition>> newBoxes()``
 
@@ -108,7 +108,7 @@ The most relevant methods of this class are detailed below:
   Returns the type of this transaction. Each custom transaction must have its own unique type.
 
 - ``public boolean transactionSemanticValidity()``
-  Confirms if a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
+  Confirms if a transaction is semantically valid, e.g. checks that fee > 0, timestamp > 0, etc.
   This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
 
 SidechainNoncedTransaction has already implementation of newBoxes function. But it requires an implementation of abstract function getOutputData that provides list of output data of the transaction.
@@ -429,7 +429,7 @@ asyncSubmitTransaction allows after submitting transaction apply callback functi
     transactionSubmitProvider.asyncSubmitTransaction(transaction, callback)
 
 
-Also there ara availible providers for retrieving NodeView and Secret submission
+Also there are available providers for retrieving NodeView and Secret submission
 
 ::
 
