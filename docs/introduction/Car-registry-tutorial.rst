@@ -1144,12 +1144,16 @@ The methods of the interface are the following ones:
     	Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] blockId, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
 
     	Try<ApplicationState> onRollback(byte[] blockId);
+
+        boolean checkStoragesVersion(byte[] blockId);
     }
 
 
 Please note how the block revert notification is implemented: a byte[] representing a version id is passed every time *onApplyChanges* is called. If a rollback happens, the same version id is passed by the *onRollback* method: all versions after that one have to be discarded.
 
-All the methods have a *SidechainStateReader* parameter. It's a utility class you can use to access the closed boxes of the sidechain, i.e. all the boxes that haven't been spent yet. Here its interface definition:
+The method *checkStoragesVersion* is called by the SDK in order to check the alignment of SDK and any application custom storages versions (if any) at node restart.
+
+Most methods have a *SidechainStateReader* parameter. It's a utility class you can use to access the closed boxes of the sidechain, i.e. all the boxes that haven't been spent yet. Here its interface definition:
 
 
 
@@ -1249,7 +1253,7 @@ To validate an entire block, we need an additional check, to be sure that in the
 	}
 
 
-Finally, the *rollback* method, which is very simple and delegates all the logic to the service used to store our list:
+The *rollback* method, which is very simple and delegates all the logic to the service used to store our list:
 
 
 
@@ -1260,6 +1264,21 @@ Finally, the *rollback* method, which is very simple and delegates all the logic
     public Try<ApplicationState> onRollback(byte[] blockId) {
         carInfoDbService.rollback(blockId);
         return new Success<>(this);
+    }
+
+
+Finally, the *checkStoragesVersion* method, which is also very simple and just check the version of *carInfoDbService* storage against the input parameter:
+
+
+
+
+  ::
+
+    @Override
+    public boolean checkStoragesVersion(byte[] blockId)
+    {
+        byte[] ver = carInfoDbService.lastVersionID().orElse(new ByteArrayWrapper(NULL_VERSION)).data();
+        return Arrays.equals(blockId, ver);
     }
 
 
@@ -1275,15 +1294,41 @@ The interface *com.horizen.wallet.ApplicationWallet* is another extension point 
   ::
 
     public interface ApplicationWallet {
-
-    	void onAddSecret(Secret secret);
-    	void onRemoveSecret(Proposition proposition);
-    	void onChangeBoxes(byte[] blockId, List<Box<Proposition>> boxesToUpdate, List<byte[]> boxIdsToRemove);
-    	void onRollback(byte[] blockId);
-	}
+      void onAddSecret(Secret secret);
+      void onRemoveSecret(Proposition proposition);
+      void onChangeBoxes(byte[] blockId, List<Box<Proposition>> boxesToUpdate, List<byte[]> boxIdsToRemove);
+      void onRollback(byte[] blockId);
+      boolean checkStoragesVersion(byte[] blockId);
+    }
 
 
 The Lambo registry example does not implement the interface *ApplicationWallet* because its wallet has basic requirements. You may need to use interface *com.horizen.wallet.ApplicationWallet* depending on your app requirements. For example, if the app needs to maintain a separate wallet balance or counter of a specific kind of custom boxes associated to locally stored keys, you could put the code that updates those records inside the *onChangeBoxes* method. 
+
+
+Application Stopper 
+#############################
+
+The interface *com.horizen.SidechainAppStopper* allows an application to be called when the node stop procedure is initiated:
+
+::
+
+  public interface SidechainAppStopper {
+      void stopAll();
+  }
+
+
+
+Such a procedure can be explicitly triggered via the API 'node/stop' or can be triggered when the JVM is shutting down,
+for instance when a SIGINT is received.
+In the Lambo registry implementation of the method 'void stopAll()', the *carInfoDbService* storage is closed:
+
+::
+
+    @Override
+    public void stopAll() {
+        carInfoDbService.close()
+    }
+
 
 
 API extension
