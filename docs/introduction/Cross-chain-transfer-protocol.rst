@@ -80,9 +80,50 @@ Forward Transfer can be done by using following RPC command:
 
 .. code:: Bash
 
-   sc_send {"address": sc_address, "amount": sc_ft_amount, "scid": scid, "mcReturnAddress": mc_return_address}
+   sc_send <outputs> [params]
 
-This command specifies where the forward transfer coins are sent ("address"), the amount ("amount"), sidechain destination and address for change ("mcReturnAddress").
+The input arguments have the following structure:
+
+ - **1. outputs**                     - (string, required) A json array of json objects representing the amounts to send:
+
+.. code:: Bash
+
+  [{
+    "scid": id,
+    "toaddress":sc_addr,
+    "amount":amount,
+    "mcReturnAddress":mc_addr
+    },...,]
+
+Where: 
+
+     - **scid**            - (string, required) The uint256 side chain ID
+     - **toaddress**       - (string, required) The receiver PublicKey25519Proposition in the SC
+     - **amount**          - (numeric, required) Value expressed in ZEN
+     - **mcReturnAddress** - (string, required) The Horizen mainchain address where to send the backward transfer in case Forward Transfer is rejected by the sidechain
+
+And:
+
+ - **2. params**                       - (string, optional) A json object with the command parameters:
+
+.. code:: Bash
+
+  {
+     "fromaddress":taddr   
+     "changeaddress":taddr 
+     "minconf":conf        
+     "fee":fee             
+  }
+
+Where:
+
+      - **fromaddress**   - (string, optional) The taddr to send the funds from. If omitted funds are taken from all available UTXO
+      - **changeaddress** - (string, optional) The taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used
+      - **minconf**       - (numeric, optional, default=1) Only use funds confirmed at least this many times.
+      - **fee**           - (numeric, optional) The fee amount to attach to this transaction in ZEN. If not specified it is automatically computed using a fixed fee rate (default is 1zat per byte)
+
+
+This command specifies the SC destination where the forward transfer coins are sent ("toaddress"), the amount ("amount") and the MC address where to send a backward transfer in case Forward Transfer is rejected by the sidechai ("mcReturnAddress").
 
 From the mainchain's perspective, the transferred coins are destroyed; they are only represented in the total balance of that particular sidechain.
 On the sidechain side, the SDK provides all the functionalities that support Forward Transfers, so that a transferred amount is “converted” into a new Sidechain Box.
