@@ -135,25 +135,52 @@ A backward transfer moves coins back from a sidechain to the mainchain destinati
 A Backward Transfer is initiated by a **Withdrawal Request** which is a sidechain transaction issued by the coin's owner. The request specifies the mainchain destination address and the amount. More precisely, the withdrawal request owner will create a WithdrawalRequestBox that destroys the specified amount of coins in the sidechain. This is not enough to move those coins back to the mainchain though: we need to wait until the end of the withdrawal epoch, when all the coins specified in that epoch’s Withdrawal Requests are listed in a single certificate, that is then propagated to the mainchain.
 The certificate includes a succinct cryptographic proof that the rules associated with the declared verifying key have been respected. Certificates are processed by the mainchain consensus, which recreates the coins as specified by the certificate, only checking that the proof verifies, and that the coins received by a sidechain match the amount that was sent to it.
 
-Can be performed by the following RPC command on the Mainchain side:
+As an optional step, on MC side it is possible to explicitly request a Backward Transfer from the SC which should be included in one of the next certificates via the following RPC command:
+
+.. code:: Bash
+ 
+    sc_request_transfer <outputs> [params]
+
+The input arguments have the following structure:
+
+ - **1. outputs**                     - (string, required) A json array of json objects representing the request to send:
 
 .. code:: Bash
 
-    sc_request_transfer(outputs, params)
+  [{
+    "scid": id,
+    "vScRequestData":req_data,
+    "mcDestinationAddress":mc_addr,
+    "scFee":amount,
+    },...,]
 
-Where outputs are an array of JSON objects representing the amounts to send. Each array element must contain the following elements
+Where: 
 
-   - **scid**           - sidechain ID in uint256 format
-   - **vScRequestData** - sidechain UTXO ID for the backward transfer that is being requested
-   - **pubkeyhash**     - mainchain address that will receive the backward transferred amount
-   - **scFee**          - value spent by the sender that will be gained by a sidechain forger
+     - **scid**                 - (string, required) The uint256 side chain ID
+     - **vScRequestData**       - (array, required) It is an arbitrary array of byte strings of even length expressed in hexadecimal format representing a SC reference (for instance an Utxo ID) for which a backward transfer is being requested. The size of each string must be 32 bytes.
+     - **mcDestinationAddress** - (string, required) The Horizen mainchain address where to send the backward transfer
+     - **scFee**                - (numeric, required) The amount in ZEN representing the value spent by the sender that will be gained by a SC forger
 
-*Params* is a JSON object with the following command parameters:
+And:
 
-   - **fromaddress**   - The address to send the funds from. If omitted funds are taken from all available UTXO.
-   - **changeaddress** - The address to send the change to, if any. If not set, fromaddress is used. If the latter is not set, a newly generated address will be used.
-   - **minconf**       - Minimum confirmations the funds should have.
-   - **fee**           - The fee amount to attach to this transaction.
+ - **2. params**                       - (string, optional) A json object with the command parameters:
+
+.. code:: Bash
+
+  {
+     "fromaddress":taddr   
+     "changeaddress":taddr 
+     "minconf":conf        
+     "fee":fee             
+  }
+
+Where:
+
+      - **fromaddress**   - (string, optional) The taddr to send the funds from. If omitted funds are taken from all available UTXO
+      - **changeaddress** - (string, optional) The taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used
+      - **minconf**       - (numeric, optional, default=1) Only use funds confirmed at least this many times.
+      - **fee**           - (numeric, optional) The fee amount to attach to this transaction in ZEN. If not specified it is automatically computed using a fixed fee rate (default is 1zat per byte)
+
 
 Ceased Sidechain Withdrawal
 ===========================
