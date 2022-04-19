@@ -16,34 +16,49 @@ We can declare a new sidechain by using the following RPC command:
 
 .. code:: Bash
 
-	   sc_create {"versione": version,
-	      "withdrawalEpochLength": withdrawalEpochLength, 
-	      "toaddress": address, 
-	      "amount": creation_amount, 
-	      "wCertVk": vk, 
-	      "constant": constant, 
-	      'customData': custom_data, 
-	      'wCeasedVk': cswVk, 
-	      'vFieldElementCertificateFieldConfig': feCfg,
-              'vBitVectorCertificateFieldConfig': bvCfg, 
-	      'forwardTransferScFee': ftScFee, 
-              'mainchainBackwardTransferScFee': mbtrScFee, 
-	      'mainchainBackwardTransferRequestDataLength': mbtrRequestDataLength}
+    sc_create {
+         "version": version,
+         "withdrawalEpochLength": withdrawalEpochLength, 
+         "fromaddress": mc_address, 
+         "changeaddress": mc_address, 
+         "toaddress": sc_address, 
+         "amount": creation_amount, 
+         "minconf": conf, 
+         "fee": fee, 
+         "wCertVk": vk, 
+         'customData': custom_data, 
+         "constant": constant, 
+         'wCeasedVk': cswVk, 
+         'vFieldElementCertificateFieldConfig': feCfg,
+         'vBitVectorCertificateFieldConfig': bvCfg, 
+         'forwardTransferScFee': ftScFee, 
+         'mainchainBackwardTransferScFee': mbtrScFee, 
+         'mainchainBackwardTransferRequestDataLength': mbtrRequestDataLength
+    }
 	
 Parameters to the command must be passed in JSON format. 
 The command must specify the destination address where the first forward transfer coins are sent ("toaddress"), its amount ("amount"), as well as the epoch length ("withdrawalEpochLength"). 
 It is the epoch length that defines the frequency, in blocks, of the backward transfers' submissions (see the “backward transfers” paragraph below). The sc_create command also includes the cryptographic key to receive coins back from the sidechain ("wCertVk"). 
 The verification key guarantees that the received coins were processed according to a matching proving system. 
-Besides these parameters, sc_create has some optional ones:
+Besides these parameters, sc_create has some optional ones, here is the complete set of parameters:
 
- - **customData**                                 - An arbitrary byte string of even length expressed in hexadecimal format.
- - **constant**                                   - A public input for WCert proof verification.
- - **wCeasedVk**                                  - Used to verify a ceased sidechain withdrawal proofs for given SC. Optional.
- - **vFieldElementCertificateFieldConfig**        - Specifies how many custom FieldElementCertificateField any certificate should have and the corresponding size.
- - **vBitVectorCertificateFieldConfig**           - Specifies how many bitvector fields any certificate should have and the corresponding size.
- - **forwardTransferScFee**                       - The fee amount due to sidechain actors when creating an FT
- - **mainchainBackwardTransferScFee**             - The fee amount due to sidechain actors when creating an MBTR
- - **mainchainBackwardTransferRequestDataLength** - The expected size of the request data vector (made of field elements) in an MBTR
+ - **version**                                    - (numeric, required) The version of the sidechain.
+ - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032.
+ - **fromaddress**                                - (string, optional) The MC taddr to send the funds from. If omitted funds are taken from all available UTXO.
+ - **changeaddress**                              - (string, optional) The MC taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used.
+ - **toaddress**                                  - (string, required) The receiver PublicKey25519Proposition in the SC.
+ - **amount**                                     - (numeric, required) Funds to be sent to the newly created Sidechain. Value expressed in ZEN.
+ - **minconf**                                    - (numeric, optional, default=1) Only use funds confirmed at least this many times.
+ - **fee**                                        - (numeric, optional) The fee amount to attach to this transaction in ZEN. If not specified it is automatically computed using a fixed fee rate (default is 1zat per byte).
+ - **wCertVk**                                    - (string, required) It is an arbitrary byte string of even length expressed in hexadecimal format. Required to verify a WCert SC proof. Its size must be 9216 bytes max.
+ - **customData**                                 - (string, optional) An arbitrary byte string of even length expressed in hexadecimal format. A max limit of 1024 bytes will be checked.
+ - **constant**                                   - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used as public input for WCert proof verification. Its size must be 32 bytes.
+ - **wCeasedVk**                                  - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used to verify a Ceased sidechain withdrawal proof for given SC. Its size must be 9216 bytes max.
+ - **vFieldElementCertificateFieldConfig**        - (array, optional) An array whose entries are sizes (in bits). Any certificate should have as many custom FieldElements with the corresponding size.
+ - **vBitVectorCertificateFieldConfig**           - (array, optional) An array whose entries are bitVectorSizeBits and maxCompressedSizeBytes pairs. Any certificate should have as many custom BitVectorCertificateField with the corresponding sizes.
+ - **forwardTransferScFee**                       - (numeric, optional, default=0) The amount of fee in ZEN due to sidechain actors when creating a FT
+ - **mainchainBackwardTransferScFee**             - (numeric, optional, default=0) The amount of fee in ZEN due to sidechain actors when creating a MBTR
+ - **mainchainBackwardTransferRequestDataLength** - (numeric, optional, default=0) The expected size (max=16) of the request data vector (made of field elements) in a MBTR
 
 
 
