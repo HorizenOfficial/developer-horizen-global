@@ -428,7 +428,7 @@ implementation of the method 'void stopAll()'. Such a method is called by the SD
 Such a procedure can be explicitly triggered via the API 'node/stop' or can be triggered when the JVM is shutting down,
 for instance when a SIGINT is received.
 In the custom implementation for instance, custom storages should be closed or any resources should be properly released.
-An example is provided in the "SimpleApp" with the SimpleAPpStopper.java class.
+An example is provided in the "SimpleApp" with the SimpleAppStopper.java class.
 
 ::
 
