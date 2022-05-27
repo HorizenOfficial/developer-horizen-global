@@ -145,7 +145,7 @@ The communication between a node and its users is available through http end poi
 Physical storage
 ****************
 
-The SDK introduces the unified physical storage interface, and this default implementation is based on the `IODB Library <https://github.com/input-output-hk/iodb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. When using a custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes.
+The SDK introduces the unified physical storage interface, and this default implementation is based on the `LevelDB key-value storage <https://github.com/google/leveldb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. When using a custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes.
 
 User-specific settings
 **********************
@@ -358,6 +358,7 @@ Internal storage used to save the Forger boxes.
 Must be an instance of a class implementing the com.horizen.storage.Storage interface.
 
 ::
+
 	bind(Storage.class)                                                                                        
     	.annotatedWith(Names.named("StateForgerBoxStorage"))
     	.toInstance(..);   
@@ -421,6 +422,19 @@ Each pair on the passed list represents a path to be disabled (the key is the ba
 		.annotatedWith(Names.named("RejectedApiPaths"))
 		.toInstance(...); 
 
+- Sidechain Application stopper
+It is a customized class instance which implements the public interface 'SidechainAppStopper' and must provide an
+implementation of the method 'void stopAll()'. Such a method is called by the SDK when the node stop procedure is initiated.
+Such a procedure can be explicitly triggered via the API 'node/stop' or can be triggered when the JVM is shutting down,
+for instance when a SIGINT is received.
+In the custom implementation for instance, custom storages should be closed or any resources should be properly released.
+An example is provided in the "SimpleApp" with the SimpleAPpStopper.java class.
+
+::
+
+    bind(SidechainAppStopper.class)
+        .annotatedWith(Names.named("ApplicationStopper"))
+        .toInstance(applicationStopper);
 
 
 
