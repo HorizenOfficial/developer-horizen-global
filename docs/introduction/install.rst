@@ -21,7 +21,7 @@ The Sidechain SDK requires Java 11 or newer, Scala 2.12.10+ or newer, and the la
 
 
 **********************
-Installing on Windows:
+Installing on Windows
 **********************
 
   1. Install Java JDK version 11 (`link <https://www.oracle.com/java/technologies/javase-jdk11-downloads.html>`_)
@@ -44,7 +44,7 @@ Installing on Windows:
   9. When you are comfortable with the SDK core functionalities, you can tackle Chapter 8 and 9, and learn how to extend the software to add your own data and logic. Here the "Lambo Registry" example (`link <https://github.com/HorizenOfficial/lambo-registry>`_) will complement your reading, and show you how to create your own blockchain-based dApp.   
   
 *******************
-Installing on Linux:
+Installing on Linux
 *******************
 
   1. Install Java JDK version 11 (`link <https://www.oracle.com/java/technologies/javase-jdk11-downloads.html>`_)

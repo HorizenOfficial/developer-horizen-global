@@ -35,7 +35,7 @@ should return true for all custom boxes
 
 As a common design rule, you usually do not implement the Box interface directly, but extend instead the abstract class `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, which already provides default implementations of 
 some useful methods like ``id()``, ``equals()``, ``hashCode()``, ``typeName()`` and ``isCustom()``.
-This class requires the definition of another object: a class extending `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
+This class requires the definition of another object: a class extending `com.horizen.box.AbstractBoxData <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBoxData.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
 This data object must be passed in the constructor of AbstractBox, along with the nonce.
 The important methods of AbstractBoxData that need to be implemented are:
 
@@ -57,7 +57,7 @@ The serializer is responsible to convert the box into bytes, and parse it back l
 - Box ``parse(scorex.util.serialization.Reader reader)``
   perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-Also any instance of AbstractBoxData need's to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/BoxDataSerializer.java>`_
+Also any instance of AbstractBoxData needs to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/BoxDataSerializer.java>`_
 
       
 Specific actions for extension of Coin-box
@@ -69,7 +69,7 @@ A Coin Box is a Box that has a value in ZEN. The creation process is the same ju
 Transaction extension
 #####################
 
-A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transaction inherited from SidechainTransaction. SidechainNoncedTransaction - class that help to deal with output boxes nonces. AbstractRegularTransaction class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>`
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transactions inherited from SidechainTransaction. SidechainNoncedTransaction - class that helps to deal with output boxes nonces. AbstractRegularTransaction class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>`_.
 The most relevant methods of this class are detailed below:
 
 - ``public List<BoxUnlocker<Proposition>> unlockers()``
@@ -85,7 +85,7 @@ The most relevant methods of this class are detailed below:
       Proof<P> boxKey();
     }
 
-  The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the the process requires to spend the box and create a new one with the updated values.
+  The two methods define the id of the closed box to be opened and the proof that unlocks the proposition for that box. When a box is unlocked and opened, it is spent or "burnt", i.e. it stops existing; as such, it will be removed from the wallet and the blockchain state. As a reminder, a value inside a box cannot be "updated": the process requires to spend the box and create a new one with the updated values.
 
 - ``public List<Box<Proposition>> newBoxes()``
 
@@ -108,7 +108,7 @@ The most relevant methods of this class are detailed below:
   Returns the type of this transaction. Each custom transaction must have its own unique type.
 
 - ``public boolean transactionSemanticValidity()``
-  Confirms if a transaction is semantically valid, e.g. check that fee > 0, timestamp > 0, etc.
+  Confirms if a transaction is semantically valid, e.g. checks that fee > 0, timestamp > 0, etc.
   This function is not aware of the state of the sidechain, so it can't check, for instance, if the input is a valid Box.
 
 SidechainNoncedTransaction has already implementation of newBoxes function. But it requires an implementation of abstract function getOutputData that provides list of output data of the transaction.
@@ -211,13 +211,15 @@ A customized blockchain will likely include custom data and transactions. The Ap
 ApplicationState:
 ::
   interface ApplicationState {
-  void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException;
+      void validate(SidechainStateReader stateReader, SidechainBlock block) throws IllegalArgumentException;
 
-  void validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) throws IllegalArgumentException;
+      void validate(SidechainStateReader stateReader, BoxTransaction<Proposition, Box<Proposition>> transaction) throws IllegalArgumentException;
 
-  Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] blockId, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
+      Try<ApplicationState> onApplyChanges(SidechainStateReader stateReader, byte[] blockId, List<Box<Proposition>> newBoxes, List<byte[]> boxIdsToRemove);
 
-  Try<ApplicationState> onRollback(byte[] blockId);
+      Try<ApplicationState> onRollback(byte[] blockId);
+
+      boolean checkStoragesVersion(byte[] blockId);
   }
 
 An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can represent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
@@ -251,6 +253,13 @@ Then, the developer could implement the needed custom state checks in the follow
       public Try<ApplicationState> onRollback(byte[] version)
     
   
+  * This method checks that all the storages of the application which get updated by the sdk via the "onApplyChange" call above, have the version corresponding to the
+    blockId passed as input parameter. This is useful when checking the alignment of sdk and application storages versions at node restart.
+    ::
+
+      public boolean checkStoragesVersion(byte[] blockId)
+    
+  
 
 Application Wallet 
 ##################
@@ -266,13 +275,36 @@ The interface methods are listed below:
 ::
 
   interface ApplicationWallet {
-    void onAddSecret(Secret secret);
-    void onRemoveSecret(Proposition proposition);
-    void onChangeBoxes(byte[] version, List<Box<Proposition>> boxesToBeAdded, List<byte[]> boxIdsToRemove);
-    void onRollback(byte[] version);
+      void onAddSecret(Secret secret);
+
+      void onRemoveSecret(Proposition proposition);
+
+      void onChangeBoxes(byte[] version, List<Box<Proposition>> boxesToBeAdded, List<byte[]> boxIdsToRemove);
+
+      void onRollback(byte[] version);
+
+      boolean checkStoragesVersion(byte[] blockId);
   }
 
 As an example, the onChangeBoxes method gets called every time new blocks are added or removed from the chain; it can be used to implement for instance the update to a local storage of values that are modified by the opening and/or creation of specific box types.
+Similarly to ApplicationState, the checkStoragesVersion method is useful when checking the alignment of sdk and application wallet storages versions at node restart.
+
+
+
+Sidechain Application Stopper 
+#############################
+
+A user application should define a class that implements the interface FIXME `SidechainAppStopper <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/SidechainAppStopper.java>`_
+The interface is listed below:
+
+::
+
+  interface SidechainAppStopper {
+      void stopAll();
+  }
+
+The stopAll() method gets called when the node stop procedure is initiated. Such a procedure can be explicitly triggered via the API ‘node/stop’ or can be triggered when the JVM is shutting down, for instance when a SIGINT is received.
+In the custom implementation for instance, custom storages should be closed and any resources should be properly released. An example is provided in the “SimpleApp” with the SimpleAppStopper.java class.
 
 
 Custom API creation 
@@ -371,7 +403,6 @@ Submitting transaction can be operated with TransactionSubmitProvider
     }
 
 For example
-
 ::
     val transactionSubmitProvider: TransactionSubmitProviderImpl = new TransactionSubmitProviderImpl(sidechainTransactionActorRef)
 
@@ -398,15 +429,17 @@ asyncSubmitTransaction allows after submitting transaction apply callback functi
     transactionSubmitProvider.asyncSubmitTransaction(transaction, callback)
 
 
-Also there ara availible providers for retrieving NodeView and Secret submission
+Also there are available providers for retrieving NodeView and Secret submission
 
 ::
+
     trait NodeViewProvider {
         def getNodeView(view: SidechainNodeView => Unit)
 
     }
 
 ::
+
     public interface SecretSubmitHelper {
         void submitSecret(Secret secret) throws IllegalArgumentException;
     }
