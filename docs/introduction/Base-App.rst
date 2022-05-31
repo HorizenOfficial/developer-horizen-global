@@ -403,6 +403,16 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
     	.annotatedWith(Names.named("StateUtxoMerkleTreeStorage"))
     	.toInstance(..);
 
+-  BackupStorage
+Storage containing the non coin-boxes saved during the backup procedure.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+
+	bind(Storage.class)
+    	.annotatedWith(Names.named("BackupStorage"))
+    	.toInstance(..);
+
 - Custom API extensions   
 Used to add new custom endpoints to the http API.
 

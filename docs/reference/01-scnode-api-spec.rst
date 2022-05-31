@@ -2150,3 +2150,107 @@ ________
 	  }
 	}
 _______
+
+=====
+**Sidechain Backup operations**
+=====
+
+.. http:post:: /backup/getSidechainBlockIdForBackup
+
+*Returns the sidechain block id to use in the backup procedure.*
+
+*The block id is calculated using the following formula:*
+
+* *Genesis_MC_block_height + (current_epch - 2) * withdrawalEpochLength - 1*
+*This endpoint returns an error in case the sidechain current epoch is less than 3.*
+
+**No Parameters**
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/backup/getSidechainBlockIdForBackup\" -H \"accept: application/json\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "blockId":"7f25d35aadae65062033757e5049e44728128b7405ff739070e91d753b419094"
+         }
+      }
+
+________
+
+.. http:post:: /backup/getRestoredBoxes
+
+*Returns the non-coin boxes restored by the restore procedure in a paginated way.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| numberOfElements    |  int    | Number of boxes to return. Max = 100                                  |
++---------------------+---------+-----------------------------------------------------------------------+
+| lastBoxId           |  string | Last box id received. It's optional and in case of empty or non value |
+|                     |         | the endpoint starts to answer with the first box found.               |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/backup/getRestoredBoxes\" -H \"accept: application/json\" -d \"{\\\"numberOfElements\\\": 100, ,\\\"lastBoxId\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "boxes" : [ {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 866000000,
+              "nonce" : 3509023985616518242,
+              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 3561000000,
+              "nonce" : 6626025734618418495,
+              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 4165000000,
+              "nonce" : -7600613233944287562,
+              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
+              },
+              "isCustom" : true
+            } ],
+            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+         }
+      }
+
+________
+

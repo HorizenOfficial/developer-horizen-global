@@ -510,4 +510,94 @@ This can be done with Guice, by binding the ""CustomApiGroups" field:
    bind(new TypeLiteral<List<ApplicationApiGroup>> () {})
          .annotatedWith(Names.named("CustomApiGroups"))
          .toInstance(mycustomApiGroups);
- 
+
+
+Backup and restore procedure
+###################
+
+This mechanism was introduced to give the possibility to bootstrap a sidechain starting from a "snapshot" taken from an another sidechain of the same type.
+This can be useful in the unfortunately case of a sidechain that get ceased. With this procedure you are able to make a backup of your unspent non-coin boxes contained
+in your ceased sidechain and start a new sidechain that contains these boxes.
+
+Important notes:
+    ::
+
+- This procedure allows to backup and restore only NON-COIN boxes.
+- These restored boxes are not propagated over the network. This means that in a re-bootstrapped sidechain every nodes should have these boxes inside their data directory.
+- The nodes must include the backup inside their data directory BEFORE start for the first time.
+
+Backup procedure
+-------------------------------
+
+The SDK contains a Class called ``SidechainAppBackup`` that can be referenced from the application level to perform a backup.
+
+::
+
+    class SidechainBackup @Inject()
+      (@Named("CustomBoxSerializers") val customBoxSerializers: JHashMap[JByte, BoxSerializer[SidechainTypes#SCB]],
+       @Named("BackupStorage") val backUpStorage: Storage,
+       @Named("BackUpper") val backUpper : BoxBackupInterface
+      ) extends ScorexLogging
+      {
+
+        def createBackup(stateStoragePath: String, sidechainBlockIdToRollback: String, copyStateStorage: Boolean): Unit = {
+            ...
+        }
+      }
+
+It requires that the application level injects the following objects:
+
+- ``CustomBoxSerializer``: Map containing a serializer for every kind of new boxes added.
+- ``BackupStorage``: The Storage that will contains the backup.
+- ``BackUpper``: A class that implements the interface ``BoxBackupInterface`` that will be called to perform the backup.
+
+The method ``createBackup`` starts the backup procedure by calling the function ``BackUpper.backup``. It takes as parameters:
+
+- ``stateStoragePath``: File path to the SidechainStateStorage.
+- ``sidechainBlockItToRollback``: Sidechain block id used for the storage rollback.
+- ``copyStateStorage``: If True performs a copy of the SidechainStateStorage before rollback it in order to avoid its permanent corruption (this is a one way procedure, the Storge can't be used anymore after the rollback).
+
+The ``BoxBackupInterface`` interface declares a method ``backup`` that should be implemented by the extending class.
+
+::
+
+    public interface BoxBackupInterface {
+        void backup(BoxIterator source, BackupStorage db) throws Exception;
+    }
+
+The ``backup`` method receives an iterator over the Storage that will be taken as a source for the backup (typically it would be the SidechainStateStorage),
+and the Storage used to store the backup.
+You can use the method ``nextBox`` from this iterator to retrieve the next non-coin box from the Storage.
+
+Important notes:
+    ::
+
+In order to maintain a consistency between what the Mainchain knows about the Sidechain and what the Sidechain contains itself, if you want to perform a Backup of a ceased Sidechain, you should rollback the Storage
+to the version that contains the Mainchain block calculated by the following formula:
+
+  Genesis_MC_block_height + (current_epch - 2) * withdrawalEpochLength - 1
+
+This can be easily done by calling the endpoint `/backup/getSidechainBlockIdForBackup <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/scala/com/horizen/api/http/SidechainBackupApiRoute.scala>`_
+and pass the block id obtained to the method ``createBackup``.
+
+Restore procedure
+-------------------------------
+
+The restore procedure is automatically invoked when a Sidechain node starts from an empty blockchain. Before the application of the genesis block, the node is able to detect if there is a Backup Storage to restore,
+and in that case, it performs a several iteration over it in order to populate the other storages.
+The Backup Storage is scanned 4 times:
+
+- First scan used to populate the ``SidechainStateStorage`` with all the boxes found in the BackupStorage.
+- Second scan used to add the boxes owned by a node wallet proposition inside the ``WalletBoxStorage``. In this way you will be able to see the restored boxes inside your wallet (only if you have the corresponding proposition imported in your wallet) and spend them.
+- Third scan performed in the application level (``ApplicationState``). This is useful if you have some custom storages that you want to populate with the information taken from these boxes. You should override the method ``public Try<ApplicationState> onBackupRestore(BoxIterator boxIterator)`` inside the ``ApplicationState``.
+- Fourth scan performed in the application level (``ApplicationWallet``). This is useful if you want to perform some operations in your wallet based on the information taken from these boxes. You should override the method ``public void onBackupRestore(BoxIterator i)`` inside the ``ApplicationWallet``.
+
+Important notes:
+    ::
+
+The Backup Storage must be present inside your node data directory before starts the node for the first time.
+
+The procedure fails if just a single coin box is found inside the Backup Storage.
+
+If you own some of the restored boxes and you want to see them inside your wallet, you should add your secrets inside the config file of your node (before starts the node for the first time).
+You can add your secrets inside the section Wallet.genesisSecrets by appending "00" at the beginning of your secret in case it is a PrivateKey25519, "03" if it is a VrfPrivateKey or "04" if it is a SchnorrPrivateKey.
