@@ -220,6 +220,8 @@ ApplicationState:
       Try<ApplicationState> onRollback(byte[] blockId);
 
       boolean checkStoragesVersion(byte[] blockId);
+
+    Try<ApplicationState> onBackupRestore(BoxIterator i);
   }
 
 An example might help to understand the purpose of these methods. Let's assume, as we'll see in the next chapter, that our sidechain can represent a physical car as a token, that is coded as a "CarBox". Each CarBox token should represent a unique car, and that will mean having a unique VIN (Vehicle Identification Number): the sidechain developer will make ApplicationState store the list of all seen VINs, and reject transactions that create CarBox tokens with any preexisting VINs.
@@ -260,6 +262,10 @@ Then, the developer could implement the needed custom state checks in the follow
       public boolean checkStoragesVersion(byte[] blockId)
     
   
+  * This method is used during the restore procedure. It can be useful if you want to perform some operations based on the restored boxes.
+    ::
+
+      Try<ApplicationState> onBackupRestore(BoxIterator i);
 
 Application Wallet 
 ##################
@@ -284,6 +290,8 @@ The interface methods are listed below:
       void onRollback(byte[] version);
 
       boolean checkStoragesVersion(byte[] blockId);
+
+      void onBackupRestore(BoxIterator i);
   }
 
 As an example, the onChangeBoxes method gets called every time new blocks are added or removed from the chain; it can be used to implement for instance the update to a local storage of values that are modified by the opening and/or creation of specific box types.
@@ -511,11 +519,12 @@ This can be done with Guice, by binding the ""CustomApiGroups" field:
          .annotatedWith(Names.named("CustomApiGroups"))
          .toInstance(mycustomApiGroups);
 
+.. _backup_and_restore-label:
 
 Backup and restore procedure
 ###################
 
-This mechanism was introduced to give the possibility to bootstrap a sidechain starting from a "snapshot" taken from an another sidechain of the same type.
+This mechanism was introduced to make it possibile to bootstrap a sidechain starting from a "snapshot" taken from an another sidechain of the same kind.
 This can be useful in the unfortunately case of a sidechain that get ceased. With this procedure you are able to make a backup of your unspent non-coin boxes contained
 in your ceased sidechain and start a new sidechain that contains these boxes.
 
@@ -523,8 +532,8 @@ Important notes:
     ::
 
 - This procedure allows to backup and restore only NON-COIN boxes.
-- These restored boxes are not propagated over the network. This means that in a re-bootstrapped sidechain every nodes should have these boxes inside their data directory.
-- The nodes must include the backup inside their data directory BEFORE start for the first time.
+- These restored boxes are not propagated over the network. This means also that, in a re-bootstrapped sidechain, every single node must have these boxes inside it's own data directory.
+- The nodes must include the backup inside their data directory BEFORE they are started for the first time.
 
 Backup procedure
 -------------------------------
@@ -583,8 +592,8 @@ and pass the block id obtained to the method ``createBackup``.
 Restore procedure
 -------------------------------
 
-The restore procedure is automatically invoked when a Sidechain node starts from an empty blockchain. Before the application of the genesis block, the node is able to detect if there is a Backup Storage to restore,
-and in that case, it performs a several iteration over it in order to populate the other storages.
+The restore procedure is automatically invoked when a Sidechain node starts from an empty blockchain. Before the application of the genesis block, the node is able to detect if there is a Backup Storage to restore
+into it's data directory; in such a case, it performs several iterations over it in order to populate the other storages.
 The Backup Storage is scanned 4 times:
 
 - First scan used to populate the ``SidechainStateStorage`` with all the boxes found in the BackupStorage.
@@ -599,5 +608,5 @@ The Backup Storage must be present inside your node data directory before starts
 
 The procedure fails if just a single coin box is found inside the Backup Storage.
 
-If you own some of the restored boxes and you want to see them inside your wallet, you should add your secrets inside the config file of your node (before starts the node for the first time).
+If you own some of the restored boxes and you want to see them inside your wallet, you should add your secrets inside the config file of your node (before start the node for the first time).
 You can add your secrets inside the section Wallet.genesisSecrets by appending "00" at the beginning of your secret in case it is a PrivateKey25519, "03" if it is a VrfPrivateKey or "04" if it is a SchnorrPrivateKey.
