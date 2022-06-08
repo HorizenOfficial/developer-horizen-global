@@ -197,7 +197,8 @@ The starting point of the SDK for each sidechain is the `SidechainApp class <htt
 			Storage consensusStorage,
 			Storage walletCswDataStorage,
 			Storage stateUtxoMerkleTreeStorage,
-			Storage stateForgerBoxStorage
+			Storage stateForgerBoxStorage,
+			Storage backupStorage,
 
 			// Custom API calls and Core API endpoints to disable:
 			List<ApplicationApiGroup> customApiGroups,
@@ -401,6 +402,17 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 	bind(Storage.class)
     	.annotatedWith(Names.named("StateUtxoMerkleTreeStorage"))
+    	.toInstance(..);
+
+-  BackupStorage
+Storage containing the non coin-boxes saved during the backup procedure and restored during the restore procedure (See :ref:`backup_and_restore-label`).
+If you don't want to have any restore logic you can leave this empty.
+Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+
+::
+
+	bind(Storage.class)
+    	.annotatedWith(Names.named("BackupStorage"))
     	.toInstance(..);
 
 - Custom API extensions   
