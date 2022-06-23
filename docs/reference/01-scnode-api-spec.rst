@@ -1298,6 +1298,152 @@ ________
 
 ________
 
+.. http:post:: /wallet/importSecret
+
+*Import a secret into the wallet*
+
+**This endpoint needs authentication**
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| privKey          | String       |   Yes    | Secret to import inside the wallet   |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/importSecret\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"privKey\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+	      "proposition" : "4439cbfd50af1b846e5ef06889d3192ef7a459bdd4640dc6da506062de43113c80"
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/exportSecret
+
+*Export a secret corresponding to a public key from the wallet*
+
+**This endpoint needs authentication**
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| publickey        | String       |   Yes    | PublicKey to export                  |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/exportSecret\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"publicKey\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+	      "privKey" : "002b64a179846da0b13ed5b4354dbdeb85a500c60ccb12c01a0fded2bd5d8b58e58bb8302e2b46763c830099c6fd862da0774a7b8f1323db5bbd96d3652176e485"
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/importSecrets
+
+*Import all the secret from a file. The file must contain in each line: SECRET + " " + PUBLICKEYS*
+
+**This endpoint needs authentication**
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| path             | String       |   Yes    | Path to the file to import           |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/importSecrets\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"path\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "successfullyAdded" : 3,
+            "failedToAdd": 1,
+            "summary": [
+                {
+                    "lineNumber": 2,
+                    "description": "string"
+                }
+            ]
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/dumpSecrets
+
+*Dump all the wallet secrets to a file*
+
+**This endpoint needs authentication**
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| path             | String       |   Yes    | Path where the file will be created  |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/dumpSecrets\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"path\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "status": "string"
+	  }
+	}
+
+________
 
 =====
 **Sidechain Node operations**
