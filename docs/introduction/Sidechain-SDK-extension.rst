@@ -630,14 +630,14 @@ To fire additional log messages in your application code, just declare a log4j L
 
 Note: do not add any log4j library in your application pom file, as it is already loaded as a nested dependency of the SDK. 
 
-You can rely on the default logging configuration (based on Log4J library) and change just a few parameters inside the application config file, or ovveride it completely with a custom one.
+You can rely on the default logging configuration (based on Log4J library) and change just a few parameters inside the application configuration file, or override it completely with a custom one.
 
 Default log configuration
 -------------------------------
 By default, `a predefined log4j2.xml configuration <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/resources/log4j2.xml>`_  is used.
 It redirects all logging messages to the system console and to a filesystem log file, rotated and gzipped when it reaches 50MB size (only the latest 10 are then retained).
 
-The following dynamic parameters coming from the application conf file are used, so that you can change them by just updating the application conf file:
+The following dynamic parameters are taken from the application configuration file, and  can be changed there at any time:
 ::
 
     scorex {
@@ -653,7 +653,7 @@ The following dynamic parameters coming from the application conf file are used,
 
         ...
 
-- ``scorex.logDir``: base folder where log files are generated, injected in the log4jxml in the placeholder ``${sys:logDir}``
+- ``scorex.logDir``: base folder where the log files are generated, injected in the log4jxml in the placeholder ``${sys:logDir}``
 - ``scorex.logInfo.logFileName`` : log filename, injected in the log4jxml in the placeholder ``${sys:logFileName}``
 - ``scorex.logInfo.logFileLevel`` : log level used for the file appender, injected in the log4jxml in the placeholder ``${sys:logFileLevel}``
 - ``scorex.logInfo.logConsoleLevel`` : log level used for the console appender, injected in the log4jxml in the placeholder ``${sys:logConsoleLevel}``
