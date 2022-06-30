@@ -625,7 +625,7 @@ ______
    
 *Creates and signs a Sidechain core transaction, specifying inputs and outputs. Returns the new transaction as a hex string if format = false, otherwise its JSON representation.*
 
-
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -689,7 +689,8 @@ ______
    
 *Creates and signs a Sidechain core transaction, specifying inputs and outputs. Returns the new transaction as a hex string if format = false, otherwise its JSON representation.*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **Parameters**
 
 Example Value 
@@ -780,7 +781,8 @@ ______
    
 *Creates and signs a regular transaction, specifying outputs and fee. Then validates and sends the transaction. Returns the id of the transaction*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **Parameters**
 
 Example Value
@@ -823,6 +825,7 @@ ____
    
 *Creates and signs a regular transaction, specifying withdrawal outputs and fee. Then validates and sends the transaction. Returns the id of the transaction.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -864,6 +867,7 @@ ____
    
 *Creates and signs a Sidechain core transaction, specifying forger stake outputs and fee. Then validates and sends the transaction. Returns the id of the transaction*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -909,6 +913,7 @@ _______
    
 *Creates and signs sidechain core transaction, specifying inputs and outputs. Returns the new transaction as a hex string if format = false, otherwise its JSON representation.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -989,6 +994,7 @@ ______
    
 *Validates and sends a transaction, given its serialization as input. Then returns the id of the transaction.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1028,6 +1034,7 @@ ______
    
 *Returns all boxes, excluding those which ids are included in excludeBoxIds list*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1111,6 +1118,7 @@ ______
    
 *Returns the global balance for all types of boxes*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -1141,6 +1149,7 @@ ______
    
 *Returns the global balance for given type of boxes*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1177,6 +1186,7 @@ ______
    
 *Creates new secret and returns corresponding address (public key)*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -1208,7 +1218,8 @@ ______
    
 *Creates new Vrf secret and returns corresponding public key*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
    
@@ -1239,6 +1250,7 @@ ________
    
 *Returns the list of all wallet’s propositions (public keys)*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1302,7 +1314,7 @@ ________
 
 *Import a secret into the wallet*
 
-**This endpoint needs authentication**
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **Parameters**
 
@@ -1337,7 +1349,7 @@ ________
 
 *Export a secret corresponding to a public key from the wallet*
 
-**This endpoint needs authentication**
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **Parameters**
 
@@ -1372,7 +1384,7 @@ ________
 
 *Import all the secret from a file. The file must contain in each line: SECRET + " " + PUBLICKEYS*
 
-**This endpoint needs authentication**
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **Parameters**
 
@@ -1414,7 +1426,7 @@ ________
 
 *Dump all the wallet secrets to a file*
 
-**This endpoint needs authentication**
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **Parameters**
 
@@ -2149,6 +2161,7 @@ ________
    * *ProofGenerationInProcess - Proof generation was started before, still in process;*
    * *ProofCreationFinished - Proof is ready.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **Parameters**
 
