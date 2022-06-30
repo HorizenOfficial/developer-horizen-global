@@ -58,8 +58,7 @@ It's possible to add a basic authentication to the API interface.
 Some endpoints already requires it (e.g. all wallet endpoints).
 
 In order to enable it you should add an api key hash inside the config file section: **restApi.apiKeyHash**
-The api key must be an Hash of another string (api key) that it's used in the HTTP request. It's possible to calculate this Hash using the **ScBootstrapping tool** with the command
-**endocdeString**.
+The api key hash must be an Hash of another string (api key) that it's used in the HTTP request. It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
 
 .. code:: bash
 
