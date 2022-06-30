@@ -120,7 +120,8 @@ Memory Pool
 
 The Memory Pool is the node's mechanism for storing transactions that haven't been included in a block yet. It acts as a sort of transactions' "waiting room".
 It has a customizable size that can be changed in the configuration file.
-It's also possible to define a minimum amount of **fee rate** that a transaction should have in order to be included in the Memory Pool.
+In case of a full Memory Pool the transaction with the lower **fee rate** is removed.
+It's also possible to define a minimum amount of fee rate that a transaction should have in order to be included in the Memory Pool.
 By default the transactions are sorted by fee rate.
 
 The fee rate of a transaction is calculated by the following formula:
