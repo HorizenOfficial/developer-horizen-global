@@ -143,7 +143,7 @@ These parameter can be found in the configuration file in the section mempool
       }
 
 
-There is also the possibility to define a max fee threshold that blocks the inclusion in the Memory Pool of the transactions that have fee > max fee.
+There is also the possibility to define a max fee threshold that blocks the possibility to launch transactions from the node wallet that have fee > max fee.
 This property can be set in the configuration file in the section wallet.
 
 .. code:: bash
