@@ -119,6 +119,39 @@ Memory Pool
 ***********
 
 The Memory Pool is the node's mechanism for storing transactions that haven't been included in a block yet. It acts as a sort of transactions' "waiting room".
+It has a customizable size that can be changed in the configuration file.
+In case of a full Memory Pool the transaction with the lower **fee rate** is removed.
+It's also possible to define a minimum amount of fee rate that a transaction should have in order to be included in the Memory Pool.
+By default the transactions are sorted by fee rate.
+
+The fee rate of a transaction is calculated by the following formula:
+
+.. note::
+
+    transaction_fee_rate = transaction_fee*1000/transaction_size
+
+
+These parameter can be found in the configuration file in the section mempool
+
+.. code:: bash
+
+    mempool {
+          #unit is MB
+          maxSize = <MEMPOOL MAX SIZE> (Defualt is 300 MB)
+          #unit is ZENtoshi per kb
+          minFeeRate =  <MEMPOOL_MIN_FEE_RATE> (Default is 0)
+      }
+
+
+There is also the possibility to define a max fee threshold that blocks the inclusion in the Memory Pool of the transactions that have fee > max fee.
+This property can be set in the configuration file in the section wallet.
+
+.. code:: bash
+
+    wallet {
+        #Long
+        maxTxFee = 10000000 (Default value)
+    }
 
 Node wallet
 ***********
