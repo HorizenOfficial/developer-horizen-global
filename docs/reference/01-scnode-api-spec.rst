@@ -625,7 +625,7 @@ ______
    
 *Creates and signs a Sidechain core transaction, specifying inputs and outputs. Returns the new transaction as a hex string if format = false, otherwise its JSON representation.*
 
-
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -689,7 +689,8 @@ ______
    
 *Creates and signs a Sidechain core transaction, specifying inputs and outputs. Returns the new transaction as a hex string if format = false, otherwise its JSON representation.*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **Parameters**
 
 Example Value 
@@ -780,7 +781,8 @@ ______
    
 *Creates and signs a regular transaction, specifying outputs and fee. Then validates and sends the transaction. Returns the id of the transaction*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **Parameters**
 
 Example Value
@@ -823,6 +825,7 @@ ____
    
 *Creates and signs a regular transaction, specifying withdrawal outputs and fee. Then validates and sends the transaction. Returns the id of the transaction.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -864,6 +867,7 @@ ____
    
 *Creates and signs a Sidechain core transaction, specifying forger stake outputs and fee. Then validates and sends the transaction. Returns the id of the transaction*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -909,6 +913,7 @@ _______
    
 *Creates and signs sidechain core transaction, specifying inputs and outputs. Returns the new transaction as a hex string if format = false, otherwise its JSON representation.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -989,6 +994,7 @@ ______
    
 *Validates and sends a transaction, given its serialization as input. Then returns the id of the transaction.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1028,6 +1034,7 @@ ______
    
 *Returns all boxes, excluding those which ids are included in excludeBoxIds list*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1111,6 +1118,7 @@ ______
    
 *Returns the global balance for all types of boxes*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -1141,6 +1149,7 @@ ______
    
 *Returns the global balance for given type of boxes*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1177,6 +1186,7 @@ ______
    
 *Creates new secret and returns corresponding address (public key)*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -1208,7 +1218,8 @@ ______
    
 *Creates new Vrf secret and returns corresponding public key*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
    
@@ -1239,6 +1250,7 @@ ________
    
 *Returns the list of all wallet’s propositions (public keys)*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1298,6 +1310,152 @@ ________
 
 ________
 
+.. http:post:: /wallet/importSecret
+
+*Import a secret into the wallet*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| privKey          | String       |   Yes    | Secret to import inside the wallet   |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/importSecret\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"privKey\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+	      "proposition" : "4439cbfd50af1b846e5ef06889d3192ef7a459bdd4640dc6da506062de43113c80"
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/exportSecret
+
+*Export a secret corresponding to a public key from the wallet*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| publickey        | String       |   Yes    | PublicKey to export                  |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/exportSecret\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"publicKey\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+	      "privKey" : "002b64a179846da0b13ed5b4354dbdeb85a500c60ccb12c01a0fded2bd5d8b58e58bb8302e2b46763c830099c6fd862da0774a7b8f1323db5bbd96d3652176e485"
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/importSecrets
+
+*Import all the secret from a file. The file must contain in each line: SECRET + " " + PUBLICKEYS*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| path             | String       |   Yes    | Path to the file to import           |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/importSecrets\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"path\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "successfullyAdded" : 3,
+            "failedToAdd": 1,
+            "summary": [
+                {
+                    "lineNumber": 2,
+                    "description": "string"
+                }
+            ]
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/dumpSecrets
+
+*Dump all the wallet secrets to a file*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Parameters**
+
++------------------+--------------+----------+--------------------------------------+
+| Name             | Type         | Required | Description                          |
++==================+==============+==========+======================================+
+| path             | String       |   Yes    | Path where the file will be created  |
++------------------+--------------+----------+--------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/dumpSecrets\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{\\\"path\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "status": "string"
+	  }
+	}
+
+________
 
 =====
 **Sidechain Node operations**
@@ -2003,6 +2161,7 @@ ________
    * *ProofGenerationInProcess - Proof generation was started before, still in process;*
    * *ProofCreationFinished - Proof is ready.*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **Parameters**
 
