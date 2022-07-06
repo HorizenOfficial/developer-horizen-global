@@ -48,3 +48,48 @@ timeout -- Timeout in seconds on API requests
  * `Submitter <../reference/01-scnode-api-spec.html#certificate-submitter-operations>`_ -- Certificate submitter operations like current status of certificate generation, managing operation of submitting, and signing of a certificate.
 
  * `Csw <../reference/01-scnode-api-spec.html#ceased-sidechain-withdrawal-operations>`_ -- Ceased Sidechain Withdrawal operations like CSW proof generation or managing nullifiers.
+
+.. _api_authentication-label:
+
+API authentication
+====================
+
+It's possible to add a basic authentication to the API interface.
+Some endpoints already requires it (e.g. all wallet endpoints).
+
+In order to enable it you should add an api key hash inside the config file section: **restApi.apiKeyHash**
+The api key hash must be an Hash of another string (api key) that it's used in the HTTP request. It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
+
+.. code:: bash
+
+    encodeString:{"string": "Horizen"}
+
+Then, in the HTTP request you need to add an additional custom header: **"api_key"**.
+
+Example:
+
+HTTP request:
+
+.. code:: bash
+
+    "api_key": "Horizen"
+
+Config file:
+
+.. code:: bash
+
+    restApi {
+        "apiKeyHash": "aa8ed2a907753a4a7c66f2aa1d48a0a74d4fde9a6ef34bae96a86dcd7800af98"
+    }
+
+If you want to add authentication to your custom endpoints you just need to wrap your code between the withAuth directive.
+
+Example:
+
+.. code:: bash
+
+    your_custom_endpoint() = {
+        withAuth {
+            <custom endpoint implementation>
+        }
+    }

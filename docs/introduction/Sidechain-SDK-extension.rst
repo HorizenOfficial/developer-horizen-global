@@ -610,3 +610,58 @@ The procedure fails if just a single coin box is found inside the Backup Storage
 
 If you own some of the restored boxes and you want to see them inside your wallet, you should add your secrets inside the config file of your node (before start the node for the first time).
 You can add your secrets inside the section Wallet.genesisSecrets by appending "00" at the beginning of your secret in case it is a PrivateKey25519, "03" if it is a VrfPrivateKey or "04" if it is a SchnorrPrivateKey.
+
+Logging
+###################
+
+The SDK logging system is based on the Log4J library.
+To fire additional log messages in your application code, just declare a log4j Logger in your class and use it:
+
+::
+
+    public class MyCustomClass {
+
+        Logger logger = LogManager.getLogger(MyCustomClass.class);
+
+        public MyCustomClass(){
+          logger.debug("This is an example  debug message inside the constructor");
+        }
+    }
+
+Note: do not add any log4j library in your application pom file, as it is already loaded as a nested dependency of the SDK. 
+
+You can rely on the default logging configuration (based on Log4J library) and change just a few parameters inside the application configuration file, or override it completely with a custom one.
+
+Default log configuration
+-------------------------------
+By default, `a predefined log4j2.xml configuration <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/resources/log4j2.xml>`_  is used.
+It redirects all logging messages to the system console and to a filesystem log file, rotated and gzipped when it reaches 50MB size (only the latest 10 are then retained).
+
+The following dynamic parameters are taken from the application configuration file, and  can be changed there at any time:
+::
+
+    scorex {
+        ...
+
+        logDir = /tmp/scorex/data/log
+
+        logInfo {
+          logFileName = "debug.log"
+          logFileLevel = "warn"
+          logConsoleLevel = "debug"
+        }
+
+        ...
+
+- ``scorex.logDir``: base folder where the log files are generated, injected in the log4jxml in the placeholder ``${sys:logDir}``
+- ``scorex.logInfo.logFileName`` : log filename, injected in the log4jxml in the placeholder ``${sys:logFileName}``
+- ``scorex.logInfo.logFileLevel`` : log level used for the file appender, injected in the log4jxml in the placeholder ``${sys:logFileLevel}``
+- ``scorex.logInfo.logConsoleLevel`` : log level used for the console appender, injected in the log4jxml in the placeholder ``${sys:logConsoleLevel}``
+
+Customized log configuration
+-------------------------------
+
+If you add a custom log4j2.xml in your application's classpath, it will override the default one.
+
+Same placeholders described before are available also here.
+
