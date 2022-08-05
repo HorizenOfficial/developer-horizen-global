@@ -1457,6 +1457,62 @@ ________
 
 ________
 
+.. http:post:: /wallet/reindex
+
+*Starts a reindex operation. Returns true if the reindex successfully started*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/reindex\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "started": "boolean"
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/reindexStatus
+
+*Reports the current status of the reindex activity. In case of reindex ongoing, reports also the reached block height of the reindex*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/reindexStatus\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "status": "ongoing",
+            "heightReached": 345
+	  }
+	}
+
+________
+
+
 =====
 **Sidechain Node operations**
 =====
