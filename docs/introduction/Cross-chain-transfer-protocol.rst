@@ -38,12 +38,13 @@ We can declare a new sidechain by using the following RPC command:
 	
 Parameters to the command must be passed in JSON format. 
 The command must specify the destination address where the first forward transfer coins are sent ("toaddress"), its amount ("amount"), as well as the epoch length ("withdrawalEpochLength"). 
-It is the epoch length that defines the frequency, in blocks, of the backward transfers' submissions (see the “backward transfers” paragraph below). The sc_create command also includes the cryptographic key to receive coins back from the sidechain ("wCertVk"). 
+It is the epoch length that defines the frequency, in blocks, of the backward transfers' submissions (see the “backward transfers” paragraph below). Otherwise sidechain can be declared as non ceasing. In this case sidechain not oblige to send certificates in determined period of time, but can decide itself when to submit it.
+The sc_create command also includes the cryptographic key to receive coins back from the sidechain ("wCertVk").
 The verification key guarantees that the received coins were processed according to a matching proving system. 
 Besides these parameters, sc_create has some optional ones, here is the complete set of parameters:
 
- - **version**                                    - (numeric, required) The version of the sidechain.
- - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032.
+ - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain should be 2.
+ - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032. For non ceasing sidechain should be 0.
  - **fromaddress**                                - (string, optional) The MC taddr to send the funds from. If omitted funds are taken from all available UTXO.
  - **changeaddress**                              - (string, optional) The MC taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used.
  - **toaddress**                                  - (string, required) The receiver PublicKey25519Proposition in the SC.
@@ -53,7 +54,7 @@ Besides these parameters, sc_create has some optional ones, here is the complete
  - **wCertVk**                                    - (string, required) It is an arbitrary byte string of even length expressed in hexadecimal format. Required to verify a WCert SC proof. Its size must be 9216 bytes max.
  - **customData**                                 - (string, optional) An arbitrary byte string of even length expressed in hexadecimal format. A max limit of 1024 bytes will be checked.
  - **constant**                                   - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used as public input for WCert proof verification. Its size must be 32 bytes.
- - **wCeasedVk**                                  - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used to verify a Ceased sidechain withdrawal proof for given SC. Its size must be 9216 bytes max.
+ - **wCeasedVk**                                  - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used to verify a Ceased sidechain withdrawal proof for given SC. Its size must be 9216 bytes max. Not used in non ceasing sidechains.
  - **vFieldElementCertificateFieldConfig**        - (array, optional) An array whose entries are sizes (in bits). Any certificate should have as many custom FieldElements with the corresponding size.
  - **vBitVectorCertificateFieldConfig**           - (array, optional) An array whose entries are bitVectorSizeBits and maxCompressedSizeBytes pairs. Any certificate should have as many custom BitVectorCertificateField with the corresponding sizes.
  - **forwardTransferScFee**                       - (numeric, optional, default=0) The amount of fee in ZEN due to sidechain actors when creating a FT
