@@ -235,7 +235,13 @@ The starting point of the SDK for each sidechain is the `SidechainApp class <htt
 
 			// Custom API calls and Core API endpoints to disable:
 			List<ApplicationApiGroup> customApiGroups,
-			List<Pair<String, String>> rejectedApiPaths
+			List<Pair<String, String>> rejectedApiPaths,
+
+			// Application specific logic handler for the node safe stop
+			SidechainAppStopper applicationStopper,
+
+			// Applciation specific configs for core forks activation
+   			ForkConfigurator forkConfigurator
 		)
 
 		public void run()
@@ -468,7 +474,7 @@ Each pair on the passed list represents a path to be disabled (the key is the ba
 		.toInstance(...); 
 
 - Sidechain Application stopper
-It is a customized class instance which implements the public interface 'SidechainAppStopper' and must provide an
+It is a customized class instance which implements the public interface `SidechainAppStopper` and must provide an
 implementation of the method 'void stopAll()'. Such a method is called by the SDK when the node stop procedure is initiated.
 Such a procedure can be explicitly triggered via the API 'node/stop' or can be triggered when the JVM is shutting down,
 for instance when a SIGINT is received.
@@ -481,9 +487,20 @@ An example is provided in the "SimpleApp" with the SimpleAppStopper.java class.
         .annotatedWith(Names.named("ApplicationStopper"))
         .toInstance(applicationStopper);
 
+- Fork configurator
+
+SDK may introduce the backward incompatible changes that will lead to the hard fork for the already running sidechains.
+Every sidechain application should use `ForkConfigurator` to specify the activation points for regtest, testnet and mainnet networks.
 
 
-SidechainApp arguments can be split into 4 groups:
+::
+
+    bind(ForkConfigurator.class)
+        .annotatedWith(Names.named("ForkConfiguration"))
+        .toInstance(forkConfigurator);
+
+
+SidechainApp arguments can be split into several groups:
 	1. Settings
 		* An instance of SidechainSettings can be retrieved by a custom application via SettingsReader, as seen above.
 	2. Custom objects serializers
@@ -492,6 +509,8 @@ SidechainApp arguments can be split into 4 groups:
 		* As seen above, the state is a snapshot of all unspent boxes on the blockchain at a given moment. So when a new block arrives, the ApplicationState validates the block, e.g. to prevent the spending of non-existing boxes, or to discard transactions with inconsistencies in their input/output balance. Developers can extend this validation process by introducing additional logic in ApplicationState and ApplicationWallet.
 	4. **API extension** - `link <../Sidechain-SDK-extension.html#custom-api-creation>`_
 	5. **Node communication** - `link <../Node-communication.html>`_
+	6. **Core forks management**.
+
 	
 	
 The SDK repository includes in its "examples" folder, the "SimpleApp" sidechain;  it's an application that does not introduce any custom logic: no custom boxes or transactions, no custom API, an empty ApplicationState and ApplicationWallet. "SimpleApp" shows the basic SDK functionalities, that are immediately available to the developer, and it's the fastest way to get started with our SDK.
