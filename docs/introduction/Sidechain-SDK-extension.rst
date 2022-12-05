@@ -665,3 +665,30 @@ If you add a custom log4j2.xml in your application's classpath, it will override
 
 Same placeholders described before are available also here.
 
+Fork Configuration
+###################
+
+In the new versions of the SDK the backward incompatible changes may be introduced. For example, the changes to the consensus protocol or another kind of core transaction.
+That will lead to the hard fork. So, already running sidechains must be very careful and may have a unified mechanism to upgrade the nodes and activate such changes.
+For this every sidechain application should use `ForkConfigurator` to specify the activation points for regtest, testnet and mainnet networks.
+SDK implements consensus, which is measured in the fixed time epochs, but an epoch may have variant number of blocks associated with it.
+That's why forks activation points (caused by consensus changes) are specified in the consensus epoch numbers, rather than blockchain heights.
+Every sidechain network knows what is the current epoch and able to choose any epoch in the future for the fork activation while upgrading SDK version.
+
+In the following example the first fork activates in regtest at epoch 10, in testnet at epoch 20, and in mainnet at epoch 30.
+The next fork is activated always not earlier than the previous one (but can be activated at the same time).
+
+::
+
+  public class MyAppForkConfigurator extends ForkConfigurator {
+      @Override
+      public ForkConsensusEpochNumber getSidechainFork1() {
+          return new ForkConsensusEpochNumber(/*regtest*/ 10, /*testnet*/ 20, /*mainnet*/30);
+      }
+
+      @Override
+      public ForkConsensusEpochNumber getSidechainFork2() {
+          return new ForkConsensusEpochNumber(/*regtest*/ 20, /*testnet*/ 20, /*mainnet*/30);
+      }
+  }
+
