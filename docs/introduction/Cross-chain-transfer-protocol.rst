@@ -217,6 +217,7 @@ These changes occur in-chain for 2 reasons:
 - every node must keep knowledge about the recent set of public keys. And if we keep this information off-chain we can easily loose it.
 - we need to be sure that all the nodes use exactly the same source of data for signing or verifying certificate, creating the snark proof, etc.
 Every key rotation transaction is validated according to a set of rules, then all key rotations within certificate submission epoch are aggregated, included to certificate, submitted to Mainchain. Starting from the next epoch previous keys are invalidated, and new keys are activated.
+The route for POST request is /createKeyRotationTransaction, you should be authenticated to use it.
 
 
 Summary
