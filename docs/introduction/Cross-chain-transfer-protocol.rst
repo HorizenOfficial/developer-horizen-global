@@ -43,8 +43,8 @@ The sc_create command also includes the cryptographic key to receive coins back 
 The verification key guarantees that the received coins were processed according to a matching proving system. 
 Besides these parameters, sc_create has some optional ones, here is the complete set of parameters:
 
- - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain should be 2.
- - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032. For non ceasing sidechain should be 0.
+ - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain and for circuit with key rotation should be 2.
+ - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032. For non ceasing sidechain and for circuit with key rotation should be 0.
  - **fromaddress**                                - (string, optional) The MC taddr to send the funds from. If omitted funds are taken from all available UTXO.
  - **changeaddress**                              - (string, optional) The MC taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used.
  - **toaddress**                                  - (string, required) The receiver PublicKey25519Proposition in the SC.
@@ -54,7 +54,7 @@ Besides these parameters, sc_create has some optional ones, here is the complete
  - **wCertVk**                                    - (string, required) It is an arbitrary byte string of even length expressed in hexadecimal format. Required to verify a WCert SC proof. Its size must be 9216 bytes max.
  - **customData**                                 - (string, optional) An arbitrary byte string of even length expressed in hexadecimal format. A max limit of 1024 bytes will be checked.
  - **constant**                                   - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used as public input for WCert proof verification. Its size must be 32 bytes.
- - **wCeasedVk**                                  - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used to verify a Ceased sidechain withdrawal proof for given SC. Its size must be 9216 bytes max. Not used in non ceasing sidechains.
+ - **wCeasedVk**                                  - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used to verify a Ceased sidechain withdrawal proof for given SC. Its size must be 9216 bytes max. Not supported in version 2.
  - **vFieldElementCertificateFieldConfig**        - (array, optional) An array whose entries are sizes (in bits). Any certificate should have as many custom FieldElements with the corresponding size.
  - **vBitVectorCertificateFieldConfig**           - (array, optional) An array whose entries are bitVectorSizeBits and maxCompressedSizeBytes pairs. Any certificate should have as many custom BitVectorCertificateField with the corresponding sizes.
  - **forwardTransferScFee**                       - (numeric, optional, default=0) The amount of fee in ZEN due to sidechain actors when creating a FT
