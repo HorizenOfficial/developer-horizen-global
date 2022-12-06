@@ -44,7 +44,7 @@ The verification key guarantees that the received coins were processed according
 Besides these parameters, sc_create has some optional ones, here is the complete set of parameters:
 
  - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain and for circuit with key rotation should be 2.
- - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032. For non ceasing sidechain and for circuit with key rotation should be 0.
+ - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032. For non ceasing sidechain should be 0.
  - **fromaddress**                                - (string, optional) The MC taddr to send the funds from. If omitted funds are taken from all available UTXO.
  - **changeaddress**                              - (string, optional) The MC taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used.
  - **toaddress**                                  - (string, required) The receiver PublicKey25519Proposition in the SC.
@@ -208,6 +208,15 @@ Mainchain request can be performed through a raw transaction with the following 
             "ceasingCumScTxCommTree": ceasingCumScTxCommTree,
             "scProof": sc_proof1
         }]
+
+Circuit with key rotation
+===========================
+
+Circuit with key rotation is needed to replace compromised signers and masters keys of certificate submitters with new keys.
+These changes occur in-chain for 2 reasons:
+- every node must keep knowledge about the recent set of public keys. And if we keep this information off-chain we can easily loose it.
+- we need to be sure that all the nodes use exactly the same source of data for signing or verifying certificate, creating the snark proof, etc.
+Every key rotation transaction is validated according to a set of rules, then all key rotations within certificate submission epoch are aggregated, included to certificate, submitted to Mainchain. Starting from the next epoch previous keys are invalidated, and new keys are activated.
 
 
 Summary
