@@ -214,20 +214,21 @@ Circuit with key rotation
 
 Circuit with key rotation is needed to replace compromised signers and masters keys of certificate submitters with new keys.
 These changes occur in-chain for 2 reasons:
-- every node must keep knowledge about the recent set of public keys. And if we keep this information off-chain we can easily loose it.
-- we need to be sure that all the nodes use exactly the same source of data for signing or verifying certificate, creating the snark proof, etc.
+    - every node must keep knowledge about the recent set of public keys. And if we keep this information off-chain we can easily loose it.
+    - we need to be sure that all the nodes use exactly the same source of data for signing or verifying certificate, creating the snark proof, etc.
 Every key rotation transaction is validated according to a set of rules, then all key rotations within certificate submission epoch are aggregated, included to certificate, submitted to Mainchain. Starting from the next epoch previous keys are invalidated, and new keys are activated.
-The route for POST request is http://127.0.0.1:9085/transaction/createKeyRotationTransaction, caller should be authenticated to use it.
+Key rotation can be performed with createKeyRotationTransaction API command(transaction group). Caller should be authenticated to use it.
+
 Parameters for request are following:
-- 'keyType' of type Integer;
-- 'keyIndex' of type Integer, must not be less than zero;
-- 'newKey' of type String, this is a required parameter;
-- 'signingKeySignature' of type String, this is a required parameter;
-- 'masterKeySignature' of type String, this is a required parameter;
-- 'newKeySignature' of type String, this is a required parameter;
-- 'format' of type Boolean, can be nullable;
-- 'automaticSend' of type Boolean, can be nullable;
-- 'fee' of type Long, can be nullable;
+    - **keyType** of type Integer;
+    - **keyIndex** of type Integer, must not be less than zero;
+    - **newKey** of type String, this is a required parameter;
+    - **signingKeySignature** of type String, this is a required parameter;
+    - **masterKeySignature** of type String, this is a required parameter;
+    - **newKeySignature** of type String, this is a required parameter;
+    - **format** of type Boolean, can be nullable;
+    - **automaticSend** of type Boolean, can be nullable;
+    - **fee** of type Long, can be nullable;
 
 
 Summary
