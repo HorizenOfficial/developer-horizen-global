@@ -72,6 +72,7 @@ As a consequence of the sidechain declaration command, a unique sidechain id wil
       "scid": "2f7ed2e07ad78e52f43aafb85e242497f5a1da3539ecf37832a0a31ed54072c3",
    }
 
+From the Mainchain prespective a non ceasing sidechain doesn't have withdrawal epoch length and can switch the withdrawal epoch in any time. Meanwhile the non ceasing sidechaon has a virtual withdrawal epoch length. This parameter motivates sidechain to schedule certificate submission after the specified period. The virtual withdrawal epoch length can not be less than 10 for the regtest network and less than 100 for the mainnet and the testnet networks.
 
 Forward Transfer
 ================
