@@ -2472,17 +2472,39 @@ ________
    .. sourcecode:: http
 
       {
-         "result":{
-            "signingKeys" : [ {
-              "publicBytes" : [ byte, byte, byte]
-            }, {
-              "publicBytes" : [ byte, byte, byte]
-            } ],
-            "masterKeys" : [ {
-              "publicBytes" : [ byte, byte, byte]
-            }, {
-              "publicBytes" : [ byte, byte, byte]
-            } ]
+         "result": {
+            "certifiersKeys": {
+                "signingKeys": [{
+                    "publicKey": "ec4166e9225e97e90dde76089dd4edbb5ab60fb5ea60230a256ca3d2e4c2162c80"
+                }, {
+                    "publicKey": "3fd1d98e4d4331f31d28a4b652ac9c7b3ea5ac1b35e0ef113434307b79cd590c80"
+                }, {
+                    "publicKey": 'b2130ed9458ff6f917b717b4765b185e40f6139ee7546830ba8ddd1f73b37b2400"
+                }, {
+                    "publicKey": "ce0b8c7c4345a7fec79424cfa519d732d68aef16c7c0e5146c5efc2d9454601980"
+                }, {
+                    "publicKey": "08be76211383c6cd3bfa7c72d49d5a79c79efd04d297535cf0004e5cf1ba7e0b00"
+                }, {
+                    "publicKey": "606efe3b31cdab05fee935f58da6c88f7554f9bc55f0c6c3c577889a168aad3480"
+                }, {
+                    "publicKey": "f9b41abe48c176f928b39ad66520969fd66be40c47dad5964b622f2b6620590580"
+                }],
+                "masterKeys": [{
+                    "publicKey": "9b59d065c3373a70eab20263f6511a29d4af3aa20b3d9600295dcd985381bd2580"
+                }, {
+                    "publicKey": "6edd6574af4d49474b981a89c8ff783b1bf3db63b2c818459ea130b4fab6bc0c80"
+                }, {
+                    "publicKey": "39077d62d10ca0a9639908d0e7b3d37787d84d1a6c81624371015064383da02000"
+                }, {
+                    "publicKey": "efd7e4f58e039f23bad6b7b5dc06c8c7a3c8f90a9f94ce6ae4164bc6ecb8f10980"
+                }, {
+                    "publicKey": "a62b704bcc08e4c2fc4dd2ae51e6812dfa6519fc57db77812a3123639b5e4a3380"
+                }, {
+                    "publicKey': "b46172f71951fe8a421ac77847821ac9f65105962f1cd2761ed9b0cf9400561500"
+                }, {
+                    "publicKey": "a477534cac7bad0c77f81f8b5da7aec9582cebcf95de57aa6fafbc3cd7deca2480"
+                }]
+            }
          }
       }
 
@@ -2519,11 +2541,11 @@ ________
 
       {
         "result": {
-          "keyType" : "SigningKeyRotationProofType",
-          "index" : 2
-          "newKey" : [ byte, byte, byte],
-          "signingKeySignature" : [ byte, byte, byte],
-          "masterKeySignature" : [ byte, byte, byte]
+          "keyType" : 0,
+          "index" : 0,
+          "newKey" : "2cddac0f51b4329ab6ee85ccaf4e3bbc1b80639a96e41239de978bd99d245f0a00",
+          "signingKeySignature" : "1d39072beb8480edeee6dabf16ee15526bfd2170680dcc4a23d656bbb9740d1d0977f58009c19943d7964314aafc9aa0776f253ac479c708cf6ec0a51d9a9e1b",
+          "masterKeySignature" : "1d39072beb8480edeee6dabf16ee15526bfd2170680dcc4a23d656bbb9740d1d0977f58009c19943d7964314aafc9aa0776f253ac479c708cf6ec0a51d9a9e1b"
         }
       }
 
