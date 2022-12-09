@@ -1,4 +1,4 @@
-*********************************
+    *********************************
 The Cross-Chain Transfer Protocol
 *********************************
 
@@ -43,7 +43,7 @@ The sc_create command also includes the cryptographic key to receive coins back 
 The verification key guarantees that the received coins were processed according to a matching proving system. 
 Besides these parameters, sc_create has some optional ones, here is the complete set of parameters:
 
- - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain should be 2.
+ - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain and for circuit with key rotation must be 2.
  - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032. For non ceasing sidechain should be 0.
  - **fromaddress**                                - (string, optional) The MC taddr to send the funds from. If omitted funds are taken from all available UTXO.
  - **changeaddress**                              - (string, optional) The MC taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used.
@@ -54,7 +54,7 @@ Besides these parameters, sc_create has some optional ones, here is the complete
  - **wCertVk**                                    - (string, required) It is an arbitrary byte string of even length expressed in hexadecimal format. Required to verify a WCert SC proof. Its size must be 9216 bytes max.
  - **customData**                                 - (string, optional) An arbitrary byte string of even length expressed in hexadecimal format. A max limit of 1024 bytes will be checked.
  - **constant**                                   - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used as public input for WCert proof verification. Its size must be 32 bytes.
- - **wCeasedVk**                                  - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used to verify a Ceased sidechain withdrawal proof for given SC. Its size must be 9216 bytes max. Not used in non ceasing sidechains.
+ - **wCeasedVk**                                  - (string, optional) It is an arbitrary byte string of even length expressed in hexadecimal format. Used to verify a Ceased sidechain withdrawal proof for given SC. Its size must be 9216 bytes max. Not supported in version 2.
  - **vFieldElementCertificateFieldConfig**        - (array, optional) An array whose entries are sizes (in bits). Any certificate should have as many custom FieldElements with the corresponding size.
  - **vBitVectorCertificateFieldConfig**           - (array, optional) An array whose entries are bitVectorSizeBits and maxCompressedSizeBytes pairs. Any certificate should have as many custom BitVectorCertificateField with the corresponding sizes.
  - **forwardTransferScFee**                       - (numeric, optional, default=0) The amount of fee in ZEN due to sidechain actors when creating a FT
@@ -209,6 +209,27 @@ Mainchain request can be performed through a raw transaction with the following 
             "ceasingCumScTxCommTree": ceasingCumScTxCommTree,
             "scProof": sc_proof1
         }]
+
+Circuit with key rotation
+===========================
+
+Circuit with key rotation is needed to replace compromised signers and masters keys of certificate submitters with new keys.
+These changes occur in-chain for 2 reasons:
+    - every node must keep knowledge about the recent set of public keys. And if we keep this information off-chain we can easily loose it.
+    - we need to be sure that all the nodes use exactly the same source of data for signing or verifying certificate, creating the snark proof, etc.
+Every key rotation transaction is validated according to a set of rules, then all key rotations within certificate submission epoch are aggregated, included to certificate, submitted to Mainchain. Starting from the next epoch previous keys are invalidated, and new keys are activated.
+Key rotation can be performed with createKeyRotationTransaction API command(transaction group). Caller should be authenticated to use it.
+
+Parameters for request are following:
+    - **keyType** of type Integer;
+    - **keyIndex** of type Integer, must not be less than zero;
+    - **newKey** of type String, this is a required parameter;
+    - **signingKeySignature** of type String, this is a required parameter;
+    - **masterKeySignature** of type String, this is a required parameter;
+    - **newKeySignature** of type String, this is a required parameter;
+    - **format** of type Boolean, can be nullable;
+    - **automaticSend** of type Boolean, can be nullable;
+    - **fee** of type Long, can be nullable;
 
 
 Summary
