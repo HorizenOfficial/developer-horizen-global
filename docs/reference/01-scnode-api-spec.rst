@@ -2440,7 +2440,7 @@ ________
 
       {
          "result":{
-            "schnorrPublicKeyHash" : "string"
+            "schnorrPublicKeyHash" : "4a2cbb9ff049b2a973c02e23f5cba3e1ac46d8bc030b75868b6510c764f0fc01"
          }
       }
 
