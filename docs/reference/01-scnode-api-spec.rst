@@ -2440,38 +2440,7 @@ ________
 
       {
          "result":{
-            "boxes" : [ {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 866000000,
-              "nonce" : 3509023985616518242,
-              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
-              },
-              "isCustom" : true
-            }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 3561000000,
-              "nonce" : 6626025734618418495,
-              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
-              },
-              "isCustom" : true
-            }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 4165000000,
-              "nonce" : -7600613233944287562,
-              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
-              },
-              "isCustom" : true
-            } ],
-            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+            "schnorrPublicKeyHash" : "string"
          }
       }
 
@@ -2504,38 +2473,16 @@ ________
 
       {
          "result":{
-            "boxes" : [ {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 866000000,
-              "nonce" : 3509023985616518242,
-              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
-              },
-              "isCustom" : true
+            "signingKeys" : [ {
+              "publicBytes" : [ byte, byte, byte]
             }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 3561000000,
-              "nonce" : 6626025734618418495,
-              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
-              },
-              "isCustom" : true
-            }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 4165000000,
-              "nonce" : -7600613233944287562,
-              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
-              },
-              "isCustom" : true
+              "publicBytes" : [ byte, byte, byte]
             } ],
-            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+            "masterKeys" : [ {
+              "publicBytes" : [ byte, byte, byte]
+            }, {
+              "publicBytes" : [ byte, byte, byte]
+            } ]
          }
       }
 
@@ -2571,40 +2518,13 @@ ________
    .. sourcecode:: http
 
       {
-         "result":{
-            "boxes" : [ {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 866000000,
-              "nonce" : 3509023985616518242,
-              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
-              },
-              "isCustom" : true
-            }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 3561000000,
-              "nonce" : 6626025734618418495,
-              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
-              },
-              "isCustom" : true
-            }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 4165000000,
-              "nonce" : -7600613233944287562,
-              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
-              },
-              "isCustom" : true
-            } ],
-            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
-         }
+        "result": {
+          "keyType" : "SigningKeyRotationProofType",
+          "index" : 2
+          "newKey" : [ byte, byte, byte],
+          "signingKeySignature" : [ byte, byte, byte],
+          "masterKeySignature" : [ byte, byte, byte]
+        }
       }
 
 ________
@@ -2653,38 +2573,7 @@ ________
 
       {
          "result":{
-            "boxes" : [ {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 866000000,
-              "nonce" : 3509023985616518242,
-              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
-              },
-              "isCustom" : true
-            }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 3561000000,
-              "nonce" : 6626025734618418495,
-              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
-              },
-              "isCustom" : true
-            }, {
-              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
-              "customValue" : 4165000000,
-              "nonce" : -7600613233944287562,
-              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
-              "typeName" : "CustomBox",
-              "proposition" : {
-                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
-              },
-              "isCustom" : true
-            } ],
-            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+
          }
       }
 
