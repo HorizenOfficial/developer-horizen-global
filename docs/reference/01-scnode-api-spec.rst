@@ -2413,3 +2413,280 @@ ________
 
 ________
 
+.. http:post:: /submitter/getSchnorrPublicKeyHash
+
+*Accepts public key and returns hash of the public key.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| schnorrPublicKey    |  string | Public key of certificate signer                                      |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getSchnorrPublicKeyHash\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "boxes" : [ {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 866000000,
+              "nonce" : 3509023985616518242,
+              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 3561000000,
+              "nonce" : 6626025734618418495,
+              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 4165000000,
+              "nonce" : -7600613233944287562,
+              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
+              },
+              "isCustom" : true
+            } ],
+            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+         }
+      }
+
+________
+
+.. http:post:: /submitter/getCertifiersKeys
+
+*Accepts number of withdrawal epoch and returns signer keys of certificate signers.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| withdrawalEpoch     |  int    | Withdrawal epoch of certificate signer keys                           |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getCertifiersKeys\" -H \"accept: application/json\" -d \"{\\\"withdrawalEpoch\\\": 100}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "boxes" : [ {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 866000000,
+              "nonce" : 3509023985616518242,
+              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 3561000000,
+              "nonce" : 6626025734618418495,
+              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 4165000000,
+              "nonce" : -7600613233944287562,
+              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
+              },
+              "isCustom" : true
+            } ],
+            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+         }
+      }
+
+________
+
+.. http:post:: /submitter/getKeyRotationProof
+
+*Returns key rotation proof (key type, index of key, new key value and 2 signatures proving key rotation) if type of circuit is NaiveThresholdSignatureCircuitWithKeyRotation.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
++---------------------+---------+-----------------------------------------------------------------------+
+| indexOfKey          |  int    | Index of certificate submitter key. Min = 100                         |
++---------------------+---------+-----------------------------------------------------------------------+
+| keyType             |  int    | Key type - 0 for signers key, 1 for masters key. Min = 0. Max = 1     |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationProof\" -H \"accept: application/json\" -d \"{\\\"withdrawalEpoch\\\": 100, \\\"indexOfKey\\\": 2, \\\"keyType\\\": 0}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "boxes" : [ {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 866000000,
+              "nonce" : 3509023985616518242,
+              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 3561000000,
+              "nonce" : 6626025734618418495,
+              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 4165000000,
+              "nonce" : -7600613233944287562,
+              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
+              },
+              "isCustom" : true
+            } ],
+            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+         }
+      }
+
+________
+
+.. http:post:: /transaction/createKeyRotationTransaction
+
+*Creates and signs sidechain transaction for signers or masters certificate submitter key rotation.*
+
+**Parameters**
+
++---------------------+-----------+-----------------------------------------------------------------------+
+| Name                | Type      |            Description                                                |
++=====================+===========+=======================================================================+
+| keyType             |  int      | Key type - 0 for signers key, 1 for masters key. Min = 0. Max = 1     |
++---------------------+-----------+-----------------------------------------------------------------------+
+| keyIndex            |  int      | Index of certificate submitter key                                    |
++---------------------+-----------+-----------------------------------------------------------------------+
+| newKey              |  string   | Value of new key                                                      |
++---------------------+-----------+-----------------------------------------------------------------------+
+| signingKeySignature |  string   | Signing key signature                                                 |
++---------------------+-----------+-----------------------------------------------------------------------+
+| masterKeySignature  |  string   | Master key signature                                                  |
++---------------------+-----------+-----------------------------------------------------------------------+
+| newKeySignature     |  string   | New key signature (if key type 0, then new signers key signature;     |
+|                     |           | if key type 1, then master key signature). Min = 0. Max = 1.          |
++---------------------+-----------+-----------------------------------------------------------------------+
+| format              |  boolean  | Optional field - true if format, false if non format                  |
++---------------------+-----------+-----------------------------------------------------------------------+
+| automaticSend       |  boolean  | Optional field - true if automatic, false if not automatic            |
++---------------------+-----------+-----------------------------------------------------------------------+
+| fee                 |  int      | Optional field for transaction fee                                    |
++---------------------+-----------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/transaction/createKeyRotationTransaction\" -H \"accept: application/json\" -d \"{\\\"keyType\\\": 0, \\\"keyIndex\\\": 3, \\\"newKey\\\":\\\"string\\\, \\\"signingKeySignature\\\":\\\"string\\\, \\\"masterKeySignature\\\":\\\"string\\\, \\\"newKeySignature\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "boxes" : [ {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 866000000,
+              "nonce" : 3509023985616518242,
+              "id" : "84e2dd2f114a829422345fb0f27dfd836a803235f3e82418185aa68a0ba2f3b8",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "46630ae9f76aa3359a3007566aa83e661cdd0d024b484b85a6d9e0d2e4d51fb5"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 3561000000,
+              "nonce" : 6626025734618418495,
+              "id" : "8e5757b44d0199ee75ecd6a7cfb7c7deb8f675e14670f976abfe59f3521eae97",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "52ba271cc2d786c8197901679f1f7d47112c9dbee0dde082387a2295d7a8e074"
+              },
+              "isCustom" : true
+            }, {
+              "customUuid" : "71723462d695198c31e65136c9cc42c50b23c478f165c8957cb0509fd123cbb8",
+              "customValue" : 4165000000,
+              "nonce" : -7600613233944287562,
+              "id" : "54f3d032494cbc4bccedc9a64d181b0e7e8ddd3d69f960db52b677995b6ecc2e",
+              "typeName" : "CustomBox",
+              "proposition" : {
+                "publicKey" : "7377afd5a3d6d134a0748e7f0f3d9b11b67295a98384ee364bb464bafebf5dc9"
+              },
+              "isCustom" : true
+            } ],
+            "startingBoxId" : "e49866604b904546b7a83b04ff0fa131528de045bff8199af8cc47b9516cb512"
+         }
+      }
+
+________
+
