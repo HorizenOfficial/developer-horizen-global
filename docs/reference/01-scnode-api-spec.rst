@@ -1061,7 +1061,7 @@ ________
 
    .. tab:: Bash
 
-      curl -X POST \"http://127.0.0.1:9085/transaction/createKeyRotationTransaction\" -H \"accept: application/json\" -d \"{\\\"keyType\\\": 0, \\\"keyIndex\\\": 3, \\\"newKey\\\":\\\"string\\\, \\\"signingKeySignature\\\":\\\"string\\\, \\\"masterKeySignature\\\":\\\"string\\\, \\\"newKeySignature\\\":\\\"string\\\"}\"
+      curl -X POST \"http://127.0.0.1:9085/transaction/createKeyRotationTransaction\" -H \"accept: application/json\" -d \"{\\\"keyType\\\": 0, \\\"keyIndex\\\": 3, \\\"newKey\\\":\\\"string\\\", \\\"signingKeySignature\\\":\\\"string\\\", \\\"masterKeySignature\\\":\\\"string\\\", \\\"newKeySignature\\\":\\\"string\\\"}\"
 
 
 **Example response**:
@@ -2248,7 +2248,7 @@ ________
 +=====================+=========+=======================================================================+
 | withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
 +---------------------+---------+-----------------------------------------------------------------------+
-| indexOfKey          |  int    | Index of certificate submitter key. Min = 100                         |
+| indexOfKey          |  int    | Index of certificate submitter key. Min = 0                           |
 +---------------------+---------+-----------------------------------------------------------------------+
 | keyType             |  int    | Key type - 0 for signers key, 1 for masters key. Min = 0. Max = 1     |
 +---------------------+---------+-----------------------------------------------------------------------+

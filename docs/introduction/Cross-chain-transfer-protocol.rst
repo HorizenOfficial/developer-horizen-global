@@ -1,4 +1,4 @@
-*********************************
+    *********************************
 The Cross-Chain Transfer Protocol
 *********************************
 
@@ -43,7 +43,7 @@ The sc_create command also includes the cryptographic key to receive coins back 
 The verification key guarantees that the received coins were processed according to a matching proving system. 
 Besides these parameters, sc_create has some optional ones, here is the complete set of parameters:
 
- - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain and for circuit with key rotation should be 2.
+ - **version**                                    - (numeric, required) The version of the sidechain. Recommended to use version 1. For non ceasing sidechain and for circuit with key rotation must be 2.
  - **withdrawalEpochLength**                      - (numeric, optional, default=100) length of the withdrawal epochs. The minimum valid value in regtest is: 2, the maximum (for any network type) is: 4032. For non ceasing sidechain should be 0.
  - **fromaddress**                                - (string, optional) The MC taddr to send the funds from. If omitted funds are taken from all available UTXO.
  - **changeaddress**                              - (string, optional) The MC taddr to send the change to, if any. If not set, "fromaddress" is used. If the latter is not set too, a newly generated address will be used.
