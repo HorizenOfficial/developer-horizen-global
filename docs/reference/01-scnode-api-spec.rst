@@ -2140,7 +2140,7 @@ ________
 
 ________
 
-.. http:post:: /submitter/getSchnorrPublicKeyHash
+.. http:post:: /submitter/getKeyRotationMessageToSign
 
 *Accepts public key and returns hash of the public key.*
 
@@ -2151,6 +2151,10 @@ ________
 +=====================+=========+=======================================================================+
 | schnorrPublicKey    |  string | Public key of certificate signer                                      |
 +---------------------+---------+-----------------------------------------------------------------------+
+| keyType             |  int    | Key type - 0 for signers key, 1 for masters key                       |
++---------------------+---------+-----------------------------------------------------------------------+
+| withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
++---------------------+---------+-----------------------------------------------------------------------+
 
 **Example request**:
 
@@ -2158,7 +2162,7 @@ ________
 
    .. tab:: Bash
 
-      curl -X POST \"http://127.0.0.1:9085/submitter/getSchnorrPublicKeyHash\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\"}\"
+      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationMessageToSign\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\", \\\"keyType\\\": 0, \\\"withdrawalEpoch\\\": 100}\"
 
 
 **Example response**:
