@@ -2140,7 +2140,7 @@ ________
 
 ________
 
-.. http:post:: /submitter/getKeyRotationMessageToSign
+.. http:post:: /submitter/getKeyRotationMessageToSignForSigningKey
 
 *Accepts public key and returns hash of the public key.*
 
@@ -2151,7 +2151,40 @@ ________
 +=====================+=========+=======================================================================+
 | schnorrPublicKey    |  string | Public key of certificate signer                                      |
 +---------------------+---------+-----------------------------------------------------------------------+
-| keyType             |  int    | Key type - 0 for signers key, 1 for masters key                       |
+| withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationMessageToSignForSigningKey\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\", \\\"withdrawalEpoch\\\": 100}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "keyRotationMessageToSign" : "4a2cbb9ff049b2a973c02e23f5cba3e1ac46d8bc030b75868b6510c764f0fc01"
+         }
+      }
+
+________
+
+.. http:post:: /submitter/getKeyRotationMessageToSignForMasterKey
+
+*Accepts public key and returns hash of the public key.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| schnorrPublicKey    |  string | Public key of certificate signer                                      |
 +---------------------+---------+-----------------------------------------------------------------------+
 | withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
 +---------------------+---------+-----------------------------------------------------------------------+
@@ -2162,7 +2195,7 @@ ________
 
    .. tab:: Bash
 
-      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationMessageToSign\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\", \\\"keyType\\\": 0, \\\"withdrawalEpoch\\\": 100}\"
+      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationMessageToSignForMasterKey\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\", \\\"withdrawalEpoch\\\": 100}\"
 
 
 **Example response**:
@@ -2171,7 +2204,7 @@ ________
 
       {
          "result":{
-            "schnorrPublicKeyHash" : "4a2cbb9ff049b2a973c02e23f5cba3e1ac46d8bc030b75868b6510c764f0fc01"
+            "keyRotationMessageToSign" : "4a2cbb9ff049b2a973c02e23f5cba3e1ac46d8bc030b75868b6510c764f0fc01"
          }
       }
 
