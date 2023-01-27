@@ -321,7 +321,9 @@ _____
 
 .. http:post:: /block/startForging
    
-*Starts forging*  
+*Starts forging*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -346,7 +348,9 @@ _____
 
  .. http:post:: /block/stopForging
    
-*Stops forging*  
+*Stops forging*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
    
@@ -1515,7 +1519,8 @@ ________
    
 *Returns the list of all sidechain node peers*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
    
@@ -1554,6 +1559,7 @@ __________
    
 *Sends the request to connect to a sidechain node*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1591,6 +1597,7 @@ __________
    
 *Returns the list of all connected sidechain node peers*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -1657,6 +1664,7 @@ _______
    
 *Initiates a graceful stop procedure for the sidechain node. Returns an empty object*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -2015,6 +2023,8 @@ ________
 
 *Enables automatic certificate submission*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
 **Example request**:
@@ -2039,6 +2049,8 @@ ________
 .. http:post:: /submitter/disableCertificateSubmitter
 
 *Disables automatic certificate submission*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **No Parameters**
 
@@ -2093,6 +2105,8 @@ ________
 
 *Enables automatic certificate signing*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
 **Example request**:
@@ -2118,6 +2132,8 @@ ________
 .. http:post:: /submitter/disableCertificateSigner
 
 *Disables automatic certificate signing*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **No Parameters**
 
