@@ -503,7 +503,7 @@ Every sidechain application should use `ForkConfigurator` to specify the activat
 
 - Seconds in slots parameter
 
-It's integer parameter that defines slot duration. The minimum valid value is 10, the maximum is 430. (See :ref:`latus_params`)
+It's integer parameter that defines slot duration. The minimum valid value is 10, the maximum is 300. (See :ref:`latus_params`)
 
 ::
 

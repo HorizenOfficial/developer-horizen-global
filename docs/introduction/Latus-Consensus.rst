@@ -33,7 +33,7 @@ Default Latus consensus parameters
   * Number of slots in one consensus Epoch - 720, i.e. new nonce is generated (and thus forging stake holder could check slot leader possibility) every 720 * 120 =  86400 seconds, i.e. 24 hours.
   * BlockSize Limit 5MB
 
-Seconds in one slot value must be specified in SidechainApp arguments. The minimum valid value is 10, the maximum is 430. Please note, that in case seconds in one slot has value 10, consensus epoch length shorten to 2 hours. At least one block of epoch must be generated during that time.
+Seconds in one slot value must be specified in SidechainApp arguments. The minimum valid value is 10, the maximum is 300. Please note, that in case seconds in one slot has value 10, consensus epoch length shorten to 2 hours. At least one block of epoch must be generated during that time.
 
 Fee redistribution
 ==================
