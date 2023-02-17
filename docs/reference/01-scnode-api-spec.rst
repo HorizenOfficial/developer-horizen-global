@@ -321,7 +321,9 @@ _____
 
 .. http:post:: /block/startForging
    
-*Starts forging*  
+*Starts forging*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -346,7 +348,9 @@ _____
 
  .. http:post:: /block/stopForging
    
-*Stops forging*  
+*Stops forging*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
    
@@ -1023,7 +1027,56 @@ ______
 	    "transactionId" : "ccaa312d3eded27469a8241ccc885b19361687cadef0bdf0511a20310ef46310"
 	  }
 	}
-   
+
+________
+
+.. http:post:: /transaction/createKeyRotationTransaction
+
+*Creates and signs sidechain transaction for signers or masters certificate submitter key rotation.*
+
+**Parameters**
+
++---------------------+-----------+-----------------------------------------------------------------------+
+| Name                | Type      |            Description                                                |
++=====================+===========+=======================================================================+
+| keyType             |  int      | Key type - 0 for signers key, 1 for masters key. Min = 0. Max = 1     |
++---------------------+-----------+-----------------------------------------------------------------------+
+| keyIndex            |  int      | Index of certificate submitter key                                    |
++---------------------+-----------+-----------------------------------------------------------------------+
+| newKey              |  string   | Value of new key                                                      |
++---------------------+-----------+-----------------------------------------------------------------------+
+| signingKeySignature |  string   | Signing key signature                                                 |
++---------------------+-----------+-----------------------------------------------------------------------+
+| masterKeySignature  |  string   | Master key signature                                                  |
++---------------------+-----------+-----------------------------------------------------------------------+
+| newKeySignature     |  string   | New key signature (if key type 0, then new signers key signature;     |
+|                     |           | if key type 1, then master key signature). Min = 0. Max = 1.          |
++---------------------+-----------+-----------------------------------------------------------------------+
+| format              |  boolean  | Optional field - true if format, false if non format                  |
++---------------------+-----------+-----------------------------------------------------------------------+
+| automaticSend       |  boolean  | Optional field - true if automatic, false if not automatic            |
++---------------------+-----------+-----------------------------------------------------------------------+
+| fee                 |  int      | Optional field for transaction fee                                    |
++---------------------+-----------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/transaction/createKeyRotationTransaction\" -H \"accept: application/json\" -d \"{\\\"keyType\\\": 0, \\\"keyIndex\\\": 3, \\\"newKey\\\":\\\"string\\\", \\\"signingKeySignature\\\":\\\"string\\\", \\\"masterKeySignature\\\":\\\"string\\\", \\\"newKeySignature\\\":\\\"string\\\"}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result": {
+            "transactionId": "3c25254df2f57a524c65b5883550bb1a41130493c6440c60eb6256f4c142dbc9"
+        }
+      }
 ______
 
 =====
@@ -1466,7 +1519,8 @@ ________
    
 *Returns the list of all sidechain node peers*
 
-   
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
    
@@ -1505,6 +1559,7 @@ __________
    
 *Sends the request to connect to a sidechain node*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **Parameters**
 
@@ -1542,6 +1597,7 @@ __________
    
 *Returns the list of all connected sidechain node peers*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -1608,6 +1664,7 @@ _______
    
 *Initiates a graceful stop procedure for the sidechain node. Returns an empty object*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
    
 **No Parameters**
 
@@ -1966,6 +2023,8 @@ ________
 
 *Enables automatic certificate submission*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
 **Example request**:
@@ -1990,6 +2049,8 @@ ________
 .. http:post:: /submitter/disableCertificateSubmitter
 
 *Disables automatic certificate submission*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
 
 **No Parameters**
 
@@ -2044,6 +2105,8 @@ ________
 
 *Enables automatic certificate signing*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
 **Example request**:
@@ -2070,6 +2133,8 @@ ________
 
 *Disables automatic certificate signing*
 
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
 **No Parameters**
 
 **Example request**:
@@ -2088,6 +2153,182 @@ ________
       {
          "result": { }
       }
+
+________
+
+.. http:post:: /submitter/getKeyRotationMessageToSignForSigningKey
+
+*Accepts public key and returns hash of the public key.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| schnorrPublicKey    |  string | Public key of certificate signer                                      |
++---------------------+---------+-----------------------------------------------------------------------+
+| withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationMessageToSignForSigningKey\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\", \\\"withdrawalEpoch\\\": 100}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "keyRotationMessageToSign" : "4a2cbb9ff049b2a973c02e23f5cba3e1ac46d8bc030b75868b6510c764f0fc01"
+         }
+      }
+
+________
+
+.. http:post:: /submitter/getKeyRotationMessageToSignForMasterKey
+
+*Accepts public key and returns hash of the public key.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| schnorrPublicKey    |  string | Public key of certificate signer                                      |
++---------------------+---------+-----------------------------------------------------------------------+
+| withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationMessageToSignForMasterKey\" -H \"accept: application/json\" -d \"{\\\"schnorrPublicKey\\\":\\\"string\\\", \\\"withdrawalEpoch\\\": 100}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result":{
+            "keyRotationMessageToSign" : "4a2cbb9ff049b2a973c02e23f5cba3e1ac46d8bc030b75868b6510c764f0fc01"
+         }
+      }
+
+________
+
+.. http:post:: /submitter/getCertifiersKeys
+
+*Accepts number of withdrawal epoch and returns signer keys of certificate signers.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| withdrawalEpoch     |  int    | Withdrawal epoch of certificate signer keys                           |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getCertifiersKeys\" -H \"accept: application/json\" -d \"{\\\"withdrawalEpoch\\\": 100}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+         "result": {
+            "certifiersKeys": {
+                "signingKeys": [{
+                    "publicKey": "ec4166e9225e97e90dde76089dd4edbb5ab60fb5ea60230a256ca3d2e4c2162c80"
+                }, {
+                    "publicKey": "3fd1d98e4d4331f31d28a4b652ac9c7b3ea5ac1b35e0ef113434307b79cd590c80"
+                }, {
+                    "publicKey": 'b2130ed9458ff6f917b717b4765b185e40f6139ee7546830ba8ddd1f73b37b2400"
+                }, {
+                    "publicKey": "ce0b8c7c4345a7fec79424cfa519d732d68aef16c7c0e5146c5efc2d9454601980"
+                }, {
+                    "publicKey": "08be76211383c6cd3bfa7c72d49d5a79c79efd04d297535cf0004e5cf1ba7e0b00"
+                }, {
+                    "publicKey": "606efe3b31cdab05fee935f58da6c88f7554f9bc55f0c6c3c577889a168aad3480"
+                }, {
+                    "publicKey": "f9b41abe48c176f928b39ad66520969fd66be40c47dad5964b622f2b6620590580"
+                }],
+                "masterKeys": [{
+                    "publicKey": "9b59d065c3373a70eab20263f6511a29d4af3aa20b3d9600295dcd985381bd2580"
+                }, {
+                    "publicKey": "6edd6574af4d49474b981a89c8ff783b1bf3db63b2c818459ea130b4fab6bc0c80"
+                }, {
+                    "publicKey": "39077d62d10ca0a9639908d0e7b3d37787d84d1a6c81624371015064383da02000"
+                }, {
+                    "publicKey": "efd7e4f58e039f23bad6b7b5dc06c8c7a3c8f90a9f94ce6ae4164bc6ecb8f10980"
+                }, {
+                    "publicKey": "a62b704bcc08e4c2fc4dd2ae51e6812dfa6519fc57db77812a3123639b5e4a3380"
+                }, {
+                    "publicKey': "b46172f71951fe8a421ac77847821ac9f65105962f1cd2761ed9b0cf9400561500"
+                }, {
+                    "publicKey": "a477534cac7bad0c77f81f8b5da7aec9582cebcf95de57aa6fafbc3cd7deca2480"
+                }]
+            }
+         }
+      }
+
+________
+
+.. http:post:: /submitter/getKeyRotationProof
+
+*Returns key rotation proof (key type, index of key, new key value and 2 signatures proving key rotation) if type of circuit is NaiveThresholdSignatureCircuitWithKeyRotation.*
+
+**Parameters**
+
++---------------------+---------+-----------------------------------------------------------------------+
+| Name                | Type    |            Description                                                |
++=====================+=========+=======================================================================+
+| withdrawalEpoch     |  int    | Number of withdrawal epoch                                            |
++---------------------+---------+-----------------------------------------------------------------------+
+| indexOfKey          |  int    | Index of certificate submitter key. Min = 0                           |
++---------------------+---------+-----------------------------------------------------------------------+
+| keyType             |  int    | Key type - 0 for signers key, 1 for masters key. Min = 0. Max = 1     |
++---------------------+---------+-----------------------------------------------------------------------+
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9085/submitter/getKeyRotationProof\" -H \"accept: application/json\" -d \"{\\\"withdrawalEpoch\\\": 100, \\\"indexOfKey\\\": 2, \\\"keyType\\\": 0}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+      {
+        "result": {
+          "keyType" : 0,
+          "index" : 0,
+          "newKey" : "2cddac0f51b4329ab6ee85ccaf4e3bbc1b80639a96e41239de978bd99d245f0a00",
+          "signingKeySignature" : "1d39072beb8480edeee6dabf16ee15526bfd2170680dcc4a23d656bbb9740d1d0977f58009c19943d7964314aafc9aa0776f253ac479c708cf6ec0a51d9a9e1b",
+          "masterKeySignature" : "1d39072beb8480edeee6dabf16ee15526bfd2170680dcc4a23d656bbb9740d1d0977f58009c19943d7964314aafc9aa0776f253ac479c708cf6ec0a51d9a9e1b"
+        }
+      }
+
 _______
 
 
