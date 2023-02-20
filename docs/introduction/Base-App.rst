@@ -538,3 +538,5 @@ By default, Remote Key Manager is disabled
         signersSecrets = []
         ...
     }
+
+Key management inside Secure Enclave is based on AWS Key Management Service.
