@@ -54,17 +54,14 @@ timeout -- Timeout in seconds on API requests
 API authentication
 ====================
 
-It's possible to add a basic authentication to the API interface.
-Some endpoints already requires it (e.g. all wallet endpoints).
+We support the Basic Authentication inside our REST interface.
+You can add an api key hash inside the config file in the section: *restApi.apiKeyHash* which should be the **BCrypt** Hash of the password used in the Basic Auth.
 
-In order to enable it you should add an api key hash inside the config file section: **restApi.apiKeyHash**
-The api key hash must be an Hash of another string (api key) that it's used in the HTTP request. It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
+It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
 
 .. code:: bash
 
-    encodeString:{"string": "Horizen"}
-
-Then, in the HTTP request you need to add an additional custom header: **"api_key"**.
+    encodeString:{"string": "a8q38j2f0239jf2olf20f"}
 
 Example:
 
@@ -72,24 +69,24 @@ HTTP request:
 
 .. code:: bash
 
-    "api_key": "Horizen"
+    "Authorization": "Basic a8q38j2f0239jf2olf20f"
 
 Config file:
 
 .. code:: bash
 
     restApi {
-        "apiKeyHash": "aa8ed2a907753a4a7c66f2aa1d48a0a74d4fde9a6ef34bae96a86dcd7800af98"
+        "apiKeyHash": "2y$12$vga1LEzU1jiLYI766CIeVOi1A9QwFBqYgjbAsD.2t8Z7SFP6ff4Eq"
     }
 
-If you want to add authentication to your custom endpoints you just need to wrap your code between the withAuth directive.
+If you want to add authentication to your custom endpoints you just need to wrap your code between the withBasicAuth directive.
 
 Example:
 
 .. code:: bash
 
     your_custom_endpoint() = {
-        withAuth {
+        withBasicAuth {
             <custom endpoint implementation>
         }
     }
