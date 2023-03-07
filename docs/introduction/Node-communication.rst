@@ -16,7 +16,7 @@ The available options are:
 
 bindAddress -- "IP:port" address for sending HTTP request, e.g. "127.0.0.1:9085"
 
-api-key-hash -- Authentication header must be a string that hashes to the field "api-key-hash" specified in each sidechain node's .conf file. The authentication header could be empty if no api-key-hash is specified
+apiKeyHash -- Authentication header must be a standard HTTP Baisic Authentication where the password hashes to the field "apiKeyHash" specified in each sidechain node's .conf file. The authentication header could be empty if no apiKeyHash is specified
 
 timeout -- Timeout in seconds on API requests 
 
@@ -54,42 +54,49 @@ timeout -- Timeout in seconds on API requests
 API authentication
 ====================
 
-It's possible to add a basic authentication to the API interface.
+It's possible to add a the HTTP basic authentication to the API interface.
 Some endpoints already requires it (e.g. all wallet endpoints).
 
 In order to enable it you should add an api key hash inside the config file section: **restApi.apiKeyHash**
-The api key hash must be an Hash of another string (api key) that it's used in the HTTP request. It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
+The api key hash must be the BCrypt hash of the HTTP Basic authentication password. It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
 
 .. code:: bash
 
-    encodeString:{"string": "Horizen"}
+    encodeString:{"string": "a8q38j2f0239jf2olf20f"}
 
-Then, in the HTTP request you need to add an additional custom header: **"api_key"**.
+Then, in the HTTP request you need to add the Basic Authentication header.
 
 Example:
 
 HTTP request:
 
+HTTP Basic Auth username: user
+
+HTTP Basic Auth password: a8q38j2f0239jf2olf20f
+
+Encoded64 of username:password = dXNlcjphOHEzOGoyZjAyMzlqZjJvbGYyMGY=
+
 .. code:: bash
 
-    "api_key": "Horizen"
+    "Authorization": "Basic dXNlcjphOHEzOGoyZjAyMzlqZjJvbGYyMGY="
+
 
 Config file:
 
 .. code:: bash
 
     restApi {
-        "apiKeyHash": "aa8ed2a907753a4a7c66f2aa1d48a0a74d4fde9a6ef34bae96a86dcd7800af98"
+        "apiKeyHash": "$2a$10$sQHM/Y40YKQuL7NWD15Fk.U7HUC7x5IKtcpRUo0CY9JXH7hP7gxli"
     }
 
-If you want to add authentication to your custom endpoints you just need to wrap your code between the withAuth directive.
+If you want to add authentication to your custom endpoints you just need to wrap your code between the withBasicAuth directive.
 
 Example:
 
 .. code:: bash
 
     your_custom_endpoint() = {
-        withAuth {
+        withBasicAuth {
             <custom endpoint implementation>
         }
     }
