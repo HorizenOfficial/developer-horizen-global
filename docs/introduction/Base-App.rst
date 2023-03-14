@@ -514,3 +514,29 @@ SidechainApp arguments can be split into several groups:
 	
 	
 The SDK repository includes in its "examples" folder, the "SimpleApp" sidechain;  it's an application that does not introduce any custom logic: no custom boxes or transactions, no custom API, an empty ApplicationState and ApplicationWallet. "SimpleApp" shows the basic SDK functionalities, that are immediately available to the developer, and it's the fastest way to get started with our SDK.
+
+
+Remote Key Manager configuration
+******************
+
+Remote Key Manager (or Secure Enclave) is a remotely hosted server that exposes REST HTTP API. When configured, the Sidechain nodes will communicate with it for operations such as creating and verifying signatures or messages. This functionality is used to sign Withdrawal Certificate with private parts of the signing keys, that can now be stored remotely and not specified in the Node configuration file.
+
+- Example configuration:
+::
+
+    remoteKeysManager {
+        enabled = true
+        address = "https://$host:$port"
+    }
+By default, Remote Key Manager is disabled
+
+- With Remote Key Manager configured, signers secrets configuration in not needed:
+::
+
+    withdrawalEpochCertificate {
+        ...
+        signersSecrets = []
+        ...
+    }
+
+Key management inside Secure Enclave is based on AWS Key Management Service.
