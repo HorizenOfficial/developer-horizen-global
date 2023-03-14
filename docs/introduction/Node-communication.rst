@@ -70,12 +70,6 @@ Example:
 
 HTTP request:
 
-HTTP Basic Auth username: user
-
-HTTP Basic Auth password: a8q38j2f0239jf2olf20f
-
-Encoded64 of username:password = dXNlcjphOHEzOGoyZjAyMzlqZjJvbGYyMGY=
-
 .. code:: bash
 
     "Authorization": "Basic a8q38j2f0239jf2olf20f"
