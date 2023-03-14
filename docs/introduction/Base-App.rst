@@ -75,8 +75,8 @@ Transactions
 ************
 
 There are two basic transactions: `MC2SCAggregatedTransaction
-<https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/MC2SCAggregatedTransaction.java>`_ and `SidechainCoreTransaction
-<https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainCoreTransaction.java>`_.
+<https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/transaction/MC2SCAggregatedTransaction.java>`_ and `SidechainCoreTransaction
+<https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/transaction/SidechainCoreTransaction.java>`_.
 
 An MC2SCAggregatedTransaction is the implementation in a sidechain of Forward Transfers to that specific sidechain, i.e. mainchain transactions that send coins to addresses of that specific sidechain. When a Forger is going to produce a sidechain block, and a new mainchain block appears, the forger will mention that mainchain block as a reference that contains that sidechain related data. If a Forward Transfer exists in the mainchain block, it will be included into the MC2SCAggregatedTransaction and added as a part of the reference.
 
@@ -96,7 +96,7 @@ This interface defines two methods:
 - ``byte[] bytes()`` - returns a bytearray representing the object
 - ``Serializer serializer()`` - returns the class responsible to parse and write the object through Scorex Reader and Writer, which are wrappers on byte streams
 
-The SDK provides basic serializer interfaces for its objects (for example `BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ for BoxData, `TransactionSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/TransactionSerializer.java>`_ for Transactions), ready to be extended when writing specific custom serializers.
+The SDK provides basic serializer interfaces for its objects (for example `BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/box/BoxSerializer.java>`_ for BoxData, `TransactionSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/transaction/TransactionSerializer.java>`_ for Transactions), ready to be extended when writing specific custom serializers.
 All other serializers must implement the ScorexSerializer interface.
 
 This interface defines two abstract methods:
@@ -178,12 +178,12 @@ The communication between a node and its users is available through http end poi
 Physical storage
 ****************
 
-The SDK introduces the unified physical storage interface, and this default implementation is based on the `LevelDB key-value storage <https://github.com/google/leveldb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. When using a custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/com/horizen/storage/StorageTest.java>`_ test passes.
+The SDK introduces the unified physical storage interface, and this default implementation is based on the `LevelDB key-value storage <https://github.com/google/leveldb>`_. Sidechain developers can decide to use the default solution or provide a custom implementation. For example, the developer could decide to use encrypted storage, a Key Value store, a relational database or even a cloud solution. When using a custom implementation, please make sure that the `Storage <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/test/java/io/horizen/storage/StorageTest.java>`_ test passes.
 
 User-specific settings
 **********************
 
-A user can define custom configuration options, such as a specific path to the node data storage, wallet seed, node name and API server address/port, by modifying the configuration file. The file is written in `HOCON notation <https://github.com/lightbend/config/blob/master/HOCON.md/>`_, that is JSON made more human-editable. The configuration file consists of the SDK's required fields and the application's custom fields, if needed. Sidechain developers can use the `com.horizen.settings.SettingsReader <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/settings/SettingsReader.java>`_ utility class to extract sidechain-specific data and the config object itself to get custom parts.
+A user can define custom configuration options, such as a specific path to the node data storage, wallet seed, node name and API server address/port, by modifying the configuration file. The file is written in `HOCON notation <https://github.com/lightbend/config/blob/master/HOCON.md/>`_, that is JSON made more human-editable. The configuration file consists of the SDK's required fields and the application's custom fields, if needed. Sidechain developers can use the `io.horizen.settings.SettingsReader <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/settings/SettingsReader.java>`_ utility class to extract sidechain-specific data and the config object itself to get custom parts.
 
 ::
 
@@ -201,7 +201,7 @@ In the above class, userConfigPath is the path to the user defined configuration
 SidechainApp class
 ******************
 
-The starting point of the SDK for each sidechain is the `SidechainApp class <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/scala/com/horizen/SidechainApp.scala>`_. Every sidechain application should create an instance of SidechainApp, passing all the required parameters, and then call its run() method to start the sidechain node:
+The starting point of the SDK for each sidechain is the `SidechainApp class <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/scala/io/horizen/utxo/SidechainApp.scala>`_. Every sidechain application should create an instance of SidechainApp, passing all the required parameters, and then call its run() method to start the sidechain node:
 
 ::
 
@@ -286,7 +286,7 @@ injected_classType and identifier must belong to the binding types defined in th
 
 
 -  SideChain settings
-Must be an instance of com.horizen.SidechainSettings, defining the sidechain configuration parameters.
+Must be an instance of io.horizen.SidechainSettings, defining the sidechain configuration parameters.
 
 ::
 
@@ -326,7 +326,7 @@ Use ``new HashMap<>();`` if no custom serializers are required.
 
 -  Application Wallet
 Class defining custom application wallet logic.
-Must be an instance of a class implementing the com.horizen.wallet.ApplicationWallet interface.
+Must be an instance of a class implementing the io.horizen.utxo.wallet.ApplicationWallet interface.
 
 ::
 
@@ -336,7 +336,7 @@ Must be an instance of a class implementing the com.horizen.wallet.ApplicationWa
 
 -  Application state
 Class defining custom application state logic.
-Must be an instance of a class implementing the com.horizen.state.ApplicationState interface.
+Must be an instance of a class implementing the io.horizen.utxo.state.ApplicationState interface.
 
 ::
 
@@ -346,7 +346,7 @@ Must be an instance of a class implementing the com.horizen.state.ApplicationSta
 
 -  Secret storage
 Class for defining Secret storage, i.e. a place where secret keys are stored.   
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -356,7 +356,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
        
 -  WalletBoxStorage
 Internal storage used for the wallet.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -366,7 +366,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 -  WalletTransactionStorage
 Internal storage used for transactions.
-Must be an instance of a class implementing this interface: com.horizen.storage.Storage
+Must be an instance of a class implementing this interface: io.horizen.storage.Storage
 
 ::
 
@@ -377,7 +377,7 @@ Must be an instance of a class implementing this interface: com.horizen.storage.
 
 -  WalletForgingBoxesInfoStorage
 Internal storage used for forging boxes.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -387,7 +387,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 -  StateStorage
 Internal storage used to save the current State, e.g. store information about boxes currently still closed, perform rollbacks in case of forks, etc.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -397,7 +397,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 -  StateForgerBoxStorage
 Internal storage used to save the Forger boxes.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -407,7 +407,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 -  HistoryStorage
 Internal storage used to store all the History data, including blocks of all forks.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -417,7 +417,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 -  ConsensusStorage
 Internal storage to save consensus data.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -427,7 +427,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 -  CswDataStorage
 Internal storage to save data for recovering coins from the ceased Sidechain.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -437,7 +437,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 
 -  UtxoMerkleTreeStorage
 Internal storage to save UTXO Merkle Tree data.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
@@ -448,7 +448,7 @@ Must be an instance of a class implementing the com.horizen.storage.Storage inte
 -  BackupStorage
 Storage containing the non coin-boxes saved during the backup procedure and restored during the restore procedure (See :ref:`backup_and_restore-label`).
 If you don't want to have any restore logic you can leave this empty.
-Must be an instance of a class implementing the com.horizen.storage.Storage interface.
+Must be an instance of a class implementing the io.horizen.storage.Storage interface.
 
 ::
 
