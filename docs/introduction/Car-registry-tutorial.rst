@@ -1122,7 +1122,7 @@ Application state
 ##########################
 
 
-By implementing the *com.horizen.state.ApplicationState* interface with a custom class, developers can:
+By implementing the *io.horizen.utxo.state.ApplicationState* interface with a custom class, developers can:
 
 - define specific rules to validate transactions (before they are accepted in the mempool and later when included in a block)
 - define specific rules to validate blocks (before they are appended to the blockchain)
@@ -1286,7 +1286,7 @@ Finally, the *checkStoragesVersion* method, which is also very simple and just c
 Application wallet
 ##########################
 
-The interface *com.horizen.wallet.ApplicationWallet* is another extension point that allows an application to be notified each time a secret or box is added or removed from the sidechain node local wallet.
+The interface *io.horizen.utxo.wallet.ApplicationWallet* is another extension point that allows an application to be notified each time a secret or box is added or removed from the sidechain node local wallet.
 
 
 
@@ -1302,13 +1302,13 @@ The interface *com.horizen.wallet.ApplicationWallet* is another extension point 
     }
 
 
-The Lambo registry example does not implement the interface *ApplicationWallet* because its wallet has basic requirements. You may need to use interface *com.horizen.wallet.ApplicationWallet* depending on your app requirements. For example, if the app needs to maintain a separate wallet balance or counter of a specific kind of custom boxes associated to locally stored keys, you could put the code that updates those records inside the *onChangeBoxes* method. 
+The Lambo registry example does not implement the interface *ApplicationWallet* because its wallet has basic requirements. You may need to use interface *io.horizen.utxo.wallet.ApplicationWallet* depending on your app requirements. For example, if the app needs to maintain a separate wallet balance or counter of a specific kind of custom boxes associated to locally stored keys, you could put the code that updates those records inside the *onChangeBoxes* method.
 
 
 Application Stopper 
 #############################
 
-The interface *com.horizen.SidechainAppStopper* allows an application to be called when the node stop procedure is initiated:
+The interface *io.horizen.SidechainAppStopper* allows an application to be called when the node stop procedure is initiated:
 
 ::
 
@@ -1345,7 +1345,7 @@ As an example, the Lambo Registry application adds four endpoints, one for each 
 These new endpoints do not broadcast the transaction directly, but only produce a signed hex version of it; to execute the transaction, the user will later have to post it to the standard endpoint  */transaction/sendTransaction*. This approach is just a design choice, so it's not a mandatory requirement.
 Before looking at the code, please note that all these endpoints need to interact with the local wallet to unlock boxes and sign the transactions.
 
-So, the first step to add endpoints is to extend the *com.horizen.api.http.ApplicationApiGroup* class, and implement its two methods:
+So, the first step to add endpoints is to extend the *io.horizen.api.http.ApplicationApiGroup* class, and implement its two methods:
 
 
   ::

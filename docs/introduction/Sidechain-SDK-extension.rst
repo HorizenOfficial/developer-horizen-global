@@ -9,7 +9,7 @@ Custom box creation
 
 The first step of the development process of a distributed app implemented as a sidechain, is the representation of the needed data. In the SDK, application data are modeled as "Boxes". 
 
-Every custom box should at least implement the ``com.horizen.box.Box`` interface. 
+Every custom box should at least implement the ``io.horizen.utxo.box.Box`` interface.
 The methods defined in the interface are the following:
 
 - ``long nonce()``
@@ -19,7 +19,7 @@ The methods defined in the interface are the following:
   In the case of a Non-Coin box, this value is still required, and could have a customized meaning chosen by the developer, or no meaning, i.e. not used. In the latter case, by convention is generally set to 1.
 - ``Proposition proposition()``  
   should return the proposition that locks this box.
-  The proposition that is used in the SDK examples is `com.horizen.proposition.PublicKey25519Proposition <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/proposition/PublicKey25519Proposition.java>`_; it's based on `Curve 25519 <https://en.wikipedia.org/wiki/Curve25519>`_, a fast and secure elliptic curve used by Horizen mainchain. A developer may want to define and use custom propositions.
+  The proposition that is used in the SDK examples is `io.horizen.proposition.PublicKey25519Proposition <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/proposition/PublicKey25519Proposition.java>`_; it's based on `Curve 25519 <https://en.wikipedia.org/wiki/Curve25519>`_, a fast and secure elliptic curve used by Horizen mainchain. A developer may want to define and use custom propositions.
 - ``byte[] id()``
   should return a unique identifier of each box instance.
 - ``byte[] bytes()``
@@ -33,9 +33,9 @@ The methods defined in the interface are the following:
 - ``boolean isCustom()``
 should return true for all custom boxes
 
-As a common design rule, you usually do not implement the Box interface directly, but extend instead the abstract class `com.horizen.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBox.java>`_, which already provides default implementations of 
+As a common design rule, you usually do not implement the Box interface directly, but extend instead the abstract class `io.horizen.utxo.box.AbstractBox <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/box/AbstractBox.java>`_, which already provides default implementations of
 some useful methods like ``id()``, ``equals()``, ``hashCode()``, ``typeName()`` and ``isCustom()``.
-This class requires the definition of another object: a class extending `com.horizen.box.AbstractBoxData <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/AbstractBoxData.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
+This class requires the definition of another object: a class extending `io.horizen.utxo.box.AbstractBoxData <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/box/AbstractBoxData.java>`_, where you should put all the properties of the box, including the proposition. You can think of the AbstractBoxData as an inner container of all the fields of your box.
 This data object must be passed in the constructor of AbstractBox, along with the nonce.
 The important methods of AbstractBoxData that need to be implemented are:
 
@@ -50,14 +50,14 @@ BoxSerializer and BoxDataSerializer
 #########################################
 
 Each box must define its own serializer and return it from the ``serializer()`` method.
-The serializer is responsible to convert the box into bytes, and parse it back later. It should implement the `com.horizen.box.BoxSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/BoxSerializer.java>`_ interface, which defines two methods:
+The serializer is responsible to convert the box into bytes, and parse it back later. It should implement the `io.horizen.utxo.box.BoxSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/box/BoxSerializer.java>`_ interface, which defines two methods:
 
 - void ``serialize(Box box, scorex.util.serialization.Writer writer)``
   writes the box content into a Scorex writer  
 - Box ``parse(scorex.util.serialization.Reader reader)``
   perform the opposite operation (reads a Scorex reader and re-create the Box)
 
-Also any instance of AbstractBoxData needs to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `com.horizen.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/box/data/BoxDataSerializer.java>`_
+Also any instance of AbstractBoxData needs to have its own serializer: if you declare a boxData, you should define one in a similar way. In this case the interface to be implemented is `io.horizen.utxo.box.data.BoxDataSerializer <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/box/data/BoxDataSerializer.java>`_
 
       
 Specific actions for extension of Coin-box
@@ -69,7 +69,7 @@ A Coin Box is a Box that has a value in ZEN. The creation process is the same ju
 Transaction extension
 #####################
 
-A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transactions inherited from SidechainTransaction. SidechainNoncedTransaction - class that helps to deal with output boxes nonces. AbstractRegularTransaction class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `com.horizen.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainNoncedTransaction.java>`_ class or `com.horizen.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/transaction/SidechainTransaction.java>`_.
+A transaction is the basic way to implement the application logic, by processing input Boxes that get unlocked and opened (or "spent"), and create new ones. All custom transactions inherited from SidechainTransaction. SidechainNoncedTransaction - class that helps to deal with output boxes nonces. AbstractRegularTransaction class helps to deal with ZenBoxes. To define a new custom transaction, you have to extend the `io.horizen.utxo.transaction.SidechainNoncedTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/transaction/SidechainNoncedTransaction.java>`_ class or `io.horizen.utxo.transaction.SidechainTransaction <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/transaction/SidechainTransaction.java>`_.
 The most relevant methods of this class are detailed below:
 
 - ``public List<BoxUnlocker<Proposition>> unlockers()``
@@ -275,7 +275,7 @@ The wallet stores the user secret info and related balances. It is initialized w
 New private keys can be added by calling the http endpoint /wallet/createPrivateKey25519.
 The local wallet data is updated when a new block is added to the sidechain, and when blocks are reverted. 
 
-Developers can extend Wallet logic by defining a class that implements the interface `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/wallet/ApplicationWallet.java>`_
+Developers can extend Wallet logic by defining a class that implements the interface `ApplicationWallet <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/utxo/wallet/ApplicationWallet.java>`_
 The interface methods are listed below:
 
 ::
@@ -302,7 +302,7 @@ Similarly to ApplicationState, the checkStoragesVersion method is useful when ch
 Sidechain Application Stopper 
 #############################
 
-A user application should define a class that implements the interface FIXME `SidechainAppStopper <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/com/horizen/SidechainAppStopper.java>`_
+A user application should define a class that implements the interface FIXME `SidechainAppStopper <https://github.com/ZencashOfficial/Sidechains-SDK/blob/master/sdk/src/main/java/io/horizen/SidechainAppStopper.java>`_
 The interface is listed below:
 
 ::
@@ -320,7 +320,7 @@ Custom API creation
 
 A user application can extend the default standard API (see chapter 6) and add custom API endpoints. For example if your application defines a custom transaction, you may want to add an endpoint that creates one.
 
-To add custom API you have to create a class which extends the com.horizen.api.http.ApplicationApiGroup abstract class, and implements the following methods:
+To add custom API you have to create a class which extends the io.horizen.api.http.ApplicationApiGroup abstract class, and implements the following methods:
 
 -  ``public String basePath()``
    returns the base path of this group of endpoints (the first part of the URL)
@@ -454,7 +454,7 @@ Also there are available providers for retrieving NodeView and Secret submission
 
 API response classes
 
-The function that processes the request must return an object of type com.horizen.api.http.ApiResponse.
+The function that processes the request must return an object of type io.horizen.api.http.ApiResponse.
 In most cases, we can have two different responses: either the operation is successful, or an error has occurred during the API request processing. 
 
 For a successful response, you have to:
@@ -586,7 +586,7 @@ to the version that contains the Mainchain block calculated by the following for
 
   Genesis_MC_block_height + (current_epch - 2) * withdrawalEpochLength - 1
 
-This can be easily done by calling the endpoint `/backup/getSidechainBlockIdForBackup <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/scala/com/horizen/api/http/SidechainBackupApiRoute.scala>`_
+This can be easily done by calling the endpoint `/backup/getSidechainBlockIdForBackup <https://github.com/HorizenOfficial/Sidechains-SDK/blob/master/sdk/src/main/scala/io/horizen/utxo/api/http/route/SidechainBackupApiRoute.scala>`_
 and pass the block id obtained to the method ``createBackup``.
 
 Restore procedure
