@@ -242,6 +242,8 @@ The starting point of the SDK for each sidechain is the `SidechainApp class <htt
 
 			// Applciation specific configs for core forks activation
    			ForkConfigurator forkConfigurator
+
+            int consensusSecondsInSlot = 120
 		)
 
 		public void run()
@@ -498,6 +500,16 @@ Every sidechain application should use `ForkConfigurator` to specify the activat
     bind(ForkConfigurator.class)
         .annotatedWith(Names.named("ForkConfiguration"))
         .toInstance(forkConfigurator);
+
+- Seconds in slots parameter
+
+It's integer parameter that defines slot duration. The minimum valid value is 10, the maximum is 300. (See :ref:`latus_params`)
+
+::
+
+    bind(Integer.class)
+        .annotatedWith(Names.named("ConsensusSecondsInSlot"))
+        .toInstance(consensusSecondsInSlot);
 
 
 SidechainApp arguments can be split into several groups:
