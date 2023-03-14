@@ -16,7 +16,7 @@ The available options are:
 
 bindAddress -- "IP:port" address for sending HTTP request, e.g. "127.0.0.1:9085"
 
-api-key-hash -- Authentication header must be a string that hashes to the field "api-key-hash" specified in each sidechain node's .conf file. The authentication header could be empty if no api-key-hash is specified
+apiKeyHash -- Authentication header must be a standard HTTP Baisic Authentication where the password hashes to the field "apiKeyHash" specified in each sidechain node's .conf file. The authentication header could be empty if no apiKeyHash is specified
 
 timeout -- Timeout in seconds on API requests 
 
@@ -55,17 +55,26 @@ API authentication
 ====================
 
 We support the Basic Authentication inside our REST interface.
-You can add an api key hash inside the config file in the section: *restApi.apiKeyHash* which should be the **BCrypt** Hash of the password used in the Basic Auth.
+In order to enable it you should define an api key hash inside the config file section **restApi.apiKeyHash**
+Api key hash should be the **BCrypt** Hash of the password used in the Basic Auth.
 
-It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
+It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **encodeString**.
 
 .. code:: bash
 
     encodeString:{"string": "a8q38j2f0239jf2olf20f"}
 
+Then, in the HTTP request you need to add the Basic Authentication header.
+
 Example:
 
 HTTP request:
+
+HTTP Basic Auth username: user
+
+HTTP Basic Auth password: a8q38j2f0239jf2olf20f
+
+Encoded64 of username:password = dXNlcjphOHEzOGoyZjAyMzlqZjJvbGYyMGY=
 
 .. code:: bash
 
