@@ -18,7 +18,7 @@ extensions = [
 
 autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 4
-templates_path = ['_templates']
+templates_path = ['templates']
 source_suffix = '.rst'
 master_doc = 'index'
 project = u'Horizen Docs'
