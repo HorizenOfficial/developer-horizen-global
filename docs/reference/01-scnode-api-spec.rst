@@ -1371,11 +1371,13 @@ ________
 
 **Parameters**
 
-+------------------+--------------+----------+--------------------------------------+
-| Name             | Type         | Required | Description                          |
-+==================+==============+==========+======================================+
-| privKey          | String       |   Yes    | Secret to import inside the wallet   |
-+------------------+--------------+----------+--------------------------------------+
++------------------+--------------+----------+--------------------------------------------------------------------------------------+
+| Name             | Type         | Required | Description                                                                          |
++==================+==============+==========+======================================================================================+
+| privKey          | String       |   Yes    | Secret to import inside the wallet                                                   |
++------------------+--------------+----------+--------------------------------------------------------------------------------------+
+| reindex          | boolean      |   No     | If set to true, launch a node reindex immediately after the import - default: false  |
++------------------+--------------+----------+--------------------------------------------------------------------------------------+
 
 **Example request**:
 
@@ -1441,11 +1443,13 @@ ________
 
 **Parameters**
 
-+------------------+--------------+----------+--------------------------------------+
-| Name             | Type         | Required | Description                          |
-+==================+==============+==========+======================================+
-| path             | String       |   Yes    | Path to the file to import           |
-+------------------+--------------+----------+--------------------------------------+
++------------------+--------------+----------+--------------------------------------------------------------------------------------+
+| Name             | Type         | Required | Description                                                                          |
++==================+==============+==========+======================================================================================+
+| path             | String       |   Yes    | Path to the file to import                                                           |
++------------------+--------------+----------+--------------------------------------------------------------------------------------+
+| reindex          | boolean      |   No     | If set to true, launch a node reindex immediately after the import - default: false  |
++------------------+--------------+----------+--------------------------------------------------------------------------------------+
 
 **Example request**:
 
@@ -1509,6 +1513,62 @@ ________
 	}
 
 ________
+
+.. http:post:: /wallet/reindex
+
+*Starts a reindex operation. Returns true if the reindex successfully started*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/reindex\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "started": "boolean"
+	  }
+	}
+
+________
+
+.. http:post:: /wallet/reindexStatus
+
+*Reports the current status of the reindex activity. In case of reindex ongoing, reports also the reached block height of the reindex*
+
+**This endpoint needs authentication** (See :ref:`api_authentication-label`)
+
+**Example request**:
+
+.. tabs::
+
+   .. tab:: Bash
+
+      curl -X POST \"http://127.0.0.1:9086/wallet/reindexStatus\" -H \"accept: application/json\" -H \"Content-Type: application/json\" -d \"{}\"
+
+
+**Example response**:
+
+   .. sourcecode:: http
+
+	{
+	  "result" : {
+            "status": "ongoing",
+            "heightReached": 345
+	  }
+	}
+
+________
+
 
 =====
 **Sidechain Node operations**
