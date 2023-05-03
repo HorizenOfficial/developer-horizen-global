@@ -54,11 +54,11 @@ timeout -- Timeout in seconds on API requests
 API authentication
 ====================
 
-It's possible to add a the HTTP basic authentication to the API interface.
-Some endpoints already requires it (e.g. all wallet endpoints).
+We support the Basic Authentication inside our REST interface.
+In order to enable it you should define an api key hash inside the config file section **restApi.apiKeyHash**
+Api key hash should be the **BCrypt** Hash of the password used in the Basic Auth.
 
-In order to enable it you should add an api key hash inside the config file section: **restApi.apiKeyHash**
-The api key hash must be the BCrypt hash of the HTTP Basic authentication password. It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **endocdeString**.
+It's possible to calculate this Hash using the **ScBootstrapping tool** with the command **encodeString**.
 
 .. code:: bash
 
@@ -70,23 +70,16 @@ Example:
 
 HTTP request:
 
-HTTP Basic Auth username: user
-
-HTTP Basic Auth password: a8q38j2f0239jf2olf20f
-
-Encoded64 of username:password = dXNlcjphOHEzOGoyZjAyMzlqZjJvbGYyMGY=
-
 .. code:: bash
 
-    "Authorization": "Basic dXNlcjphOHEzOGoyZjAyMzlqZjJvbGYyMGY="
-
+    "Authorization": "Basic a8q38j2f0239jf2olf20f"
 
 Config file:
 
 .. code:: bash
 
     restApi {
-        "apiKeyHash": "$2a$10$sQHM/Y40YKQuL7NWD15Fk.U7HUC7x5IKtcpRUo0CY9JXH7hP7gxli"
+        "apiKeyHash": "2y$12$vga1LEzU1jiLYI766CIeVOi1A9QwFBqYgjbAsD.2t8Z7SFP6ff4Eq"
     }
 
 If you want to add authentication to your custom endpoints you just need to wrap your code between the withBasicAuth directive.
